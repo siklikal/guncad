@@ -1,2 +1,10 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
+@plugin 'daisyui';
+
+:root {
+	--p: 213.1 93.97% 67.84%;
+	--pc: 0 0% 100%;
+	--color-primary: #2563eb;
+	--color-primary-content: #ffffff;
+}
