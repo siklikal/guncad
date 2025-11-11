@@ -4,12 +4,14 @@ import { supabase } from '$lib/supabase';
 
 // Create a writable store for the current user
 export const user = writable<User | null>(null);
+export const loading = writable<boolean>(true);
 
 // Initialize auth state and listen for changes
 export function initAuth() {
 	// Get initial session
 	supabase.auth.getSession().then(({ data: { session } }) => {
 		user.set(session?.user ?? null);
+		loading.set(false);
 	});
 
 	// Listen for auth changes (login, logout, token refresh)

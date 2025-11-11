@@ -1,10 +1,21 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin 'daisyui';
+@import '@fontsource-variable/rubik';
 
 :root {
 	--p: 213.1 93.97% 67.84%;
 	--pc: 0 0% 100%;
 	--color-primary: #2563eb;
 	--color-primary-content: #ffffff;
+	--link-primary: #ffffff;
+}
+
+.link-primary {
+	color: #ffffff !important;
+}
+.link-primary:hover {
+	color: #ffffff !important;
+	opacity: 0.8;
+	transition: 0.6s;
 }
