@@ -218,7 +218,7 @@
 				<div class="flex justify-center">
 					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
 				</div>
-				<div>
+				<div class="rounded-lg shadow-lg shadow-neutral-800">
 					<div
 						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 						style="background-image: url('/temp/collection.webp');"
@@ -239,7 +239,7 @@
 				<div class="flex justify-center">
 					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
 				</div>
-				<div>
+				<div class="rounded-lg shadow-lg shadow-neutral-800">
 					<div
 						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 						style="background-image: url('/temp/collection.webp');"
@@ -260,7 +260,7 @@
 				<div class="flex justify-center">
 					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
 				</div>
-				<div>
+				<div class="rounded-lg shadow-lg shadow-neutral-800">
 					<div
 						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 						style="background-image: url('/temp/collection.webp');"
@@ -281,7 +281,7 @@
 				<div class="flex justify-center">
 					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
 				</div>
-				<div>
+				<div class="rounded-lg shadow-lg shadow-neutral-800">
 					<div
 						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 						style="background-image: url('/temp/collection.webp');"
@@ -302,7 +302,7 @@
 				<div class="flex justify-center">
 					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
 				</div>
-				<div>
+				<div class="rounded-lg shadow-lg shadow-neutral-800">
 					<div
 						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 						style="background-image: url('/temp/collection.webp');"
