@@ -2,7 +2,16 @@
 	import { user, auth, loading } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { CircleStar, ChevronRight } from '@lucide/svelte';
+	import {
+		Eye,
+		CircleStar,
+		ChevronRight,
+		ChevronLeft,
+		Crown,
+		Flame,
+		Sparkles
+	} from '@lucide/svelte';
+	import { popularTags } from '$lib/data/tags';
 
 	let { data }: { data: PageData } = $props();
 
@@ -19,11 +28,31 @@
 			goto('/login');
 		}
 	}
+
+	let carouselElement: HTMLDivElement;
+	let showLeftGradient = $state(false);
+	let showRightGradient = $state(true);
+
+	function updateGradients() {
+		if (!carouselElement) return;
+
+		const { scrollLeft, scrollWidth, clientWidth } = carouselElement;
+		showLeftGradient = scrollLeft > 0;
+		showRightGradient = scrollLeft < scrollWidth - clientWidth - 10;
+	}
+
+	function scrollLeftBtn() {
+		carouselElement?.scrollBy({ left: -300, behavior: 'smooth' });
+	}
+
+	function scrollRightBtn() {
+		carouselElement?.scrollBy({ left: 300, behavior: 'smooth' });
+	}
 </script>
 
 <div>
 	<div class="mx-auto max-w-[1920px] px-8">
-		<div class="flex gap-6">
+		<div class="flex gap-5">
 			<div class="carousel h-[390px] w-full flex-1 rounded-lg">
 				<div id="slide1" class="relative carousel-item w-full bg-neutral-700">
 					<div class="flex h-full w-full flex-col items-start justify-center gap-4 p-8">
@@ -35,15 +64,20 @@
 				</div>
 			</div>
 
-			<div class="flex flex-1 gap-6">
+			<div class="flex flex-1 gap-5">
 				<div class="flex flex-1 flex-col gap-2">
 					<div
 						class="flex-1 rounded-lg bg-cover bg-center"
 						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp');"
 					>
-						<div class="flex h-full flex-col justify-end">
+						<div class="flex h-full flex-col justify-between">
+							<div class="flex justify-end p-3">
+								<div class="rounded-full bg-black p-1">
+									<CircleStar class="h-7 w-7 leading-0 text-blue-600" />
+								</div>
+							</div>
 							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black to-transparent"
+								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 							>
 								<p class="p-4">The Hello Kitty</p>
 							</div>
@@ -54,8 +88,8 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<CircleStar />
-							<span class="text-sm text-white">Premium Models</span>
+							<CircleStar class="h-5 text-blue-600" />
+							<span class="text-sm text-white">Exclusive Models</span>
 						</div>
 						<ChevronRight />
 					</a>
@@ -66,9 +100,14 @@
 						class="flex-1 rounded-lg bg-cover bg-center"
 						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
 					>
-						<div class="flex h-full flex-col justify-end">
+						<div class="flex h-full flex-col justify-between">
+							<div class="flex justify-end p-3">
+								<div class="rounded-full bg-black p-2">
+									<Flame class="h-5 w-5 leading-0 text-red-600" />
+								</div>
+							</div>
 							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black to-transparent"
+								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 							>
 								<p class="p-4">M&P Remix</p>
 							</div>
@@ -79,8 +118,8 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<CircleStar />
-							<span class="text-sm text-white">Premium Models</span>
+							<Flame class="h-5 text-red-600" />
+							<span class="text-sm text-white">Trending Models</span>
 						</div>
 						<ChevronRight />
 					</a>
@@ -91,9 +130,14 @@
 						class="flex-1 rounded-lg bg-cover bg-center"
 						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-3fde3396-9743-4afa-88dd-993df763d50e-768_wvfmNXY.webp');"
 					>
-						<div class="flex h-full flex-col justify-end">
+						<div class="flex h-full flex-col justify-between">
+							<div class="flex justify-end p-3">
+								<div class="rounded-full bg-black p-2">
+									<Sparkles class="h-5 w-5 leading-0 text-green-600" />
+								</div>
+							</div>
 							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black to-transparent"
+								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 							>
 								<p class="p-4">Chode Muzzle Brake</p>
 							</div>
@@ -104,11 +148,174 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<CircleStar />
-							<span class="text-sm text-white">Premium Models</span>
+							<Sparkles class="h-5 text-green-600" />
+							<span class="text-sm text-white">Featured Models</span>
 						</div>
 						<ChevronRight />
 					</a>
+				</div>
+			</div>
+		</div>
+		<a href="/popular-tags" class="mt-10 flex items-center gap-1 text-2xl font-bold">
+			Popular Tags
+			<ChevronRight class="h-7 w-7" />
+		</a>
+
+		<div class="my-5 flex items-center gap-4">
+			<button
+				onclick={scrollLeftBtn}
+				class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
+			>
+				<ChevronLeft class="h-5 w-5 -translate-x-px" />
+			</button>
+
+			<div class="relative w-full overflow-hidden">
+				<!-- Left gradient fade -->
+				{#if showLeftGradient}
+					<div
+						class="pointer-events-none absolute top-0 left-0 z-10 h-full w-24 bg-linear-to-r from-neutral-900 to-transparent"
+					></div>
+				{/if}
+
+				<!-- Right gradient fade -->
+				{#if showRightGradient}
+					<div
+						class="pointer-events-none absolute top-0 right-0 z-10 h-full w-24 bg-linear-to-l from-neutral-900 to-transparent"
+					></div>
+				{/if}
+
+				<div
+					bind:this={carouselElement}
+					onscroll={updateGradients}
+					class="scrollbar-hide flex w-full space-x-2 overflow-x-auto scroll-smooth"
+				>
+					{#each popularTags as tag}
+						<a
+							href="/tag"
+							class="flex-shrink-0 rounded-full border bg-black px-4 py-3 text-sm whitespace-nowrap {tag.classes}"
+						>
+							{tag.name}
+						</a>
+					{/each}
+				</div>
+			</div>
+
+			<button
+				onclick={scrollRightBtn}
+				class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
+			>
+				<ChevronRight class="h-5 w-5 translate-x-px" />
+			</button>
+		</div>
+
+		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
+			Collections
+			<ChevronRight class="h-7 w-7" />
+		</a>
+
+		<div class="flex justify-between">
+			<div class="w-[355px]">
+				<div class="flex justify-center">
+					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
+				</div>
+				<div>
+					<div
+						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+						style="background-image: url('/temp/collection.webp');"
+					></div>
+					<div
+						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+					>
+						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
+						<div class="flex items-center gap-2">
+							<Eye class="h-4 w-4 text-neutral-400" />
+							<p class="text-sm text-neutral-400">2.4k</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="w-[355px]">
+				<div class="flex justify-center">
+					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
+				</div>
+				<div>
+					<div
+						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+						style="background-image: url('/temp/collection.webp');"
+					></div>
+					<div
+						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+					>
+						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
+						<div class="flex items-center gap-2">
+							<Eye class="h-4 w-4 text-neutral-400" />
+							<p class="text-sm text-neutral-400">2.4k</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="w-[355px]">
+				<div class="flex justify-center">
+					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
+				</div>
+				<div>
+					<div
+						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+						style="background-image: url('/temp/collection.webp');"
+					></div>
+					<div
+						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+					>
+						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
+						<div class="flex items-center gap-2">
+							<Eye class="h-4 w-4 text-neutral-400" />
+							<p class="text-sm text-neutral-400">2.4k</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="w-[355px]">
+				<div class="flex justify-center">
+					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
+				</div>
+				<div>
+					<div
+						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+						style="background-image: url('/temp/collection.webp');"
+					></div>
+					<div
+						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+					>
+						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
+						<div class="flex items-center gap-2">
+							<Eye class="h-4 w-4 text-neutral-400" />
+							<p class="text-sm text-neutral-400">2.4k</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="w-[355px]">
+				<div class="flex justify-center">
+					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
+				</div>
+				<div>
+					<div
+						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+						style="background-image: url('/temp/collection.webp');"
+					></div>
+					<div
+						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+					>
+						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
+						<div class="flex items-center gap-2">
+							<Eye class="h-4 w-4 text-neutral-400" />
+							<p class="text-sm text-neutral-400">2.4k</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
