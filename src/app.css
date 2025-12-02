@@ -28,3 +28,38 @@
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
+
+/* Responsive grid - limit items per breakpoint */
+/* Mobile: show 4 items, Small: 2 items, Medium: 2 items, Large: 3 items, XL: 4 items */
+
+.responsive-grid > *:nth-child(n + 5) {
+	display: none;
+}
+
+/* Small (640px+): show 2 items */
+@media (min-width: 640px) and (max-width: 767px) {
+	.responsive-grid > *:nth-child(n + 3) {
+		display: none;
+	}
+}
+
+/* Medium (768px+): show 2 items */
+@media (min-width: 768px) and (max-width: 1023px) {
+	.responsive-grid > *:nth-child(n + 3) {
+		display: none;
+	}
+}
+
+/* Large (1024px+): show 3 items */
+@media (min-width: 1024px) and (max-width: 1279px) {
+	.responsive-grid > *:nth-child(n + 4) {
+		display: none;
+	}
+}
+
+/* XL (1280px+): show 4 items */
+@media (min-width: 1280px) {
+	.responsive-grid > *:nth-child(n + 5) {
+		display: none;
+	}
+}

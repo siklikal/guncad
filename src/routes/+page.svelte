@@ -9,9 +9,16 @@
 		ChevronLeft,
 		Crown,
 		Flame,
-		Sparkles
+		Sparkles,
+		Clock,
+		Weight,
+		Layers2,
+		Wrench,
+		Printer
 	} from '@lucide/svelte';
 	import { popularTags } from '$lib/data/tags';
+	import { collections } from '$lib/data/collections';
+	import { readyToPrint } from '$lib/data/readyToPrint';
 
 	let { data }: { data: PageData } = $props();
 
@@ -192,7 +199,7 @@
 					{#each popularTags as tag}
 						<a
 							href="/tag"
-							class="flex-shrink-0 rounded-full border bg-black px-4 py-3 text-sm whitespace-nowrap {tag.classes}"
+							class="shrink-0 rounded-full border bg-black px-4 py-3 text-sm whitespace-nowrap {tag.classes}"
 						>
 							{tag.name}
 						</a>
@@ -213,111 +220,85 @@
 			<ChevronRight class="h-7 w-7" />
 		</a>
 
-		<div class="flex justify-between">
-			<div class="w-[355px]">
-				<div class="flex justify-center">
-					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
-				</div>
-				<div class="rounded-lg shadow-lg shadow-neutral-800">
-					<div
-						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-						style="background-image: url('/temp/collection.webp');"
-					></div>
-					<div
-						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
-					>
-						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
-						<div class="flex items-center gap-2">
-							<Eye class="h-4 w-4 text-neutral-400" />
-							<p class="text-sm text-neutral-400">2.4k</p>
+		<div
+			class="responsive-grid grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+		>
+			{#each collections as collection}
+				<div>
+					<div class="flex justify-center">
+						<div class="h-4 w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
+					</div>
+					<div class="rounded-lg shadow-lg shadow-neutral-800">
+						<div
+							class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+							style="background-image: url('{collection.image}');"
+						></div>
+						<div
+							class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+						>
+							<p class="line-clamp-1 font-bold">{collection.title}</p>
+							<div class="flex items-center gap-2">
+								<Eye class="h-4 w-4 text-neutral-400" />
+								<p class="text-sm text-neutral-400">
+									{collection.views >= 1000
+										? `${(collection.views / 1000).toFixed(1)}k`
+										: collection.views}
+								</p>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			{/each}
+		</div>
 
-			<div class="w-[355px]">
-				<div class="flex justify-center">
-					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
-				</div>
-				<div class="rounded-lg shadow-lg shadow-neutral-800">
-					<div
-						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-						style="background-image: url('/temp/collection.webp');"
-					></div>
-					<div
-						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
-					>
-						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
-						<div class="flex items-center gap-2">
-							<Eye class="h-4 w-4 text-neutral-400" />
-							<p class="text-sm text-neutral-400">2.4k</p>
-						</div>
-					</div>
-				</div>
-			</div>
+		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
+			Ready to Print
+			<ChevronRight class="h-7 w-7" />
+		</a>
 
-			<div class="w-[355px]">
-				<div class="flex justify-center">
-					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
-				</div>
-				<div class="rounded-lg shadow-lg shadow-neutral-800">
+		<div
+			class="responsive-grid grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+		>
+			{#each readyToPrint as item}
+				<div class="flex gap-4 rounded-lg bg-black p-4">
 					<div
-						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-						style="background-image: url('/temp/collection.webp');"
+						class="h-36 w-44 shrink-0 rounded-lg bg-cover bg-center"
+						style="background-image: url('{item.image}');"
 					></div>
-					<div
-						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
-					>
-						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
-						<div class="flex items-center gap-2">
-							<Eye class="h-4 w-4 text-neutral-400" />
-							<p class="text-sm text-neutral-400">2.4k</p>
+					<div class="flex flex-1 flex-col justify-between">
+						<a
+							href="/item/{item.id}"
+							class="line-clamp-1 text-lg leading-none font-semibold hover:text-blue-500"
+						>
+							{item.title}
+						</a>
+						<div class="grid grid-cols-2 justify-between gap-2">
+							<div class="flex items-center gap-2">
+								<Wrench class="h-5 w-5 text-neutral-600" />
+								<p class="text-sm">{item.printer}</p>
+							</div>
+							<div class="flex items-center gap-2">
+								<Layers2 class="h-5 w-5 text-neutral-600" />
+								<p class="text-sm">{item.plates} Plate{item.plates > 1 ? 's' : ''}</p>
+							</div>
+							<div class="flex items-center gap-2">
+								<Clock class="h-5 w-5 text-neutral-600" />
+								<p class="text-sm">{item.time}</p>
+							</div>
+							<div class="flex items-center gap-2">
+								<Weight class="h-5 w-5 text-neutral-600" />
+								<p class="text-sm">{item.weight}</p>
+							</div>
 						</div>
+						<button class="w-full rounded-full bg-blue-600 p-2">
+							<div class="flex items-center justify-center gap-1">
+								<Printer class="h-4 w-4" />
+								<p class="text-sm text-white">Print</p>
+							</div>
+						</button>
 					</div>
 				</div>
-			</div>
-
-			<div class="w-[355px]">
-				<div class="flex justify-center">
-					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
-				</div>
-				<div class="rounded-lg shadow-lg shadow-neutral-800">
-					<div
-						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-						style="background-image: url('/temp/collection.webp');"
-					></div>
-					<div
-						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
-					>
-						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
-						<div class="flex items-center gap-2">
-							<Eye class="h-4 w-4 text-neutral-400" />
-							<p class="text-sm text-neutral-400">2.4k</p>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="w-[355px]">
-				<div class="flex justify-center">
-					<div class="h-4 min-w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
-				</div>
-				<div class="rounded-lg shadow-lg shadow-neutral-800">
-					<div
-						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-						style="background-image: url('/temp/collection.webp');"
-					></div>
-					<div
-						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
-					>
-						<p class="line-clamp-1 font-bold">asdasdas dasasdasda asdas dasdasd as dassd</p>
-						<div class="flex items-center gap-2">
-							<Eye class="h-4 w-4 text-neutral-400" />
-							<p class="text-sm text-neutral-400">2.4k</p>
-						</div>
-					</div>
-				</div>
-			</div>
+			{/each}
 		</div>
 	</div>
 </div>
