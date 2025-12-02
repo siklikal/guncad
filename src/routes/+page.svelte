@@ -62,12 +62,21 @@
 	<div class="mx-auto max-w-[1920px] px-8">
 		<div class="flex gap-5">
 			<div class="carousel h-[390px] w-full flex-1 rounded-lg">
-				<div id="slide1" class="relative carousel-item w-full bg-neutral-700">
-					<div class="flex h-full w-full flex-col items-start justify-center gap-4 p-8">
-						<p class="text-3xl font-bold">How the Incentive System Works</p>
-						<p class="text-lg">Free 3D models to download</p>
-						<a href="#" class=" rounded-full bg-blue-600 px-8 py-3 font-bold text-white">Join Now</a
-						>
+				<div
+					id="slide1"
+					class="relative carousel-item w-full bg-cover bg-center"
+					style="background-image: url('/images/hero.webp');"
+				>
+					<!-- Semi-transparent overlay -->
+					<div class="absolute inset-0 bg-blue-600/80"></div>
+
+					<!-- Content (appears above overlay) -->
+					<div class="relative flex h-full w-full flex-col items-start justify-center gap-4 p-8">
+						<p class="text-5xl leading-tight font-bold">
+							A Trusted Platform for <br />3D-Printed Firearm Innovation
+						</p>
+						<p class="text-2xl">Safe. Regulated. Community Approved.</p>
+						<a href="/" class=" rounded-full bg-black px-8 py-3 font-bold text-white">Join Now</a>
 					</div>
 				</div>
 			</div>
@@ -261,44 +270,43 @@
 			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each readyToPrint as item}
-				<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
-					<div
-						class="h-48 w-full shrink-0 rounded-lg bg-cover bg-center"
-						style="background-image: url('{item.image}');"
-					></div>
-					<div class="flex flex-1 flex-col justify-between gap-4">
-						<a
-							href="/item/{item.id}"
-							class="line-clamp-1 text-lg leading-none font-semibold hover:text-blue-500"
-						>
-							{item.title}
-						</a>
-						<div class="grid grid-cols-2 justify-between gap-2">
-							<div class="flex items-center gap-2">
-								<Wrench class="h-5 w-5 text-neutral-600" />
-								<p class="text-sm">{item.printer}</p>
+				<a href="/" class="group">
+					<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
+						<div
+							class="h-48 w-full shrink-0 rounded-lg bg-cover bg-center"
+							style="background-image: url('{item.image}');"
+						></div>
+						<div class="flex flex-1 flex-col justify-between gap-4">
+							<p class="line-clamp-1 text-lg leading-none font-semibold group-hover:text-blue-500">
+								{item.title}
+							</p>
+							<div class="grid grid-cols-2 justify-between gap-2">
+								<div class="flex items-center gap-2">
+									<Wrench class="h-5 w-5 text-neutral-600" />
+									<p class="text-sm">{item.printer}</p>
+								</div>
+								<div class="flex items-center gap-2">
+									<Layers2 class="h-5 w-5 text-neutral-600" />
+									<p class="text-sm">{item.plates} Plate{item.plates > 1 ? 's' : ''}</p>
+								</div>
+								<div class="flex items-center gap-2">
+									<Clock class="h-5 w-5 text-neutral-600" />
+									<p class="text-sm">{item.time}</p>
+								</div>
+								<div class="flex items-center gap-2">
+									<Weight class="h-5 w-5 text-neutral-600" />
+									<p class="text-sm">{item.weight}</p>
+								</div>
 							</div>
-							<div class="flex items-center gap-2">
-								<Layers2 class="h-5 w-5 text-neutral-600" />
-								<p class="text-sm">{item.plates} Plate{item.plates > 1 ? 's' : ''}</p>
-							</div>
-							<div class="flex items-center gap-2">
-								<Clock class="h-5 w-5 text-neutral-600" />
-								<p class="text-sm">{item.time}</p>
-							</div>
-							<div class="flex items-center gap-2">
-								<Weight class="h-5 w-5 text-neutral-600" />
-								<p class="text-sm">{item.weight}</p>
-							</div>
+							<button class="w-full rounded-full bg-blue-600 p-2">
+								<div class="flex items-center justify-center gap-1">
+									<Printer class="h-4 w-4" />
+									<p class="text-sm text-white">Print</p>
+								</div>
+							</button>
 						</div>
-						<button class="w-full rounded-full bg-blue-600 p-2">
-							<div class="flex items-center justify-center gap-1">
-								<Printer class="h-4 w-4" />
-								<p class="text-sm text-white">Print</p>
-							</div>
-						</button>
 					</div>
-				</div>
+				</a>
 			{/each}
 		</div>
 
