@@ -19,6 +19,7 @@
 	import { popularTags } from '$lib/data/tags';
 	import { collections } from '$lib/data/collections';
 	import { readyToPrint } from '$lib/data/readyToPrint';
+	import { blog } from '$lib/data/blog';
 
 	let { data }: { data: PageData } = $props();
 
@@ -298,6 +299,34 @@
 						</button>
 					</div>
 				</div>
+			{/each}
+		</div>
+
+		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
+			Blog
+			<ChevronRight class="h-7 w-7" />
+		</a>
+
+		<div
+			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+		>
+			{#each blog as item, index}
+				<a href="/wtf" class="group">
+					<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
+						<div
+							class="h-48 w-full shrink-0 rounded-lg bg-cover bg-center"
+							style="background-image: url('images/blog-{index + 1}.jpg');"
+						></div>
+						<div class="flex flex-1 flex-col justify-between gap-4">
+							<p class="line-clamp-2 font-semibold group-hover:text-blue-600">
+								{item.title}
+							</p>
+							<p class="text-sm text-neutral-400">
+								{item.category}
+							</p>
+						</div>
+					</div>
+				</a>
 			{/each}
 		</div>
 	</div>
