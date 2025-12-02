@@ -221,7 +221,7 @@
 		</a>
 
 		<div
-			class="responsive-grid grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each collections as collection}
 				<div>
@@ -257,15 +257,15 @@
 		</a>
 
 		<div
-			class="responsive-grid grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each readyToPrint as item}
-				<div class="flex gap-4 rounded-lg bg-black p-4">
+				<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
 					<div
-						class="h-36 w-44 shrink-0 rounded-lg bg-cover bg-center"
+						class="h-48 w-full shrink-0 rounded-lg bg-cover bg-center"
 						style="background-image: url('{item.image}');"
 					></div>
-					<div class="flex flex-1 flex-col justify-between">
+					<div class="flex flex-1 flex-col justify-between gap-4">
 						<a
 							href="/item/{item.id}"
 							class="line-clamp-1 text-lg leading-none font-semibold hover:text-blue-500"

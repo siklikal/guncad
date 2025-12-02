@@ -58,5 +58,20 @@ export const readyToPrint = [
 		plates: 3,
 		time: '8h 45m',
 		weight: '125.80g'
+	},
+	{
+		id: '4',
+		title: 'The Warden 308',
+		image:
+			'https://guncadindex.com/media/thumbnails/thumbnail-ed5488ad-7c7f-48d5-aef8-d23c01df83de-768_sqKzAXQ.webp',
+		settings: {
+			layer: '0.12mm',
+			walls: 3,
+			infill: '30%'
+		},
+		printer: 'Bambu X1',
+		plates: 3,
+		time: '8h 45m',
+		weight: '125.80g'
 	}
 ];
