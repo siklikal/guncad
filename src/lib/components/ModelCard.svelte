@@ -14,7 +14,7 @@
 		avatar: string;
 	}
 
-	type BadgeType = 'exclusive' | 'featured' | 'trending' | null;
+	export type BadgeType = 'exclusive' | 'featured' | 'trending' | null;
 
 	interface ModelCardProps {
 		title: string;
@@ -66,8 +66,10 @@
 				style="background-image: url('{image}');"
 			>
 				{#if badgeConfig}
-					<div class="flex justify-end p-2">
-						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-black">
+					<div class="flex justify-end">
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-tr-lg rounded-bl-lg bg-black"
+						>
 							<Fa icon={badgeConfig.icon} class={`h-4 w-4 ${badgeConfig.color}`} />
 						</div>
 					</div>

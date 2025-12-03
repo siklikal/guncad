@@ -1,5 +1,7 @@
 <script lang="ts">
-	import ModelCard from './ModelCard.svelte';
+	import Fa from 'svelte-fa';
+	import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+	import ModelCard, { type BadgeType } from './ModelCard.svelte';
 
 	interface User {
 		username: string;
@@ -13,20 +15,22 @@
 		likes: number;
 		downloads: number;
 		user: User;
+		badge?: BadgeType;
 	}
 
 	interface ModelSectionProps {
 		title: string;
 		items: Model[];
 		href?: string;
+		badge?: BadgeType; // section-level badge
 	}
 
-	let { title, items, href = '/collections' }: ModelSectionProps = $props();
+	let { title, items, href = '/collections', badge = null }: ModelSectionProps = $props();
 </script>
 
-<a href={href} class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
+<a {href} class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
 	{title}
-	<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
+	<Fa icon={faChevronRight} class="h-7 w-7" />
 </a>
 
 <div
@@ -40,6 +44,7 @@
 			likes={item.likes}
 			downloads={item.downloads}
 			user={item.user}
+			badge={item.badge ?? null}
 		/>
 	{/each}
 </div>
