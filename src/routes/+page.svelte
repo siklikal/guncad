@@ -2,27 +2,16 @@
 	import { user, auth, loading } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import {
-		Eye,
-		CircleStar,
-		ChevronRight,
-		ChevronLeft,
-		Crown,
-		Flame,
-		Sparkles,
-		Clock,
-		Weight,
-		Layers2,
-		Wrench,
-		Printer,
-		Heart,
-		Download
-	} from '@lucide/svelte';
 	import { popularTags } from '$lib/data/tags';
 	import { collections } from '$lib/data/collections';
 	import { readyToPrint } from '$lib/data/readyToPrint';
 	import { blog } from '$lib/data/blog';
 	import { exclusive } from '$lib/data/exclusive';
+	import { featured } from '$lib/data/featured';
+	import { trending } from '$lib/data/trending';
+	import ModelSection from '$lib/components/ModelSection.svelte';
+	import Fa from 'svelte-fa';
+	import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 
 	let { data }: { data: PageData } = $props();
 
@@ -92,8 +81,8 @@
 					>
 						<div class="flex h-full flex-col justify-between">
 							<div class="flex justify-end p-3">
-								<div class="rounded-full bg-black p-1">
-									<CircleStar class="h-7 w-7 leading-0 text-blue-600" />
+								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+									<i class="fa-solid fa-gem text-blue-600" style="font-size: 20px;"></i>
 								</div>
 							</div>
 							<div
@@ -108,40 +97,10 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<CircleStar class="h-5 text-blue-600" />
+							<i class="fa-solid fa-gem text-blue-600" style="font-size: 16px;"></i>
 							<span class="text-sm text-white">Exclusive Models</span>
 						</div>
-						<ChevronRight />
-					</a>
-				</div>
-
-				<div class="flex flex-1 flex-col gap-2">
-					<div
-						class="flex-1 rounded-lg bg-cover bg-center"
-						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
-					>
-						<div class="flex h-full flex-col justify-between">
-							<div class="flex justify-end p-3">
-								<div class="rounded-full bg-black p-2">
-									<Flame class="h-5 w-5 leading-0 text-red-600" />
-								</div>
-							</div>
-							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
-							>
-								<p class="p-4">M&P Remix</p>
-							</div>
-						</div>
-					</div>
-					<a
-						href="/premium-models"
-						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
-					>
-						<div class="flex items-center gap-2">
-							<Flame class="h-5 text-red-600" />
-							<span class="text-sm text-white">Trending Models</span>
-						</div>
-						<ChevronRight />
+						<i class="fa-solid fa-chevron-right"></i>
 					</a>
 				</div>
 
@@ -152,8 +111,8 @@
 					>
 						<div class="flex h-full flex-col justify-between">
 							<div class="flex justify-end p-3">
-								<div class="rounded-full bg-black p-2">
-									<Sparkles class="h-5 w-5 leading-0 text-green-600" />
+								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+									<i class="fa-solid fa-star text-green-600" style="font-size: 20px;"></i>
 								</div>
 							</div>
 							<div
@@ -168,25 +127,56 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<Sparkles class="h-5 text-green-600" />
+							<i class="fa-solid fa-star text-green-600" style="font-size: 16px;"></i>
 							<span class="text-sm text-white">Featured Models</span>
 						</div>
-						<ChevronRight />
+						<i class="fa-solid fa-chevron-right"></i>
+					</a>
+				</div>
+
+				<div class="flex flex-1 flex-col gap-2">
+					<div
+						class="flex-1 rounded-lg bg-cover bg-center"
+						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
+					>
+						<div class="flex h-full flex-col justify-between">
+							<div class="flex justify-end p-3">
+								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+									<i class="fa-solid fa-fire text-red-600" style="font-size: 20px;"></i>
+								</div>
+							</div>
+							<div
+								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
+							>
+								<p class="p-4">M&P Remix</p>
+							</div>
+						</div>
+					</div>
+					<a
+						href="/premium-models"
+						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
+					>
+						<div class="flex items-center gap-2">
+							<i class="fa-solid fa-fire text-red-600" style="font-size: 16px;"></i>
+							<span class="text-sm text-white">Trending Models</span>
+						</div>
+						<i class="fa-solid fa-chevron-right"></i>
 					</a>
 				</div>
 			</div>
 		</div>
-		<a href="/popular-tags" class="mt-10 flex items-center gap-1 text-2xl font-bold">
-			Popular Tags
-			<ChevronRight class="h-7 w-7" />
-		</a>
+
+		<div class="mt-10 flex items-end gap-1.5">
+			<a href="/" class="text-2xl leading-none font-bold">Popular Tags</a>
+			<Fa icon={faChevronRight} class="inline-block align-middle text-xl" />
+		</div>
 
 		<div class="my-5 flex items-center gap-4">
 			<button
 				onclick={scrollLeftBtn}
-				class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
+				class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
 			>
-				<ChevronLeft class="h-5 w-5 -translate-x-px" />
+				<Fa icon={faChevronLeft} class="text-xl" />
 			</button>
 
 			<div class="relative w-full overflow-hidden">
@@ -222,15 +212,15 @@
 
 			<button
 				onclick={scrollRightBtn}
-				class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
+				class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
 			>
-				<ChevronRight class="h-5 w-5 translate-x-px" />
+				<Fa icon={faChevronRight} class="text-xl" />
 			</button>
 		</div>
 
 		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
 			Collections
-			<ChevronRight class="h-7 w-7" />
+			<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
 		</a>
 
 		<div
@@ -247,7 +237,7 @@
 					>
 						<p class="line-clamp-1 font-bold">{collection.title}</p>
 						<div class="flex items-center gap-1">
-							<Eye class="h-4 w-4 text-neutral-400" />
+							<i class="fa-solid fa-eye text-neutral-400" style="font-size: 14px;"></i>
 							<p class="text-sm text-neutral-400">
 								{collection.views >= 1000
 									? `${(collection.views / 1000).toFixed(1)}k`
@@ -259,67 +249,15 @@
 			{/each}
 		</div>
 
-		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
-			Exlusive
-			<ChevronRight class="h-7 w-7" />
-		</a>
+		<ModelSection title="Exclusive" items={exclusive} href="/exclusive" />
 
-		<div
-			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-		>
-			{#each exclusive as item, index}
-				<div class="rounded-lg">
-					<div class="group">
-						<a href="/" class="block">
-							<div
-								class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-								style="background-image: url('{item.image}');"
-							></div>
-						</a>
-						<div class="rounded-br-lg rounded-bl-lg bg-black p-4">
-							<a href="/" class="line-clamp-2 block font-semibold group-hover:text-blue-600">
-								{item.title}
-							</a>
-						</div>
-					</div>
-					<div class="flex justify-between gap-4 bg-black px-4 pb-4">
-							<a href="/user/{item.user.username}" class="group/user flex min-w-0 items-center gap-1">
-								<div
-									class="h-6 w-6 shrink-0 rounded-full bg-cover bg-center"
-									style="background-image: url('{item.user.avatar}');"
-								></div>
-								<p class="truncate text-sm group-hover/user:text-blue-600">
-									{item.user.username}asdasdsad12312sads6adsad26234523asdasdasd
-								</p>
-							</a>
-							<div class="flex items-center gap-2">
-								<div class="flex items-center gap-0.5">
-									<Eye class="h-4 w-4 text-neutral-400" />
-									<p class="text-xs text-neutral-400">
-										{item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
-									</p>
-								</div>
-								<div class="flex items-center gap-0.5">
-									<Download class="h-4 w-4 text-neutral-400" />
-									<p class="text-xs text-neutral-400">
-										{item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
-									</p>
-								</div>
-								<div class="flex items-center gap-0.5">
-									<Heart class="h-4 w-4 text-neutral-400" />
-									<p class="text-xs text-neutral-400">
-										{item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
-									</p>
-								</div>
-							</div>
-						</div>
-				</div>
-			{/each}
-		</div>
+		<ModelSection title="Featured" items={featured} href="/featured" />
+
+		<ModelSection title="Trending" items={trending} href="/trending" />
 
 		<a href="/collections" class="mt-10 mb-5 flex hidden items-center gap-1 text-2xl font-bold">
 			Ready to Print
-			<ChevronRight class="h-7 w-7" />
+			<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
 		</a>
 
 		<div
@@ -338,25 +276,26 @@
 							</p>
 							<div class="grid grid-cols-2 justify-between gap-2">
 								<div class="flex items-center gap-2">
-									<Wrench class="h-5 w-5 text-neutral-600" />
+									<i class="fa-solid fa-wrench text-neutral-600" style="font-size: 20px;"></i>
 									<p class="text-sm">{item.printer}</p>
 								</div>
 								<div class="flex items-center gap-2">
-									<Layers2 class="h-5 w-5 text-neutral-600" />
+									<i class="fa-solid fa-layer-group text-neutral-600" style="font-size: 20px;"></i>
 									<p class="text-sm">{item.plates} Plate{item.plates > 1 ? 's' : ''}</p>
 								</div>
 								<div class="flex items-center gap-2">
-									<Clock class="h-5 w-5 text-neutral-600" />
+									<i class="fa-solid fa-clock text-neutral-600" style="font-size: 20px;"></i>
 									<p class="text-sm">{item.time}</p>
 								</div>
 								<div class="flex items-center gap-2">
-									<Weight class="h-5 w-5 text-neutral-600" />
+									<i class="fa-solid fa-weight-hanging text-neutral-600" style="font-size: 20px;"
+									></i>
 									<p class="text-sm">{item.weight}</p>
 								</div>
 							</div>
 							<button class="w-full rounded-full bg-blue-600 p-2">
 								<div class="flex items-center justify-center gap-1">
-									<Printer class="h-4 w-4" />
+									<i class="fa-solid fa-print" style="font-size: 14px;"></i>
 									<p class="text-sm text-white">Print</p>
 								</div>
 							</button>
@@ -368,7 +307,7 @@
 
 		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
 			Blog
-			<ChevronRight class="h-7 w-7" />
+			<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
 		</a>
 
 		<div

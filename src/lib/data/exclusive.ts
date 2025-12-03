@@ -6,6 +6,7 @@ export const exclusive = [
 		views: 3245,
 		likes: 892,
 		downloads: 1567,
+		badge: 'exclusive' as const,
 		user: {
 			username: 'TacticalDesigns',
 			avatar:
@@ -19,6 +20,7 @@ export const exclusive = [
 		views: 1870,
 		likes: 423,
 		downloads: 789,
+		badge: 'exclusive' as const,
 		user: {
 			username: 'PrintMaster',
 			avatar:
@@ -32,6 +34,7 @@ export const exclusive = [
 		views: 5621,
 		likes: 1204,
 		downloads: 2341,
+		badge: 'exclusive' as const,
 		user: {
 			username: 'ModSquad',
 			avatar:
@@ -45,6 +48,7 @@ export const exclusive = [
 		views: 892,
 		likes: 167,
 		downloads: 345,
+		badge: 'exclusive' as const,
 		user: {
 			username: 'RailKing',
 			avatar:
@@ -58,6 +62,7 @@ export const exclusive = [
 		views: 4156,
 		likes: 987,
 		downloads: 1823,
+		badge: 'exclusive' as const,
 		user: {
 			username: 'PrecisionCAD',
 			avatar:
@@ -71,6 +76,7 @@ export const exclusive = [
 		views: 2734,
 		likes: 645,
 		downloads: 1092,
+		badge: 'exclusive' as const,
 		user: {
 			username: 'MagCraft',
 			avatar:

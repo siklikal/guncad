@@ -1,0 +1,45 @@
+<script lang="ts">
+	import ModelCard from './ModelCard.svelte';
+
+	interface User {
+		username: string;
+		avatar: string;
+	}
+
+	interface Model {
+		title: string;
+		image: string;
+		views: number;
+		likes: number;
+		downloads: number;
+		user: User;
+	}
+
+	interface ModelSectionProps {
+		title: string;
+		items: Model[];
+		href?: string;
+	}
+
+	let { title, items, href = '/collections' }: ModelSectionProps = $props();
+</script>
+
+<a href={href} class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
+	{title}
+	<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
+</a>
+
+<div
+	class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+>
+	{#each items as item}
+		<ModelCard
+			title={item.title}
+			image={item.image}
+			views={item.views}
+			likes={item.likes}
+			downloads={item.downloads}
+			user={item.user}
+		/>
+	{/each}
+</div>
