@@ -6,6 +6,7 @@
 				<a href="/explore" class="link-primary capitalize">explore</a>
 				<a href="/explore" class="link-primary capitalize">collections</a>
 				<a href="/explore" class="link-primary capitalize">leaderboard</a>
+				<a href="/downloads" class="link-primary capitalize">downloads</a>
 			</div>
 			<div class="flex gap-4">
 				<input type="text" placeholder="Search..." class="input input-sm w-[400px] rounded-full" />

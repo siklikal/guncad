@@ -14,12 +14,15 @@
 		Weight,
 		Layers2,
 		Wrench,
-		Printer
+		Printer,
+		Heart,
+		Download
 	} from '@lucide/svelte';
 	import { popularTags } from '$lib/data/tags';
 	import { collections } from '$lib/data/collections';
 	import { readyToPrint } from '$lib/data/readyToPrint';
 	import { blog } from '$lib/data/blog';
+	import { exclusive } from '$lib/data/exclusive';
 
 	let { data }: { data: PageData } = $props();
 
@@ -64,7 +67,7 @@
 			<div class="carousel h-[390px] w-full flex-1 rounded-lg">
 				<div
 					id="slide1"
-					class="relative carousel-item w-full bg-cover bg-center"
+					class="relative carousel-item w-full bg-cover bg-center bg-top"
 					style="background-image: url('/images/hero.webp');"
 				>
 					<!-- Semi-transparent overlay -->
@@ -234,27 +237,22 @@
 			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each collections as collection}
-				<div>
-					<div class="flex justify-center">
-						<div class="h-4 w-11/12 rounded-tl-lg rounded-tr-lg bg-neutral-700"></div>
-					</div>
-					<div class="rounded-lg shadow-lg shadow-neutral-800">
-						<div
-							class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-							style="background-image: url('{collection.image}');"
-						></div>
-						<div
-							class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
-						>
-							<p class="line-clamp-1 font-bold">{collection.title}</p>
-							<div class="flex items-center gap-2">
-								<Eye class="h-4 w-4 text-neutral-400" />
-								<p class="text-sm text-neutral-400">
-									{collection.views >= 1000
-										? `${(collection.views / 1000).toFixed(1)}k`
-										: collection.views}
-								</p>
-							</div>
+				<div class="rounded-lg">
+					<div
+						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+						style="background-image: url('{collection.image}');"
+					></div>
+					<div
+						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+					>
+						<p class="line-clamp-1 font-bold">{collection.title}</p>
+						<div class="flex items-center gap-1">
+							<Eye class="h-4 w-4 text-neutral-400" />
+							<p class="text-sm text-neutral-400">
+								{collection.views >= 1000
+									? `${(collection.views / 1000).toFixed(1)}k`
+									: collection.views}
+							</p>
 						</div>
 					</div>
 				</div>
@@ -262,12 +260,72 @@
 		</div>
 
 		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
-			Ready to Print
+			Exlusive
 			<ChevronRight class="h-7 w-7" />
 		</a>
 
 		<div
 			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+		>
+			{#each exclusive as item, index}
+				<div class="rounded-lg">
+					<a href="/">
+						<div
+							class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+							style="background-image: url('{item.image}');"
+						></div></a
+					>
+					<div
+						class="flex flex-1 flex-col justify-between gap-2 rounded-br-lg rounded-bl-lg bg-black p-4"
+					>
+						<p class="line-clamp-2">
+							<a href="/" class="font-semibold hover:text-blue-600">
+								{item.title}
+							</a>
+						</p>
+						<div class="flex justify-between gap-4">
+							<a href="/user/{item.user.username}" class="group flex min-w-0 items-center gap-1">
+								<div
+									class="h-6 w-6 shrink-0 rounded-full bg-cover bg-center"
+									style="background-image: url('{item.user.avatar}');"
+								></div>
+								<p class="truncate text-sm group-hover:text-blue-600">
+									{item.user.username}asdasdsad12312sads6adsad26234523asdasdasd
+								</p>
+							</a>
+							<div class="flex items-center gap-2">
+								<div class="flex items-center gap-0.5">
+									<Eye class="h-4 w-4 text-neutral-400" />
+									<p class="text-xs text-neutral-400">
+										{item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
+									</p>
+								</div>
+								<div class="flex items-center gap-0.5">
+									<Download class="h-4 w-4 text-neutral-400" />
+									<p class="text-xs text-neutral-400">
+										{item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
+									</p>
+								</div>
+								<div class="flex items-center gap-0.5">
+									<Heart class="h-4 w-4 text-neutral-400" />
+									<p class="text-xs text-neutral-400">
+										{item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<a href="/collections" class="mt-10 mb-5 flex hidden items-center gap-1 text-2xl font-bold">
+			Ready to Print
+			<ChevronRight class="h-7 w-7" />
+		</a>
+
+		<div
+			class="responsive-grid-5 grid hidden grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each readyToPrint as item}
 				<a href="/" class="group">
@@ -320,12 +378,14 @@
 		>
 			{#each blog as item, index}
 				<a href="/wtf" class="group">
-					<div class="flex flex-col gap-4 rounded-lg bg-black p-4">
+					<div class="rounded-lg">
 						<div
-							class="h-48 w-full shrink-0 rounded-lg bg-cover bg-center"
+							class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 							style="background-image: url('images/blog-{index + 1}.jpg');"
 						></div>
-						<div class="flex flex-1 flex-col justify-between gap-4">
+						<div
+							class="flex flex-1 flex-col justify-between gap-4 rounded-br-lg rounded-bl-lg bg-black p-4"
+						>
 							<p class="line-clamp-2 font-semibold group-hover:text-blue-600">
 								{item.title}
 							</p>
