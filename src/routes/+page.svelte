@@ -11,7 +11,13 @@
 	import { trending } from '$lib/data/trending';
 	import ModelSection from '$lib/components/ModelSection.svelte';
 	import Fa from 'svelte-fa';
-	import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faChevronRight,
+		faChevronLeft,
+		faGem,
+		faStar,
+		faFire
+	} from '@fortawesome/free-solid-svg-icons';
 
 	let { data }: { data: PageData } = $props();
 
@@ -82,7 +88,7 @@
 						<div class="flex h-full flex-col justify-between">
 							<div class="flex justify-end p-3">
 								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
-									<i class="fa-solid fa-gem text-blue-600" style="font-size: 20px;"></i>
+									<Fa icon={faGem} class="text-xl text-blue-600" />
 								</div>
 							</div>
 							<div
@@ -97,10 +103,10 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<i class="fa-solid fa-gem text-blue-600" style="font-size: 16px;"></i>
+							<Fa icon={faGem} class="text-lg text-blue-600" />
 							<span class="text-sm text-white">Exclusive Models</span>
 						</div>
-						<i class="fa-solid fa-chevron-right"></i>
+						<Fa icon={faChevronRight} />
 					</a>
 				</div>
 
@@ -112,7 +118,7 @@
 						<div class="flex h-full flex-col justify-between">
 							<div class="flex justify-end p-3">
 								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
-									<i class="fa-solid fa-star text-green-600" style="font-size: 20px;"></i>
+									<Fa icon={faStar} class="text-xl text-green-600" />
 								</div>
 							</div>
 							<div
@@ -127,10 +133,10 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<i class="fa-solid fa-star text-green-600" style="font-size: 16px;"></i>
+							<Fa icon={faStar} class="text-lg text-green-600" />
 							<span class="text-sm text-white">Featured Models</span>
 						</div>
-						<i class="fa-solid fa-chevron-right"></i>
+						<Fa icon={faChevronRight} />
 					</a>
 				</div>
 
@@ -142,7 +148,7 @@
 						<div class="flex h-full flex-col justify-between">
 							<div class="flex justify-end p-3">
 								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
-									<i class="fa-solid fa-fire text-red-600" style="font-size: 20px;"></i>
+									<Fa icon={faFire} class="text-xl text-red-600" />
 								</div>
 							</div>
 							<div
@@ -157,10 +163,11 @@
 						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
-							<i class="fa-solid fa-fire text-red-600" style="font-size: 16px;"></i>
+							<Fa icon={faFire} class="text-lg text-red-600" />
 							<span class="text-sm text-white">Trending Models</span>
 						</div>
 						<i class="fa-solid fa-chevron-right"></i>
+						<Fa icon={faChevronRight} />
 					</a>
 				</div>
 			</div>

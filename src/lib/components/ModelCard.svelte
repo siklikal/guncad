@@ -1,4 +1,14 @@
 <script lang="ts">
+	import Fa from 'svelte-fa';
+	import {
+		faGem,
+		faStar,
+		faFire,
+		faEye,
+		faDownload,
+		faHeart
+	} from '@fortawesome/free-solid-svg-icons';
+
 	interface User {
 		username: string;
 		avatar: string;
@@ -35,11 +45,11 @@
 	function getBadgeConfig(type: BadgeType) {
 		switch (type) {
 			case 'exclusive':
-				return { icon: 'fa-gem', color: 'text-blue-600' };
+				return { icon: faGem, color: 'text-blue-600' };
 			case 'featured':
-				return { icon: 'fa-star', color: 'text-green-600' };
+				return { icon: faStar, color: 'text-green-600' };
 			case 'trending':
-				return { icon: 'fa-fire', color: 'text-red-600' };
+				return { icon: faFire, color: 'text-red-600' };
 			default:
 				return null;
 		}
@@ -58,8 +68,7 @@
 				{#if badgeConfig}
 					<div class="flex justify-end p-2">
 						<div class="flex h-8 w-8 items-center justify-center rounded-full bg-black">
-							<i class="fa-solid {badgeConfig.icon} {badgeConfig.color}" style="font-size: 16px;"
-							></i>
+							<Fa icon={badgeConfig.icon} class={`h-4 w-4 ${badgeConfig.color}`} />
 						</div>
 					</div>
 				{/if}
@@ -81,21 +90,21 @@
 				{user.username}
 			</p>
 		</a>
-		<div class="flex items-center gap-2">
-			<div class="flex items-center gap-0.5">
-				<i class="fa-solid fa-eye text-neutral-400" style="font-size: 14px;"></i>
+		<div class="flex items-center gap-2.5">
+			<div class="flex items-center gap-1">
+				<Fa icon={faEye} class="text-sm text-neutral-400" />
 				<p class="text-xs text-neutral-400">
 					{formatNumber(views)}
 				</p>
 			</div>
-			<div class="flex items-center gap-0.5">
-				<i class="fa-solid fa-download text-neutral-400" style="font-size: 14px;"></i>
+			<div class="flex items-center gap-1">
+				<Fa icon={faDownload} class="text-sm text-neutral-400" />
 				<p class="text-xs text-neutral-400">
 					{formatNumber(downloads)}
 				</p>
 			</div>
-			<div class="flex items-center gap-0.5">
-				<i class="fa-solid fa-heart text-neutral-400" style="font-size: 14px;"></i>
+			<div class="flex items-center gap-1">
+				<Fa icon={faHeart} class="text-sm text-neutral-400" />
 				<p class="text-xs text-neutral-400">
 					{formatNumber(likes)}
 				</p>
