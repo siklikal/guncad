@@ -57,9 +57,10 @@
 </script>
 
 <div>
-	<div class="mx-auto max-w-[1920px] px-8">
-		<div class="flex gap-5">
-			<div class="carousel h-[390px] w-full flex-1 rounded-lg">
+	<div class="mx-auto max-w-[1920px] px-4 md:px-8">
+		<div class="flex flex-col gap-5 xl:flex-row">
+			<!-- <div class="carousel h-[600px] w-full flex-1 rounded-lg xl:h-[390px]"> -->
+			<div class="carousel w-full rounded-lg lg:flex-1 xl:h-[390px]">
 				<div
 					id="slide1"
 					class="relative carousel-item w-full bg-cover bg-center bg-top"
@@ -80,7 +81,7 @@
 			</div>
 
 			<div class="flex flex-1 gap-5">
-				<div class="flex flex-1 flex-col gap-2">
+				<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-auto">
 					<div
 						class="flex-1 rounded-lg bg-cover bg-center"
 						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp');"
@@ -110,7 +111,7 @@
 					</a>
 				</div>
 
-				<div class="flex flex-1 flex-col gap-2">
+				<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-auto">
 					<div
 						class="flex-1 rounded-lg bg-cover bg-center"
 						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-3fde3396-9743-4afa-88dd-993df763d50e-768_wvfmNXY.webp');"
@@ -140,7 +141,7 @@
 					</a>
 				</div>
 
-				<div class="flex flex-1 flex-col gap-2">
+				<div class="hidden h-[346px] flex-1 flex-col gap-2 lg:flex xl:h-auto">
 					<div
 						class="flex-1 rounded-lg bg-cover bg-center"
 						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
