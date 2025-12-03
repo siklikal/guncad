@@ -269,27 +269,26 @@
 		>
 			{#each exclusive as item, index}
 				<div class="rounded-lg">
-					<a href="/">
-						<div
-							class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-							style="background-image: url('{item.image}');"
-						></div></a
-					>
-					<div
-						class="flex flex-1 flex-col justify-between gap-2 rounded-br-lg rounded-bl-lg bg-black p-4"
-					>
-						<p class="line-clamp-2">
-							<a href="/" class="font-semibold hover:text-blue-600">
+					<div class="group">
+						<a href="/" class="block">
+							<div
+								class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+								style="background-image: url('{item.image}');"
+							></div>
+						</a>
+						<div class="rounded-br-lg rounded-bl-lg bg-black p-4">
+							<a href="/" class="line-clamp-2 block font-semibold group-hover:text-blue-600">
 								{item.title}
 							</a>
-						</p>
-						<div class="flex justify-between gap-4">
-							<a href="/user/{item.user.username}" class="group flex min-w-0 items-center gap-1">
+						</div>
+					</div>
+					<div class="flex justify-between gap-4 bg-black px-4 pb-4">
+							<a href="/user/{item.user.username}" class="group/user flex min-w-0 items-center gap-1">
 								<div
 									class="h-6 w-6 shrink-0 rounded-full bg-cover bg-center"
 									style="background-image: url('{item.user.avatar}');"
 								></div>
-								<p class="truncate text-sm group-hover:text-blue-600">
+								<p class="truncate text-sm group-hover/user:text-blue-600">
 									{item.user.username}asdasdsad12312sads6adsad26234523asdasdasd
 								</p>
 							</a>
@@ -314,7 +313,6 @@
 								</div>
 							</div>
 						</div>
-					</div>
 				</div>
 			{/each}
 		</div>
