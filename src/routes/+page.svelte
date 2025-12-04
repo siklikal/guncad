@@ -16,7 +16,8 @@
 		faChevronLeft,
 		faGem,
 		faStar,
-		faFire
+		faFire,
+		faEye
 	} from '@fortawesome/free-solid-svg-icons';
 
 	let { data }: { data: PageData } = $props();
@@ -235,25 +236,40 @@
 			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each collections as collection}
+				<a href="/collections/{collection.title}" class="group">
 				<div class="rounded-lg">
 					<div
-						class="h-[170px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-						style="background-image: url('{collection.image}');"
-					></div>
-					<div
-						class="flex items-center justify-between rounded-br-lg rounded-bl-lg bg-black px-5 py-3"
+						class="grid grid-cols-2 grid-rows-2 gap-0.5 rounded-tl-lg rounded-tr-lg bg-blue-600 p-0.5"
 					>
-						<p class="line-clamp-1 font-bold">{collection.title}</p>
-						<div class="flex items-center gap-1">
-							<i class="fa-solid fa-eye text-neutral-400" style="font-size: 14px;"></i>
-							<p class="text-sm text-neutral-400">
-								{collection.views >= 1000
-									? `${(collection.views / 1000).toFixed(1)}k`
-									: collection.views}
-							</p>
+						{#each collection.images.slice(0, 4) as image, idx}
+							<div
+								class="h-20 bg-cover bg-center {idx === 0
+									? 'rounded-tl-lg'
+									: idx === 1
+										? 'rounded-tr-lg'
+										: ''}"
+								style="background-image: url('{image}');"
+							></div>
+						{/each}
+					</div>
+					<div class="flex flex-col gap-2 rounded-br-lg rounded-bl-lg bg-black px-5 py-3">
+						<div class="flex items-center justify-between">
+							<p class="line-clamp-1 font-bold group-hover:text-blue-600">{collection.title}</p>
+							<div class="flex items-center gap-1">
+								<Fa icon={faEye} class="text-sm text-neutral-400" />
+								<p class="text-sm text-neutral-400">
+									{collection.views >= 1000
+										? `${(collection.views / 1000).toFixed(1)}k`
+										: collection.views}
+								</p>
+							</div>
 						</div>
+						<p class="line-clamp-3 text-xs leading-relaxed text-neutral-400">
+							{collection.description}
+						</p>
 					</div>
 				</div>
+			</a>
 			{/each}
 		</div>
 

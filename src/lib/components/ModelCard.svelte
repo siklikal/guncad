@@ -76,23 +76,25 @@
 				{/if}
 			</div>
 		</a>
-		<div class="bg-black p-4">
-			<a {href} class="line-clamp-2 block font-semibold group-hover:text-blue-600">
+		<div class="bg-black ps-4 pe-4 pt-4 pb-2 md:py-4 md:pb-2">
+			<a {href} class="line-clamp-1 text-sm font-semibold group-hover:text-blue-600 md:text-base">
 				{title}
 			</a>
 		</div>
 	</div>
-	<div class="flex justify-between gap-4 rounded-br-lg rounded-bl-lg bg-black px-4 pb-4">
+	<div
+		class="flex flex-col justify-between gap-2 rounded-br-lg rounded-bl-lg bg-black px-4 pb-4 md:flex-row md:gap-4"
+	>
 		<a href="/user/{user.username}" class="group/user flex min-w-0 items-center gap-1">
 			<div
 				class="h-6 w-6 shrink-0 rounded-full bg-cover bg-center"
 				style="background-image: url('{user.avatar}');"
 			></div>
-			<p class="truncate text-sm text-neutral-400 group-hover/user:text-blue-600">
+			<p class="truncate text-xs text-neutral-400 group-hover/user:text-blue-600 md:text-sm">
 				{user.username}
 			</p>
 		</a>
-		<div class="flex items-center gap-2.5">
+		<div class="flex items-center justify-between gap-2.5 md:justify-end">
 			<div class="flex items-center gap-1">
 				<Fa icon={faEye} class="text-sm text-neutral-400" />
 				<p class="text-xs text-neutral-400">

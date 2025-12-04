@@ -30,10 +30,12 @@
 }
 
 /* Responsive grid for 5-item sections (Collections) */
-/* Mobile: 5 items, Small: 2 items, Medium: 2 items, Large: 4 items, XL: 5 items, 2XL: 5 items */
+/* Mobile: 4 items, Small: 2 items, Medium: 2 items, Large: 4 items, XL: 5 items, 2XL: 5 items */
 
-.responsive-grid-5 > *:nth-child(n + 6) {
-	display: none;
+@media (max-width: 639px) {
+	.responsive-grid-5 > *:nth-child(n + 5) {
+		display: none;
+	}
 }
 
 @media (min-width: 640px) and (max-width: 767px) {
