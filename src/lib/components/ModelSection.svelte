@@ -28,13 +28,13 @@
 	let { title, items, href = '/collections', badge = null }: ModelSectionProps = $props();
 </script>
 
-<a {href} class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
-	{title}
-	<Fa icon={faChevronRight} class="h-7 w-7" />
-</a>
+<div class="mt-10 flex items-end gap-1.5">
+	<a href="/" class="text-2xl leading-none font-bold">{title}</a>
+	<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+</div>
 
 <div
-	class="responsive-grid-5 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+	class="responsive-grid-5 my-5 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 >
 	{#each items as item}
 		<ModelCard

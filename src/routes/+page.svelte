@@ -177,7 +177,7 @@
 
 		<div class="mt-10 flex items-end gap-1.5">
 			<a href="/" class="text-2xl leading-none font-bold">Popular Tags</a>
-			<Fa icon={faChevronRight} class="inline-block align-middle text-xl" />
+			<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
 		</div>
 
 		<div class="my-5 flex items-center gap-4">
@@ -227,49 +227,49 @@
 			</button>
 		</div>
 
-		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
-			Collections
-			<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
-		</a>
+		<div class="mt-10 flex items-end gap-1.5">
+			<a href="/" class="text-2xl leading-none font-bold">Collections</a>
+			<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+		</div>
 
 		<div
-			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+			class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each collections as collection}
 				<a href="/collections/{collection.title}" class="group">
-				<div class="rounded-lg">
-					<div
-						class="grid grid-cols-2 grid-rows-2 gap-0.5 rounded-tl-lg rounded-tr-lg bg-blue-600 p-0.5"
-					>
-						{#each collection.images.slice(0, 4) as image, idx}
-							<div
-								class="h-20 bg-cover bg-center {idx === 0
-									? 'rounded-tl-lg'
-									: idx === 1
-										? 'rounded-tr-lg'
-										: ''}"
-								style="background-image: url('{image}');"
-							></div>
-						{/each}
-					</div>
-					<div class="flex flex-col gap-2 rounded-br-lg rounded-bl-lg bg-black px-5 py-3">
-						<div class="flex items-center justify-between">
-							<p class="line-clamp-1 font-bold group-hover:text-blue-600">{collection.title}</p>
-							<div class="flex items-center gap-1">
-								<Fa icon={faEye} class="text-sm text-neutral-400" />
-								<p class="text-sm text-neutral-400">
-									{collection.views >= 1000
-										? `${(collection.views / 1000).toFixed(1)}k`
-										: collection.views}
-								</p>
-							</div>
+					<div class="rounded-lg">
+						<div
+							class="grid grid-cols-2 grid-rows-2 gap-0.5 rounded-tl-lg rounded-tr-lg bg-neutral-400 p-0.5"
+						>
+							{#each collection.images.slice(0, 4) as image, idx}
+								<div
+									class="h-20 bg-cover bg-center {idx === 0
+										? 'rounded-tl-lg'
+										: idx === 1
+											? 'rounded-tr-lg'
+											: ''}"
+									style="background-image: url('{image}');"
+								></div>
+							{/each}
 						</div>
-						<p class="line-clamp-3 text-xs leading-relaxed text-neutral-400">
-							{collection.description}
-						</p>
+						<div class="flex flex-col gap-2 rounded-br-lg rounded-bl-lg bg-black px-5 py-3">
+							<div class="flex items-center justify-between">
+								<p class="line-clamp-1 font-bold group-hover:text-blue-600">{collection.title}</p>
+								<div class="flex items-center gap-1">
+									<Fa icon={faEye} class="text-sm text-neutral-400" />
+									<p class="text-sm text-neutral-400">
+										{collection.views >= 1000
+											? `${(collection.views / 1000).toFixed(1)}k`
+											: collection.views}
+									</p>
+								</div>
+							</div>
+							<p class="line-clamp-3 text-xs leading-relaxed text-neutral-400">
+								{collection.description}
+							</p>
+						</div>
 					</div>
-				</div>
-			</a>
+				</a>
 			{/each}
 		</div>
 
@@ -279,10 +279,10 @@
 
 		<ModelSection title="Trending" items={trending} href="/trending" />
 
-		<a href="/collections" class="mt-10 mb-5 flex hidden items-center gap-1 text-2xl font-bold">
-			Ready to Print
-			<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
-		</a>
+		<div class="mt-10 hidden items-end gap-1.5">
+			<a href="/" class="text-2xl leading-none font-bold">Ready to Print</a>
+			<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+		</div>
 
 		<div
 			class="responsive-grid-5 grid hidden grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
@@ -329,13 +329,13 @@
 			{/each}
 		</div>
 
-		<a href="/collections" class="mt-10 mb-5 flex items-center gap-1 text-2xl font-bold">
-			Blog
-			<i class="fa-solid fa-chevron-right" style="font-size: 28px;"></i>
-		</a>
+		<div class="mt-10 flex items-end gap-1.5">
+			<a href="/" class="text-2xl leading-none font-bold">Blog</a>
+			<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+		</div>
 
 		<div
-			class="responsive-grid-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+			class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each blog as item, index}
 				<a href="/wtf" class="group">
