@@ -89,8 +89,8 @@
 							style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp');"
 						>
 							<div class="flex h-full flex-col justify-between">
-								<div class="flex justify-end p-3">
-									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+								<div class="flex justify-end">
+									<div class="flex h-10 w-10 items-center justify-center rounded-bl-lg bg-black">
 										<Fa icon={faGem} class="text-xl text-blue-600" />
 									</div>
 								</div>
@@ -123,8 +123,8 @@
 							style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-3fde3396-9743-4afa-88dd-993df763d50e-768_wvfmNXY.webp');"
 						>
 							<div class="flex h-full flex-col justify-between">
-								<div class="flex justify-end p-3">
-									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+								<div class="flex justify-end">
+									<div class="flex h-10 w-10 items-center justify-center rounded-bl-lg bg-black">
 										<Fa icon={faStar} class="text-xl text-green-600" />
 									</div>
 								</div>
@@ -157,8 +157,8 @@
 							style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
 						>
 							<div class="flex h-full flex-col justify-between">
-								<div class="flex justify-end p-3">
-									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+								<div class="flex justify-end">
+									<div class="flex h-10 w-10 items-center justify-center rounded-bl-lg bg-black">
 										<Fa icon={faFire} class="text-xl text-red-600" />
 									</div>
 								</div>
