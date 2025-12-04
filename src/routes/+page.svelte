@@ -97,7 +97,7 @@
 								<div
 									class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 								>
-									<p class="p-4 group-hover:text-blue-600">The Hello Kitty</p>
+									<p class="p-4 font-semibold group-hover:text-blue-600">The Hello Kitty</p>
 								</div>
 							</div>
 						</div>
@@ -131,7 +131,7 @@
 								<div
 									class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 								>
-									<p class="p-4 group-hover:text-blue-600">Chode Muzzle Brake</p>
+									<p class="p-4 font-semibold group-hover:text-blue-600">Chode Muzzle Brake</p>
 								</div>
 							</div>
 						</div>
@@ -165,7 +165,7 @@
 								<div
 									class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 								>
-									<p class="p-4 group-hover:text-blue-600">M&P Remix</p>
+									<p class="p-4 font-semibold group-hover:text-blue-600">M&P Remix</p>
 								</div>
 							</div>
 						</div>

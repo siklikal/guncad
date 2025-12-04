@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { initAuth } from '$lib/stores/auth';
 	import Header from '$lib/components/header.svelte';
+	import Footer from '$lib/components/footer.svelte';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 
@@ -29,6 +30,7 @@
 	<div class="py-8">
 		{@render children()}
 	</div>
+	<Footer />
 {:else}
 	{@render children()}
 {/if}
