@@ -26,7 +26,7 @@
 	}
 </script>
 
-<header class="w-full bg-black">
+<header class="sticky top-0 z-50 w-full bg-black">
 	<div class="mx-auto max-w-[1920px] px-4 py-3 md:px-8">
 		<div class="flex items-center justify-between gap-4">
 			<div class="flex items-center gap-6">
