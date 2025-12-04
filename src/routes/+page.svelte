@@ -82,93 +82,104 @@
 			</div>
 
 			<div class="flex flex-1 gap-5">
-				<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-auto">
-					<div
-						class="flex-1 rounded-lg bg-cover bg-center"
-						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp');"
-					>
-						<div class="flex h-full flex-col justify-between">
-							<div class="flex justify-end p-3">
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
-									<Fa icon={faGem} class="text-xl text-blue-600" />
+				<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-full">
+					<a href="/premium-models" class="group flex-1">
+						<div
+							class="h-full flex-1 rounded-lg bg-cover bg-center"
+							style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp');"
+						>
+							<div class="flex h-full flex-col justify-between">
+								<div class="flex justify-end p-3">
+									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+										<Fa icon={faGem} class="text-xl text-blue-600" />
+									</div>
+								</div>
+								<div
+									class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
+								>
+									<p class="p-4 group-hover:text-blue-600">The Hello Kitty</p>
 								</div>
 							</div>
-							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
-							>
-								<p class="p-4">The Hello Kitty</p>
-							</div>
 						</div>
-					</div>
+					</a>
 					<a
 						href="/premium-models"
-						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
+						class="group/category flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
 							<Fa icon={faGem} class="text-lg text-blue-600" />
-							<span class="text-sm text-white">Exclusive Models</span>
+							<span class="text-sm text-white group-hover/category:text-blue-600"
+								>Exclusive Models</span
+							>
 						</div>
 						<Fa icon={faChevronRight} />
 					</a>
 				</div>
 
-				<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-auto">
-					<div
-						class="flex-1 rounded-lg bg-cover bg-center"
-						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-3fde3396-9743-4afa-88dd-993df763d50e-768_wvfmNXY.webp');"
-					>
-						<div class="flex h-full flex-col justify-between">
-							<div class="flex justify-end p-3">
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
-									<Fa icon={faStar} class="text-xl text-green-600" />
+				<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-full">
+					<a href="/premium-models" class="group flex-1">
+						<div
+							class="h-full flex-1 rounded-lg bg-cover bg-center"
+							style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-3fde3396-9743-4afa-88dd-993df763d50e-768_wvfmNXY.webp');"
+						>
+							<div class="flex h-full flex-col justify-between">
+								<div class="flex justify-end p-3">
+									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+										<Fa icon={faStar} class="text-xl text-green-600" />
+									</div>
+								</div>
+								<div
+									class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
+								>
+									<p class="p-4 group-hover:text-blue-600">Chode Muzzle Brake</p>
 								</div>
 							</div>
-							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
-							>
-								<p class="p-4">Chode Muzzle Brake</p>
-							</div>
 						</div>
-					</div>
+					</a>
 					<a
 						href="/premium-models"
-						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
+						class="group/category flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
 							<Fa icon={faStar} class="text-lg text-green-600" />
-							<span class="text-sm text-white">Featured Models</span>
+							<span class="text-sm text-white group-hover/category:text-blue-600"
+								>Featured Models</span
+							>
 						</div>
 						<Fa icon={faChevronRight} />
 					</a>
 				</div>
 
-				<div class="hidden h-[346px] flex-1 flex-col gap-2 lg:flex xl:h-auto">
-					<div
-						class="flex-1 rounded-lg bg-cover bg-center"
-						style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
-					>
-						<div class="flex h-full flex-col justify-between">
-							<div class="flex justify-end p-3">
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
-									<Fa icon={faFire} class="text-xl text-red-600" />
+				<div class="hidden h-[346px] flex-1 flex-col gap-2 lg:flex xl:h-full">
+					<a href="/premium-models" class="group flex-1">
+						<div
+							class="h-full flex-1 rounded-lg bg-cover bg-center"
+							style="background-image: url('https://guncadindex.com/media/thumbnails/thumbnail-30143aea-61f5-4d1c-b695-d0b077b0f81c-768_5MPqZeS.webp');"
+						>
+							<div class="flex h-full flex-col justify-between">
+								<div class="flex justify-end p-3">
+									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-black">
+										<Fa icon={faFire} class="text-xl text-red-600" />
+									</div>
+								</div>
+								<div
+									class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
+								>
+									<p class="p-4 group-hover:text-blue-600">M&P Remix</p>
 								</div>
 							</div>
-							<div
-								class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
-							>
-								<p class="p-4">M&P Remix</p>
-							</div>
 						</div>
-					</div>
+					</a>
 					<a
 						href="/premium-models"
-						class="flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
+						class="group/category flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 					>
 						<div class="flex items-center gap-2">
 							<Fa icon={faFire} class="text-lg text-red-600" />
-							<span class="text-sm text-white">Trending Models</span>
+							<span class="text-sm text-white group-hover/category:text-blue-600"
+								>Trending Models</span
+							>
 						</div>
-						<i class="fa-solid fa-chevron-right"></i>
 						<Fa icon={faChevronRight} />
 					</a>
 				</div>
