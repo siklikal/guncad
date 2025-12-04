@@ -57,6 +57,14 @@
 	}
 </script>
 
+{#if $loading}
+	<div class="flex h-screen items-center justify-center">
+		<div class="text-center">
+			<div class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+			<p class="text-neutral-400">Loading...</p>
+		</div>
+	</div>
+{:else if $user}
 <div>
 	<div class="mx-auto max-w-[1920px] px-4 md:px-8">
 		<div class="flex flex-col gap-5 xl:flex-row">
@@ -371,6 +379,7 @@
 		</div>
 	</div>
 </div>
+{/if}
 
 <!-- <div class="min-h-screen bg-base-200 p-8">
 	<div class="mx-auto max-w-4xl">
