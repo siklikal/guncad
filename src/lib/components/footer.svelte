@@ -15,7 +15,6 @@
 			<a href="/" class="text-xs text-neutral-400">Terms</a>
 		</div>
 		<div class="flex gap-4">
-			<Fa icon={faBitcoin} class="text-lg" />
 			<Fa icon={faXTwitter} class="text-lg" />
 			<Fa icon={faInstagram} class="text-lg" />
 			<Fa icon={faYoutube} class="text-lg" />
