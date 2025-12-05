@@ -51,21 +51,23 @@
 					placeholder="Search..."
 					class="input input-sm w-full rounded-full md:flex lg:w-[340px] xl:w-[400px]"
 				/>
-				{#if $user}
-					<button
-						onclick={handleLogout}
-						class="cursor-pointer rounded-full bg-red-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
-					>
-						Sign Out
-					</button>
-				{:else}
-					<a href="/login" class="btn rounded-full capitalize btn-sm btn-primary">log in</a>
-				{/if}
+				<div class="hidden md:flex">
+					{#if $user}
+						<button
+							onclick={handleLogout}
+							class="cursor-pointer rounded-full bg-red-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+						>
+							Sign Out
+						</button>
+					{:else}
+						<a href="/login" class="btn rounded-full capitalize btn-sm btn-primary">log in</a>
+					{/if}
+				</div>
 				<button
 					onclick={toggleMobileMenu}
 					class="flex h-9 w-9 items-center justify-center md:hidden"
 				>
-					<Fa icon={mobileMenuOpen ? faTimes : faBars} class="cursor-pointer text-xl" />
+					<Fa icon={mobileMenuOpen ? faTimes : faBars} class="cursor-pointer text-2xl" />
 				</button>
 			</div>
 		</div>
@@ -99,6 +101,18 @@
 				onclick={closeMobileMenu}
 				class="border-b border-neutral-700 p-4 capitalize hover:bg-neutral-800">downloads</a
 			>
+			<div class="px-4 py-8">
+				{#if $user}
+					<button
+						onclick={handleLogout}
+						class="w-full cursor-pointer rounded-full bg-red-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+					>
+						Sign Out
+					</button>
+				{:else}
+					<a href="/login" class="btn rounded-full capitalize btn-sm btn-primary">log in</a>
+				{/if}
+			</div>
 		</div>
 	</div>
 {/if}

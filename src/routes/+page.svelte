@@ -53,7 +53,7 @@
 	}
 </script>
 
-{#if $loading}
+{#if $loading || !$user}
 	<div class="flex h-screen items-center justify-center">
 		<div class="text-center">
 			<div
@@ -62,7 +62,7 @@
 			<p class="text-neutral-400">Loading...</p>
 		</div>
 	</div>
-{:else if $user}
+{:else}
 	<div>
 		<div class="mx-auto max-w-[1920px] px-4 md:px-8">
 			<div class="flex flex-col gap-5 xl:flex-row">
@@ -85,17 +85,19 @@
 
 						<!-- Content (appears above overlay) -->
 						<div class="relative flex h-full w-full flex-col items-start justify-center gap-4 p-8">
-							<p class="text-5xl leading-tight font-bold">
-								The Trusted Platform for <br />3D-Printed Firearm Innovation
+							<p class="text-[26px] leading-tight font-bold md:text-5xl">
+								The Trusted Platform for <span class="inline md:block"
+									>3D-Printed Firearm Innovation</span
+								>
 							</p>
-							<p class="text-2xl">Safe. Trusted. Community Approved.</p>
+							<p class="text-[16px] md:text-2xl">Safe. Trusted. Community Approved.</p>
 							<a href="/" class=" rounded-full bg-black px-8 py-3 font-bold text-white">Join Now</a>
 						</div>
 					</div>
 				</div>
 
-				<div class="flex flex-1 gap-5">
-					<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-full" id="spotlight-exclusive">
+				<div class="flex flex-1 flex-col gap-5 md:flex-row">
+					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-exclusive">
 						<a href={data.spotlightExclusive.url} class="group flex-1">
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
@@ -110,8 +112,8 @@
 									<div
 										class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 									>
-										<p class="p-4 font-semibold group-hover:text-blue-600">
-											{data.spotlightExclusive.title}
+										<p class="line-clamp-1 p-4 font-semibold group-hover:text-blue-600">
+											The Hello Kitty
 										</p>
 									</div>
 								</div>
@@ -131,7 +133,7 @@
 						</a>
 					</div>
 
-					<div class="flex h-[346px] flex-1 flex-col gap-2 xl:h-full" id="spotlight-featured">
+					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-featured">
 						<a href={data.spotlightFeatured.url} class="group flex-1">
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
@@ -167,10 +169,7 @@
 						</a>
 					</div>
 
-					<div
-						class="hidden h-[346px] flex-1 flex-col gap-2 lg:flex xl:h-full"
-						id="spotlight-trending"
-					>
+					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-trending">
 						<a href={data.spotlightTrending.url} class="group flex-1">
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
@@ -245,7 +244,7 @@
 							{#each data.tags as tag}
 								<a
 									href="/tag/{tag.slug}"
-									class="shrink-0 rounded-full border bg-black px-4 py-3 text-sm whitespace-nowrap {getTagColorClass(
+									class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap md:px-4 md:py-3 md:text-sm {getTagColorClass(
 										tag.slug
 									)}"
 								>
@@ -282,12 +281,12 @@
 							>
 								{#each collection.fetchedImages.slice(0, 4) as image, idx}
 									<div
-										class="h-32 bg-cover bg-center md:h-20 {idx === 0
+										class="bg-cover bg-center {idx === 0
 											? 'rounded-tl-lg'
 											: idx === 1
 												? 'rounded-tr-lg'
 												: ''}"
-										style="background-image: url('{image}');"
+										style="background-image: url('{image}'); aspect-ratio: 16 / 9;"
 									></div>
 								{/each}
 							</div>
@@ -383,8 +382,8 @@
 					<a href="/wtf" class="group">
 						<div class="rounded-lg">
 							<div
-								class="h-[222px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-								style="background-image: url('images/blog-{index + 1}.jpg');"
+								class="rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+								style="background-image: url('images/blog-{index + 1}.jpg'); aspect-ratio: 16 / 9;"
 							></div>
 							<div
 								class="flex flex-1 flex-col justify-between gap-4 rounded-br-lg rounded-bl-lg bg-black p-4"

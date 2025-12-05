@@ -33,7 +33,7 @@
 </div>
 
 <div
-	class="responsive-grid-5 my-5 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+	class="responsive-grid-5 my-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 >
 	{#each items as item}
 		<ModelCard

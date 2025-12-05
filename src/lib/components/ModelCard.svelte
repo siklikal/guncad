@@ -26,15 +26,7 @@
 		badge?: BadgeType;
 	}
 
-	let {
-		title,
-		image,
-		views,
-		likes,
-		user,
-		href = '/',
-		badge = null
-	}: ModelCardProps = $props();
+	let { title, image, views, likes, user, href = '/', badge = null }: ModelCardProps = $props();
 
 	function formatNumber(num: number): string {
 		return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
@@ -60,8 +52,8 @@
 	<div class="group">
 		<a {href} class="relative block" {title}>
 			<div
-				class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-				style="background-image: url('{image}');"
+				class="rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+				style="background-image: url('{image}'); aspect-ratio: 16 / 9;"
 			>
 				{#if badgeConfig}
 					<div class="flex justify-end">
@@ -81,7 +73,7 @@
 		</div>
 	</div>
 	<div
-		class="flex flex-col justify-between gap-2 rounded-br-lg rounded-bl-lg bg-black px-4 pb-4 md:flex-row md:gap-4"
+		class="flex justify-between gap-2 rounded-br-lg rounded-bl-lg bg-black px-4 pb-4 md:flex-row md:gap-4"
 	>
 		<a href="/user/{user.username}" class="group/user flex min-w-0 items-center gap-1">
 			<div
