@@ -145,19 +145,28 @@ export const load: PageServerLoad = async ({ fetch }) => {
 
 		if (exclusiveResponse.ok) {
 			const data = await exclusiveResponse.json();
-			exclusiveProjects = data.projects;
+			exclusiveProjects = data.projects.map((project: any) => ({
+				...project,
+				badge: 'exclusive'
+			}));
 			console.log('Exclusive projects fetched:', exclusiveProjects.length);
 		}
 
 		if (featuredResponse.ok) {
 			const data = await featuredResponse.json();
-			featuredProjects = data.projects;
+			featuredProjects = data.projects.map((project: any) => ({
+				...project,
+				badge: 'featured'
+			}));
 			console.log('Featured projects fetched:', featuredProjects.length);
 		}
 
 		if (trendingResponse.ok) {
 			const data = await trendingResponse.json();
-			trendingProjects = data.projects;
+			trendingProjects = data.projects.map((project: any) => ({
+				...project,
+				badge: 'trending'
+			}));
 			console.log('Trending projects fetched:', trendingProjects.length);
 		}
 
