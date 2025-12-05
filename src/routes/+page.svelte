@@ -4,9 +4,6 @@
 	import type { PageData } from './$types';
 	import { readyToPrint } from '$lib/data/readyToPrint';
 	import { blog } from '$lib/data/blog';
-	import { exclusive } from '$lib/data/exclusive';
-	import { featured } from '$lib/data/featured';
-	import { trending } from '$lib/data/trending';
 	import ModelSection from '$lib/components/ModelSection.svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
 	import Fa from 'svelte-fa';
@@ -285,7 +282,7 @@
 							>
 								{#each collection.fetchedImages.slice(0, 4) as image, idx}
 									<div
-										class="h-20 bg-cover bg-center {idx === 0
+										class="h-32 bg-cover bg-center md:h-20 {idx === 0
 											? 'rounded-tl-lg'
 											: idx === 1
 												? 'rounded-tr-lg'
@@ -315,11 +312,11 @@
 				{/each}
 			</div>
 
-			<ModelSection title="Exclusive" items={exclusive} href="/exclusive" />
+			<ModelSection title="Exclusive" items={data.exclusive} href="/exclusive" />
 
-			<ModelSection title="Featured" items={featured} href="/featured" />
+			<ModelSection title="Featured" items={data.featured} href="/featured" />
 
-			<ModelSection title="Trending" items={trending} href="/trending" />
+			<ModelSection title="Trending" items={data.trending} href="/trending" />
 
 			<div class="mt-10 hidden items-end gap-1.5">
 				<a href="/" class="text-2xl leading-none font-bold">Ready to Print</a>
@@ -386,7 +383,7 @@
 					<a href="/wtf" class="group">
 						<div class="rounded-lg">
 							<div
-								class="h-[200px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
+								class="h-[222px] rounded-tl-lg rounded-tr-lg bg-cover bg-center"
 								style="background-image: url('images/blog-{index + 1}.jpg');"
 							></div>
 							<div

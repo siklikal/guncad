@@ -13,7 +13,6 @@
 		image: string;
 		views: number;
 		likes: number;
-		downloads: number;
 		user: User;
 		badge?: BadgeType;
 	}
@@ -42,7 +41,6 @@
 			image={item.image}
 			views={item.views}
 			likes={item.likes}
-			downloads={item.downloads}
 			user={item.user}
 			badge={item.badge ?? null}
 		/>

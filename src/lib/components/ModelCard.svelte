@@ -21,7 +21,6 @@
 		image: string;
 		views: number;
 		likes: number;
-		downloads: number;
 		user: User;
 		href?: string;
 		badge?: BadgeType;
@@ -32,7 +31,6 @@
 		image,
 		views,
 		likes,
-		downloads,
 		user,
 		href = '/',
 		badge = null
@@ -99,12 +97,6 @@
 				<Fa icon={faEye} class="text-sm text-neutral-400" />
 				<p class="text-xs text-neutral-400">
 					{formatNumber(views)}
-				</p>
-			</div>
-			<div class="flex items-center gap-1">
-				<Fa icon={faDownload} class="text-sm text-neutral-400" />
-				<p class="text-xs text-neutral-400">
-					{formatNumber(downloads)}
 				</p>
 			</div>
 			<div class="flex items-center gap-1">

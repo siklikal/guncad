@@ -63,10 +63,41 @@ export const GET: RequestHandler = async ({ url: requestUrl }) => {
 			}
 		}
 
+		// Extract views and likes from .odysee-stats-wrapper
+		let views = 0;
+		let likes = 0;
+
+		// Extract the entire odysee-stats-wrapper div content
+		const statsWrapperMatch = html.match(
+			/<div[^>]*class="[^"]*odysee-stats-wrapper[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+		);
+
+		if (statsWrapperMatch) {
+			const statsContent = statsWrapperMatch[1];
+
+			// Extract views - first span with SVG (eye icon)
+			const viewsMatch = statsContent.match(
+				/<span[^>]*>[\s\S]*?<svg[^>]*>[\s\S]*?<\/svg>\s*(\d+)/i
+			);
+			if (viewsMatch) {
+				views = parseInt(viewsMatch[1], 10);
+			}
+
+			// Extract likes - span with class "upvote"
+			const likesMatch = statsContent.match(
+				/<span[^>]*class="[^"]*upvote[^"]*"[^>]*>[\s\S]*?<svg[^>]*>[\s\S]*?<\/svg>\s*(\d+)/i
+			);
+			if (likesMatch) {
+				likes = parseInt(likesMatch[1], 10);
+			}
+		}
+
 		return json({
 			title,
 			image,
-			url
+			url,
+			views,
+			likes
 		});
 	} catch (error) {
 		console.error('Error fetching spotlight:', error);
@@ -84,7 +115,9 @@ export const GET: RequestHandler = async ({ url: requestUrl }) => {
 				error: `Failed to fetch spotlight ${type}`,
 				title: 'The Hello Kitty',
 				image: 'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
-				url: fallbackUrls[type]
+				url: fallbackUrls[type],
+				views: 0,
+				likes: 0
 			},
 			{ status: 500 }
 		);
