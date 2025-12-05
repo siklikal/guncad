@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import { collections } from '$lib/data/collections';
 
 interface Release {
 	id: string;
@@ -88,12 +89,35 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		console.log('Spotlight featured fetched:', spotlightFeaturedData.title);
 		console.log('Spotlight trending fetched:', spotlightTrendingData.title);
 
+		// Fetch images for each collection in parallel
+		const collectionImagePromises = collections.map(async (collection) => {
+			const response = await fetch('/api/collection-images', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ urls: collection.projects })
+			});
+
+			if (!response.ok) {
+				console.error(`Failed to fetch images for collection: ${collection.title}`);
+				return { ...collection, fetchedImages: collection.images };
+			}
+
+			const data = await response.json();
+			return { ...collection, fetchedImages: data.images };
+		});
+
+		const collectionsWithImages = await Promise.all(collectionImagePromises);
+		console.log('Collections with images fetched:', collectionsWithImages.length);
+
 		return {
 			releases: releasesData.results,
 			tags: tagsData.results,
 			spotlightExclusive: spotlightExclusiveData,
 			spotlightFeatured: spotlightFeaturedData,
-			spotlightTrending: spotlightTrendingData
+			spotlightTrending: spotlightTrendingData,
+			collections: collectionsWithImages
 		};
 	} catch (error) {
 		console.error('Error fetching data:', error);
@@ -118,6 +142,10 @@ export const load: PageServerLoad = async ({ fetch }) => {
 					'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
 				url: 'https://guncadindex.com/detail/DeadTrolls-PA6CF-20:0'
 			},
+			collections: collections.map((collection) => ({
+				...collection,
+				fetchedImages: collection.images
+			})),
 			error: 'Failed to load data'
 		};
 	}

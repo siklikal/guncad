@@ -2,7 +2,6 @@
 	import { user, auth, loading } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { collections } from '$lib/data/collections';
 	import { readyToPrint } from '$lib/data/readyToPrint';
 	import { blog } from '$lib/data/blog';
 	import { exclusive } from '$lib/data/exclusive';
@@ -278,13 +277,13 @@
 			<div
 				class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 			>
-				{#each collections as collection}
+				{#each data.collections as collection}
 					<a href="/collections/{collection.title}" class="group">
 						<div class="rounded-lg">
 							<div
 								class="grid grid-cols-2 grid-rows-2 gap-0.5 rounded-tl-lg rounded-tr-lg bg-neutral-400 p-0.5"
 							>
-								{#each collection.images.slice(0, 4) as image, idx}
+								{#each collection.fetchedImages.slice(0, 4) as image, idx}
 									<div
 										class="h-20 bg-cover bg-center {idx === 0
 											? 'rounded-tl-lg'
