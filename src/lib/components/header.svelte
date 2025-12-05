@@ -2,8 +2,17 @@
 	import Fa from 'svelte-fa';
 	import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 	import { browser } from '$app/environment';
+	import { user, auth } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
 
 	let mobileMenuOpen = $state(false);
+
+	async function handleLogout() {
+		const { error } = await auth.signOut();
+		if (!error) {
+			goto('/login');
+		}
+	}
 
 	function toggleMobileMenu() {
 		mobileMenuOpen = !mobileMenuOpen;
@@ -42,7 +51,16 @@
 					placeholder="Search..."
 					class="input input-sm w-full rounded-full md:flex lg:w-[340px] xl:w-[400px]"
 				/>
-				<button class="btn rounded-full capitalize btn-sm btn-primary">log in</button>
+				{#if $user}
+					<button
+						onclick={handleLogout}
+						class="cursor-pointer rounded-full bg-red-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+					>
+						Sign Out
+					</button>
+				{:else}
+					<a href="/login" class="btn rounded-full capitalize btn-sm btn-primary">log in</a>
+				{/if}
 				<button
 					onclick={toggleMobileMenu}
 					class="flex h-9 w-9 items-center justify-center md:hidden"

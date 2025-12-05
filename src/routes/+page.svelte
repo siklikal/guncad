@@ -416,7 +416,9 @@
 						{/if}
 					</div>
 					{#if $user}
-						<button onclick={handleLogout} class="btn btn-outline btn-error"> Logout </button>
+						<button onclick={handleLogout} class="rounded-lg bg-red-500 px-6 py-2 font-semibold text-white hover:bg-red-600 transition-colors">
+							Sign Out
+						</button>
 					{/if}
 				</div>
 

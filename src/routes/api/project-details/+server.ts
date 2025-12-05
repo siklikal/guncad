@@ -108,7 +108,15 @@ async function scrapeProjectDetails(url: string): Promise<{
 				// Extract the <a> tag content from this span
 				const usernameMatch = secondSpan.match(/<a[^>]*>(.*?)<\/a>/i);
 				if (usernameMatch) {
-					username = usernameMatch[1].trim();
+					// Decode HTML entities
+					username = usernameMatch[1]
+						.replace(/&amp;/g, '&')
+						.replace(/&lt;/g, '<')
+						.replace(/&gt;/g, '>')
+						.replace(/&quot;/g, '"')
+						.replace(/&#x27;/g, "'")
+						.replace(/&#039;/g, "'")
+						.trim();
 				}
 			}
 		}

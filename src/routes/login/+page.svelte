@@ -23,15 +23,17 @@
 			? await auth.signUp(email, password)
 			: await auth.signIn(email, password);
 
-		loading = false;
-
 		if (result.error) {
+			loading = false;
 			error = result.error.message;
 		} else {
-			// Success! User will be redirected by the effect above
+			// Success! Keep loading true - the effect will redirect
+			// and the loading spinner will stay visible during navigation
 			if (isSignUp) {
+				loading = false;
 				error = 'Check your email to confirm your account!';
 			}
+			// For sign in, keep loading = true so spinner stays visible during redirect
 		}
 	}
 </script>
