@@ -3,7 +3,7 @@
 	import { faXTwitter, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
 </script>
 
-<div class="w-full bg-black p-4 md:px-8 md:py-4">
+<div class="mt-8 w-full bg-black p-4 md:px-8 md:py-4">
 	<div class="flex justify-between">
 		<div class="flex gap-4">
 			<p class="text-xs">© 2025 Guncad</p>
