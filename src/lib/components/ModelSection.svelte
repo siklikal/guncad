@@ -15,6 +15,7 @@
 		likes: number;
 		user: User;
 		badge?: BadgeType;
+		id?: string;
 	}
 
 	interface ModelSectionProps {
@@ -43,6 +44,7 @@
 			likes={item.likes}
 			user={item.user}
 			badge={item.badge ?? null}
+			href={item.id ? `/details/${item.id}` : '/'}
 		/>
 	{/each}
 </div>

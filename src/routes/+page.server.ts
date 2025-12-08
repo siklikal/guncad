@@ -86,6 +86,17 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		const spotlightFeaturedData = await spotlightFeaturedResponse.json();
 		const spotlightTrendingData = await spotlightTrendingResponse.json();
 
+		// Add project IDs to spotlight data
+		if (spotlightExclusiveData.url) {
+			spotlightExclusiveData.id = spotlightExclusiveData.url.split('/detail/')[1];
+		}
+		if (spotlightFeaturedData.url) {
+			spotlightFeaturedData.id = spotlightFeaturedData.url.split('/detail/')[1];
+		}
+		if (spotlightTrendingData.url) {
+			spotlightTrendingData.id = spotlightTrendingData.url.split('/detail/')[1];
+		}
+
 		console.log('Tags fetched:', tagsData.results.length, 'tags');
 		console.log('Releases fetched:', releasesData.results.length, 'releases');
 		console.log('Spotlight exclusive fetched:', spotlightExclusiveData.title);
@@ -145,28 +156,40 @@ export const load: PageServerLoad = async ({ fetch }) => {
 
 		if (exclusiveResponse.ok) {
 			const data = await exclusiveResponse.json();
-			exclusiveProjects = data.projects.map((project: any) => ({
-				...project,
-				badge: 'exclusive'
-			}));
+			exclusiveProjects = data.projects.map((project: any, index: number) => {
+				const projectId = exclusive[index].split('/detail/')[1];
+				return {
+					...project,
+					badge: 'exclusive',
+					id: projectId
+				};
+			});
 			console.log('Exclusive projects fetched:', exclusiveProjects.length);
 		}
 
 		if (featuredResponse.ok) {
 			const data = await featuredResponse.json();
-			featuredProjects = data.projects.map((project: any) => ({
-				...project,
-				badge: 'featured'
-			}));
+			featuredProjects = data.projects.map((project: any, index: number) => {
+				const projectId = featured[index].split('/detail/')[1];
+				return {
+					...project,
+					badge: 'featured',
+					id: projectId
+				};
+			});
 			console.log('Featured projects fetched:', featuredProjects.length);
 		}
 
 		if (trendingResponse.ok) {
 			const data = await trendingResponse.json();
-			trendingProjects = data.projects.map((project: any) => ({
-				...project,
-				badge: 'trending'
-			}));
+			trendingProjects = data.projects.map((project: any, index: number) => {
+				const projectId = trending[index].split('/detail/')[1];
+				return {
+					...project,
+					badge: 'trending',
+					id: projectId
+				};
+			});
 			console.log('Trending projects fetched:', trendingProjects.length);
 		}
 

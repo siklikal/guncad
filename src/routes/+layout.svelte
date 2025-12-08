@@ -27,7 +27,7 @@
 
 {#if showHeader}
 	<Header />
-	<div class="py-4 md:py-8">
+	<div class="p-4 md:py-8">
 		{@render children()}
 	</div>
 	<Footer />

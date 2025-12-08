@@ -1,9 +1,6 @@
 <script lang="ts">
 	import Fa from 'svelte-fa';
-	import { faXTwitter } from '@fortawesome/free-brands-svg-icons';
-	import { faInstagram } from '@fortawesome/free-brands-svg-icons';
-	import { faYoutube } from '@fortawesome/free-brands-svg-icons';
-	import { faBitcoin } from '@fortawesome/free-brands-svg-icons';
+	import { faXTwitter, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
 </script>
 
 <div class="w-full bg-black p-4 md:px-8 md:py-4">

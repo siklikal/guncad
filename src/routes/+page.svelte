@@ -64,7 +64,7 @@
 	</div>
 {:else}
 	<div>
-		<div class="mx-auto max-w-[1920px] px-4 md:px-8">
+		<div class="mx-auto max-w-[1920px] md:px-4">
 			<div class="flex flex-col gap-5 xl:flex-row">
 				<!-- <div class="carousel h-[600px] w-full flex-1 rounded-lg xl:h-[390px]"> -->
 				<div class="carousel w-full rounded-lg lg:flex-1 xl:h-[390px]">
@@ -98,7 +98,12 @@
 
 				<div class="flex flex-1 flex-col gap-5 md:flex-row">
 					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-exclusive">
-						<a href={data.spotlightExclusive.url} class="group flex-1">
+						<a
+							href={data.spotlightExclusive.id
+								? `/details/${data.spotlightExclusive.id}`
+								: data.spotlightExclusive.url}
+							class="group flex-1"
+						>
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
 								style="background-image: url('{data.spotlightExclusive.image}');"
@@ -134,7 +139,12 @@
 					</div>
 
 					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-featured">
-						<a href={data.spotlightFeatured.url} class="group flex-1">
+						<a
+							href={data.spotlightFeatured.id
+								? `/details/${data.spotlightFeatured.id}`
+								: data.spotlightFeatured.url}
+							class="group flex-1"
+						>
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
 								style="background-image: url('{data.spotlightFeatured.image}');"
@@ -170,7 +180,12 @@
 					</div>
 
 					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-trending">
-						<a href={data.spotlightTrending.url} class="group flex-1">
+						<a
+							href={data.spotlightTrending.id
+								? `/details/${data.spotlightTrending.id}`
+								: data.spotlightTrending.url}
+							class="group flex-1"
+						>
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
 								style="background-image: url('{data.spotlightTrending.image}');"
