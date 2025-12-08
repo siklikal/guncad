@@ -11,6 +11,7 @@
 		faShare,
 		faDownload
 	} from '@fortawesome/free-solid-svg-icons';
+	import { getTagColorClass } from '$lib/utils/tagColors';
 
 	let { data }: { data: PageData } = $props();
 
@@ -64,7 +65,7 @@
 					<h1 class="mb-4 text-3xl font-bold md:text-4xl">{data.project.title}</h1>
 
 					<!-- User Info -->
-					<a href="/user/{data.project.user.username}" class="group/user flex items-center gap-2">
+					<a href="/user/{data.project.user.username}" class="group/user flex items-center gap-1">
 						<div
 							class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center"
 							style="background-image: url('{data.project.user.avatar}');"
@@ -81,8 +82,10 @@
 					<div class="flex flex-wrap gap-2">
 						{#each data.project.tags as tag}
 							<a
-								href="/tag/{tag}"
-								class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap"
+								href="/tag/{tag.toLowerCase()}"
+								class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap {getTagColorClass(
+									tag.toLowerCase()
+								)}"
 							>
 								{tag}
 							</a>
@@ -92,38 +95,42 @@
 
 				<div class="flex justify-between rounded-lg border border-neutral-400">
 					<div
-						class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 p-3"
+						class="flex flex-1 items-center justify-center gap-2 rounded-tl-lg rounded-bl-lg border-r border-neutral-400 bg-neutral-800 p-3"
 					>
 						<Fa icon={faEye} class="text-lg text-neutral-400" />
 						<p class="text-lg font-semibold">{formatNumber(data.project.views)}</p>
 					</div>
 					<div
-						class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 p-3"
+						class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-3"
 					>
 						<Fa icon={faHeart} class="text-lg text-neutral-400" />
 						<p class="text-lg font-semibold">{formatNumber(data.project.likes)}</p>
 					</div>
 					<div
-						class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 p-3"
+						class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-3"
 					>
 						<Fa icon={faBookmark} class="text-lg text-neutral-400" />
 						<p class="text-lg font-semibold">{formatNumber(data.project.likes)}</p>
 					</div>
 					<a href="/" class="flex h-full flex-1 border-r border-neutral-400">
-						<div class="flex flex-1 items-center justify-center gap-2">
+						<div class="flex flex-1 items-center justify-center gap-2 bg-neutral-800">
 							<Fa icon={faDownload} class="text-lg text-neutral-400" />
 							<p class="text-lg font-semibold">{formatNumber(data.project.likes)}</p>
 						</div>
 					</a>
-					<a href="/" class="flex h-full flex-1">
-						<div class="flex flex-1 items-center justify-center gap-2">
+					<a href="/" class="group flex h-full flex-1">
+						<div
+							class="flex flex-1 items-center justify-center gap-2 rounded-tr-lg rounded-br-lg bg-neutral-800 group-hover:bg-neutral-700"
+						>
 							<Fa icon={faShare} class="text-lg text-neutral-400" />
 						</div>
 					</a>
 				</div>
 
 				<div>
-					<pre class="rounded-lg bg-black p-4 text-sm break-words whitespace-pre-wrap">{data.project.description || 'No description available'}</pre>
+					<p class="rounded-lg bg-black p-4 text-sm break-words whitespace-pre-wrap">
+						{data.project.description || 'No description available'}
+					</p>
 				</div>
 			</div>
 		</div>

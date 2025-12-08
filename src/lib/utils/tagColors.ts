@@ -30,13 +30,13 @@ const colorClasses = [
 /**
  * Gets a consistent color class for a tag based on its slug
  * This ensures the same tag always gets the same color
+ * Uses a better hash function to reduce collisions
  */
 export function getTagColorClass(slug: string): string {
-	// Simple hash function to get a consistent index for each slug
-	let hash = 0;
+	// DJB2 hash algorithm - better distribution than simple hash
+	let hash = 5381;
 	for (let i = 0; i < slug.length; i++) {
-		hash = (hash << 5) - hash + slug.charCodeAt(i);
-		hash = hash & hash; // Convert to 32-bit integer
+		hash = (hash * 33) ^ slug.charCodeAt(i);
 	}
 
 	// Get positive index within color array bounds

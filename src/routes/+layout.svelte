@@ -25,12 +25,14 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{#if showHeader}
-	<Header />
-	<div class="p-4 md:py-8">
+<div class="flex min-h-screen flex-col">
+	{#if showHeader}
+		<Header />
+		<div class="flex-1 p-4 md:py-8">
+			{@render children()}
+		</div>
+		<Footer />
+	{:else}
 		{@render children()}
-	</div>
-	<Footer />
-{:else}
-	{@render children()}
-{/if}
+	{/if}
+</div>
