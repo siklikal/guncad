@@ -27,15 +27,21 @@ export function initAuth() {
 
 // Auth helper functions
 export const auth = {
-	async signUp(email: string, password: string) {
+	signUp: async (email: string, password: string, username: string, displayName: string) => {
 		const { data, error } = await supabase.auth.signUp({
 			email,
-			password
+			password,
+			options: {
+				data: {
+					username,
+					display_name: displayName
+				}
+			}
 		});
 		return { data, error };
 	},
 
-	async signIn(email: string, password: string) {
+	signIn: async (email: string, password: string) => {
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email,
 			password
@@ -43,7 +49,7 @@ export const auth = {
 		return { data, error };
 	},
 
-	async signOut() {
+	signOut: async () => {
 		const { error } = await supabase.auth.signOut();
 		return { error };
 	}
