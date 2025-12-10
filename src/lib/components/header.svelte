@@ -4,10 +4,10 @@
 	import { browser } from '$app/environment';
 	import { user, auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import { LogOut, Settings } from '@lucide/svelte';
+	import { LogOut, Settings, Download, Bookmark } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
 	let mobileMenuOpen = $state(false);
 
@@ -50,18 +50,26 @@
 				<a href="/downloads" class="link-primary hidden capitalize md:flex">downloads</a>
 			</div>
 			<div class="flex flex-1 items-center justify-end gap-4">
-				<input
+				<Input
 					type="text"
 					placeholder="Search..."
-					class="input input-sm w-full rounded-full md:flex lg:w-[340px] xl:w-[400px]"
+					class="w-full rounded-full md:flex lg:w-[340px] xl:w-[400px]"
 				/>
 				<div class="hidden md:flex">
 					{#if $user}
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger><Button>My Account</Button></DropdownMenu.Trigger>
-							<DropdownMenu.Content>
+							<DropdownMenu.Content class="w-[200px]">
 								<DropdownMenu.Group>
-									<DropdownMenu.Item class="cursor-pointer"><Settings />Settings</DropdownMenu.Item>
+									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/settings')}
+										><Settings />Settings</DropdownMenu.Item
+									>
+									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/downloads')}
+										><Download />Downloads</DropdownMenu.Item
+									>
+									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/bookmarks')}
+										><Bookmark />Bookmarks</DropdownMenu.Item
+									>
 									<DropdownMenu.Item class="cursor-pointer" onclick={handleLogout}
 										><LogOut />Sign Out</DropdownMenu.Item
 									>
