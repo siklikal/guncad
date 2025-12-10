@@ -5,10 +5,9 @@
 	import { user, auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import { LogOut } from '@lucide/svelte';
+	import { LogOut, Settings } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
 
 	let mobileMenuOpen = $state(false);
 
@@ -59,50 +58,16 @@
 				<div class="hidden md:flex">
 					{#if $user}
 						<DropdownMenu.Root>
-							<DropdownMenu.Trigger class="cursor-pointer">
-								<Avatar.Root class="h-10 w-10">
-									<Avatar.Image src={$user.user_metadata?.avatar_url || '/images/default-avatar.avif'} alt={$user.user_metadata?.username || 'User'} />
-									<Avatar.Fallback>{$user.user_metadata?.username?.[0]?.toUpperCase() || 'U'}</Avatar.Fallback>
-								</Avatar.Root>
-							</DropdownMenu.Trigger>
+							<DropdownMenu.Trigger><Button>My Account</Button></DropdownMenu.Trigger>
 							<DropdownMenu.Content>
 								<DropdownMenu.Group>
-									<DropdownMenu.Label>My Account</DropdownMenu.Label>
-									<DropdownMenu.Separator />
-									<DropdownMenu.Item>Profile</DropdownMenu.Item>
-									<DropdownMenu.Item>Billing</DropdownMenu.Item>
-									<DropdownMenu.Item>Team</DropdownMenu.Item>
-									<DropdownMenu.Item>Subscription</DropdownMenu.Item>
+									<DropdownMenu.Item class="cursor-pointer"><Settings />Settings</DropdownMenu.Item>
+									<DropdownMenu.Item class="cursor-pointer" onclick={handleLogout}
+										><LogOut />Sign Out</DropdownMenu.Item
+									>
 								</DropdownMenu.Group>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
-						<!-- <NavigationMenu.Root>
-							<NavigationMenu.List>
-								<NavigationMenu.Item>
-									<NavigationMenu.Trigger>With Icon</NavigationMenu.Trigger>
-									<NavigationMenu.Content>
-										<ul class="grid w-[200px] gap-4 p-2">
-											<li>
-												<NavigationMenu.Link href="##" class="flex-row items-center gap-2">
-													<LogOut />
-													Backlog
-												</NavigationMenu.Link>
-
-												<NavigationMenu.Link href="##" class="flex-row items-center gap-2">
-													<LogOut />
-													To Do
-												</NavigationMenu.Link>
-
-												<NavigationMenu.Link href="##" class="flex-row items-center gap-2">
-													<LogOut />
-													Sign Out
-												</NavigationMenu.Link>
-											</li>
-										</ul>
-									</NavigationMenu.Content>
-								</NavigationMenu.Item>
-							</NavigationMenu.List>
-						</NavigationMenu.Root> -->
 					{:else}
 						<a href="/login" class="btn btn-sm btn-primary rounded-full capitalize">log in</a>
 					{/if}
