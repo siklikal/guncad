@@ -18,12 +18,8 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Redirect to login if not authenticated (but wait for auth to load first)
-	$effect(() => {
-		if (!$loading && !$user) {
-			goto('/login');
-		}
-	});
+	// Note: Authentication is now handled server-side in hooks.server.ts
+	// This prevents the flash of content before redirect that occurred with client-side checks
 
 	async function handleLogout() {
 		const { error } = await auth.signOut();
@@ -53,17 +49,7 @@
 	}
 </script>
 
-{#if $loading || !$user}
-	<div class="flex h-screen items-center justify-center">
-		<div class="text-center">
-			<div
-				class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"
-			></div>
-			<p class="text-neutral-400">Loading...</p>
-		</div>
-	</div>
-{:else}
-	<div>
+<div>
 		<div class="mx-auto max-w-[1920px] md:px-4">
 			<div class="flex flex-col gap-5 xl:flex-row">
 				<!-- <div class="carousel h-[600px] w-full flex-1 rounded-lg xl:h-[390px]"> -->
@@ -415,8 +401,7 @@
 				{/each}
 			</div>
 		</div>
-	</div>
-{/if}
+</div>
 
 <!-- <div class="min-h-screen bg-base-200 p-8">
 	<div class="mx-auto max-w-4xl">
