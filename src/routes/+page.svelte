@@ -53,17 +53,20 @@
 		<div class="mx-auto max-w-[1920px] md:px-4">
 			<div class="flex flex-col gap-5 xl:flex-row">
 				<!-- <div class="carousel h-[600px] w-full flex-1 rounded-lg xl:h-[390px]"> -->
-				<div class="carousel w-full rounded-lg lg:flex-1 xl:h-[390px]">
-					<div id="slide1" class="relative carousel-item w-full overflow-hidden">
-						<!-- Video Background -->
+				<div class="carousel h-[390px] w-full rounded-lg lg:flex-1">
+					<div id="slide1" class="relative carousel-item h-full w-full overflow-hidden rounded-lg">
+						<!-- Video Background with poster -->
 						<video
 							autoplay
 							muted
 							loop
 							playsinline
+							poster="/images/hero-poster.jpg"
+							preload="metadata"
 							class="absolute inset-0 h-full w-full object-cover"
 						>
 							<source src="/videos/hero.mp4" type="video/mp4" />
+							Your browser does not support the video tag.
 						</video>
 
 						<!-- Semi-transparent overlay -->

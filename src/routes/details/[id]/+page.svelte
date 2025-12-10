@@ -12,6 +12,7 @@
 		faDownload
 	} from '@fortawesome/free-solid-svg-icons';
 	import { getTagColorClass } from '$lib/utils/tagColors';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -81,7 +82,9 @@
 			// Extract filename from Content-Disposition header if available
 			const contentDisposition = response.headers.get('Content-Disposition');
 			const fileNameMatch = contentDisposition?.match(/filename="(.+)"/);
-			const fileName = fileNameMatch ? fileNameMatch[1] : data.project.source?.name || `${data.project.id}.zip`;
+			const fileName = fileNameMatch
+				? fileNameMatch[1]
+				: data.project.source?.name || `${data.project.id}.zip`;
 
 			// Convert response to blob and trigger browser download
 			// Using blob URL prevents opening new tab and downloads file directly
@@ -137,11 +140,12 @@
 					<!-- User Info -->
 					<a
 						href="/user/{data.project.user.username}"
-						class="group/user inline-flex items-center gap-1"
+						class="group/user inline-flex items-center gap-1.5"
 					>
 						<div
 							class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center"
-							style="background-image: url('{data.project.user.avatar}');"
+							style="background-image: url('{data.project.user.avatar ||
+								'/images/default-avatar.avif'}');"
 						></div>
 						<div>
 							<p class="text-sm font-semibold group-hover/user:text-blue-600">
@@ -196,22 +200,22 @@
 						</a>
 					</div>
 					<div class="flex w-full gap-2 xl:w-auto">
-						<button class="btn flex-1 btn-primary xl:flex-none"
-							><span><Fa icon={faShare} class="text-sm" /></span>Share</button
-						>
-						<button class="btn flex-1 btn-primary xl:flex-none"
-							><span><Fa icon={faBookmark} class="text-sm" /></span>Bookmark</button
-						>
-						<button class="btn flex-1 btn-primary xl:flex-none" onclick={handleDownload} disabled={downloading}>
-							<span>
-								{#if downloading}
-									<span class="loading loading-spinner loading-sm"></span>
-								{:else}
-									<Fa icon={faDownload} class="text-sm" />
-								{/if}
-							</span>
+						<Button size="lg" class="flex-1 xl:flex-none">
+							<Fa icon={faShare} class="text-sm" />
+							Share
+						</Button>
+						<Button size="lg" class="flex-1 xl:flex-none">
+							<Fa icon={faBookmark} class="text-sm" />
+							Bookmark
+						</Button>
+						<Button size="lg" class="flex-1 xl:flex-none" onclick={handleDownload} disabled={downloading}>
+							{#if downloading}
+								<span class="loading loading-sm loading-spinner"></span>
+							{:else}
+								<Fa icon={faDownload} class="text-sm" />
+							{/if}
 							{downloading ? 'Downloading...' : 'Download'}
-						</button>
+						</Button>
 					</div>
 				</div>
 

@@ -5,7 +5,6 @@
 	let email = $state('');
 	let password = $state('');
 	let username = $state('');
-	let displayName = $state('');
 	let acceptedTos = $state(false);
 	let showPassword = $state(false);
 	let isSignUp = $state(false);
@@ -24,7 +23,7 @@
 		loading = true;
 
 		const result = isSignUp
-			? await auth.signUp(email, password, username, displayName)
+			? await auth.signUp(email, password, username)
 			: await auth.signIn(email, password);
 
 		if (result.error) {
@@ -90,20 +89,6 @@
 							bind:value={username}
 							required
 							placeholder="johndoe"
-							class="input-bordered input w-full"
-						/>
-					</div>
-
-					<div class="form-control mt-4">
-						<label class="label" for="displayName">
-							<span class="label-text">Display Name</span>
-						</label>
-						<input
-							id="displayName"
-							type="text"
-							bind:value={displayName}
-							required
-							placeholder="John Doe"
 							class="input-bordered input w-full"
 						/>
 					</div>
