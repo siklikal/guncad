@@ -118,12 +118,50 @@
 				onclick={closeMobileMenu}
 				class="border-b border-neutral-700 p-4 capitalize hover:bg-neutral-800">downloads</a
 			>
+
+			{#if $user}
+				<!-- Account Section -->
+				<div class="border-b border-neutral-700 bg-neutral-800/50 p-4">
+					<p class="mb-3 text-sm font-semibold uppercase text-neutral-400">Account</p>
+					<div class="space-y-1">
+						<a
+							href="/user/settings"
+							onclick={closeMobileMenu}
+							class="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-700"
+						>
+							<Settings class="h-4 w-4" />
+							<span>Settings</span>
+						</a>
+						<a
+							href="/user/downloads"
+							onclick={closeMobileMenu}
+							class="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-700"
+						>
+							<Download class="h-4 w-4" />
+							<span>Downloads</span>
+						</a>
+						<a
+							href="/user/bookmarks"
+							onclick={closeMobileMenu}
+							class="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-700"
+						>
+							<Bookmark class="h-4 w-4" />
+							<span>Bookmarks</span>
+						</a>
+					</div>
+				</div>
+			{/if}
+
 			<div class="px-4 py-8">
 				{#if $user}
 					<button
-						onclick={handleLogout}
-						class="w-full cursor-pointer rounded-full bg-red-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+						onclick={() => {
+							handleLogout();
+							closeMobileMenu();
+						}}
+						class="flex w-full items-center justify-center gap-2 rounded-full bg-red-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
 					>
+						<LogOut class="h-4 w-4" />
 						Sign Out
 					</button>
 				{:else}
