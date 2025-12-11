@@ -6,49 +6,62 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Loader2, Eye, EyeOff } from '@lucide/svelte';
 	import { supabase } from '$lib/supabase';
+	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 
-	let username = $state($user?.user_metadata?.username || '');
-	let email = $state($user?.email || '');
+	let email = $state('');
 	let newEmail = $state('');
-	let avatarUrl = $state($user?.user_metadata?.avatar_url || '');
 
 	let currentPassword = $state('');
 	let newPassword = $state('');
 	let showCurrentPassword = $state(false);
 	let showNewPassword = $state(false);
 
-	let profileLoading = $state(false);
 	let emailLoading = $state(false);
 	let passwordLoading = $state(false);
-	let profileError = $state('');
-	let profileSuccess = $state('');
 	let emailError = $state('');
 	let emailSuccess = $state('');
 	let passwordError = $state('');
 	let passwordSuccess = $state('');
 
-	async function handleProfileUpdate() {
-		profileError = '';
-		profileSuccess = '';
-		profileLoading = true;
-
-		try {
-			const { error } = await supabase.auth.updateUser({
-				data: {
-					username,
-					avatar_url: avatarUrl
-				}
-			});
-
-			if (error) throw error;
-
-			profileSuccess = 'Profile updated successfully!';
-		} catch (error: any) {
-			profileError = error.message;
-		} finally {
-			profileLoading = false;
+	// Reactively update form values when user data loads
+	$effect(() => {
+		if ($user) {
+			email = $user.email || '';
 		}
-	}
+	});
+
+	// Check for callback errors and success messages
+	$effect(() => {
+		if (browser) {
+			const error = $page.url.searchParams.get('error');
+			const success = $page.url.searchParams.get('success');
+
+			if (error) {
+				emailError = decodeURIComponent(error);
+				window.history.replaceState({}, '', '/user/settings');
+			}
+
+			if (success) {
+				emailSuccess = decodeURIComponent(success);
+				window.history.replaceState({}, '', '/user/settings');
+			}
+
+			// Check for hash-based tokens (legacy Supabase auth flow)
+			const hashParams = new URLSearchParams(window.location.hash.substring(1));
+			const accessToken = hashParams.get('access_token');
+			const type = hashParams.get('type');
+
+			if (accessToken && type === 'email_change') {
+				// Email change confirmed via hash
+				emailSuccess = 'Email updated successfully! The page will refresh.';
+				// Refresh the user data
+				setTimeout(() => {
+					window.location.href = '/user/settings';
+				}, 1500);
+			}
+		}
+	});
 
 	async function handleEmailUpdate() {
 		emailError = '';
@@ -69,9 +82,14 @@
 		emailLoading = true;
 
 		try {
-			const { error } = await supabase.auth.updateUser({
-				email: newEmail
-			});
+			const { error } = await supabase.auth.updateUser(
+				{
+					email: newEmail
+				},
+				{
+					emailRedirectTo: `${window.location.origin}/auth/callback`
+				}
+			);
 
 			if (error) throw error;
 
@@ -120,98 +138,28 @@
 		<p class="text-muted-foreground">Manage your account settings and preferences</p>
 	</div>
 
-	<!-- Profile Settings -->
+	<!-- Email Display -->
 	<Card.Root>
 		<Card.Header>
-			<Card.Title>Profile Information</Card.Title>
-			<Card.Description>Update your profile details</Card.Description>
+			<Card.Title>Email Address</Card.Title>
+			<Card.Description>Your current email address</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					handleProfileUpdate();
-				}}
-				class="space-y-4"
-			>
-				<div class="space-y-2">
-					<Label for="email">Current Email</Label>
-					<Input id="email" type="email" bind:value={email} disabled class="opacity-50" />
-				</div>
-
-				<div class="space-y-2">
-					<Label for="username">Username</Label>
-					<Input
-						id="username"
-						type="text"
-						bind:value={username}
-						placeholder="johndoe"
-						required
-					/>
-				</div>
-
-				<div class="space-y-2">
-					<Label for="avatar">Avatar URL</Label>
-					<Input
-						id="avatar"
-						type="url"
-						bind:value={avatarUrl}
-						placeholder="https://example.com/avatar.jpg"
-					/>
-					<p class="text-xs text-muted-foreground">
-						Enter a URL to your profile picture or leave blank for default
-					</p>
-				</div>
-
-				{#if avatarUrl}
-					<div class="space-y-2">
-						<Label>Avatar Preview</Label>
-						<div class="flex items-center gap-4">
-							<img
-								src={avatarUrl}
-								alt="Avatar preview"
-								class="h-20 w-20 rounded-full object-cover"
-								onerror={(e) => {
-									e.currentTarget.src = '/images/default-avatar.avif';
-								}}
-							/>
-						</div>
-					</div>
-				{/if}
-
-				{#if profileError}
-					<div class="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-						{profileError}
-					</div>
-				{/if}
-
-				{#if profileSuccess}
-					<div class="rounded-md bg-green-500/15 p-3 text-sm text-green-600">
-						{profileSuccess}
-					</div>
-				{/if}
-
-				<Button type="submit" disabled={profileLoading}>
-					{#if profileLoading}
-						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-						Updating...
-					{:else}
-						Save Changes
-					{/if}
-				</Button>
-			</form>
+			<div class="space-y-2">
+				<Label for="email">Email</Label>
+				<Input id="email" type="email" bind:value={email} disabled class="opacity-50" />
+			</div>
 		</Card.Content>
 	</Card.Root>
 
-	<!-- Email Change Settings -->
+	<!-- Account Security (Email & Password) -->
 	<Card.Root>
 		<Card.Header>
-			<Card.Title>Change Email</Card.Title>
-			<Card.Description
-				>Update your email address. You'll need to verify the new email.</Card.Description
-			>
+			<Card.Title>Account Security</Card.Title>
+			<Card.Description>Update your email address or password</Card.Description>
 		</Card.Header>
-		<Card.Content>
+		<Card.Content class="space-y-6">
+			<!-- Change Email -->
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -226,7 +174,6 @@
 						type="email"
 						bind:value={newEmail}
 						placeholder="newemail@example.com"
-						required
 					/>
 					<p class="text-xs text-muted-foreground">
 						A verification link will be sent to your new email address
@@ -254,16 +201,10 @@
 					{/if}
 				</Button>
 			</form>
-		</Card.Content>
-	</Card.Root>
 
-	<!-- Password Settings -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>Change Password</Card.Title>
-			<Card.Description>Update your password to keep your account secure</Card.Description>
-		</Card.Header>
-		<Card.Content>
+			<div class="border-t border-border"></div>
+
+			<!-- Change Password -->
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -280,7 +221,6 @@
 							bind:value={currentPassword}
 							placeholder="••••••••"
 							class="pr-10"
-							required
 						/>
 						<button
 							type="button"
@@ -306,7 +246,6 @@
 							placeholder="••••••••"
 							minlength="6"
 							class="pr-10"
-							required
 						/>
 						<button
 							type="button"

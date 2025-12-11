@@ -10,7 +10,6 @@
 
 	let email = $state('');
 	let password = $state('');
-	let username = $state('');
 	let acceptedTos = $state(false);
 	let showPassword = $state(false);
 	let isSignUp = $state(false);
@@ -29,7 +28,7 @@
 		loading = true;
 
 		const result = isSignUp
-			? await auth.signUp(email, password, username)
+			? await auth.signUp(email, password)
 			: await auth.signIn(email, password);
 
 		if (result.error) {
@@ -82,13 +81,6 @@
 							placeholder="you@example.com"
 						/>
 					</div>
-
-					{#if isSignUp}
-						<div class="space-y-2">
-							<Label for="username">Username</Label>
-							<Input id="username" type="text" bind:value={username} required placeholder="johndoe" />
-						</div>
-					{/if}
 
 					<div class="space-y-2">
 						<Label for="password">Password</Label>

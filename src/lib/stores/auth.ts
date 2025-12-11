@@ -27,15 +27,10 @@ export function initAuth() {
 
 // Auth helper functions
 export const auth = {
-	signUp: async (email: string, password: string, username: string) => {
+	signUp: async (email: string, password: string) => {
 		const { data, error } = await supabase.auth.signUp({
 			email,
-			password,
-			options: {
-				data: {
-					username
-				}
-			}
+			password
 		});
 		return { data, error };
 	},
