@@ -45,6 +45,7 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
+		"@fontsource-variable/ibm-plex-sans": "^5.2.8",
 		"@fontsource-variable/rubik": "^5.2.8",
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@fortawesome/free-brands-svg-icons": "^7.1.0",

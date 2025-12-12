@@ -53,7 +53,7 @@
 				<Input
 					type="text"
 					placeholder="Search..."
-					class="w-full rounded-full md:flex lg:w-[340px] xl:w-[400px]"
+					class="w-full md:flex lg:w-[340px] xl:w-[400px]"
 				/>
 				<div class="hidden md:flex">
 					{#if $user}
