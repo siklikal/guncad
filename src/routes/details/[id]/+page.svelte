@@ -13,11 +13,13 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { getTagColorClass } from '$lib/utils/tagColors';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	let downloading = $state(false);
 	let downloadError = $state('');
+	let showSubscriptionModal = $state(false);
 
 	function formatNumber(num: number): string {
 		return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
@@ -33,6 +35,56 @@
 				return { icon: faFire, color: 'text-red-600', label: 'Trending' };
 			default:
 				return null;
+		}
+	}
+
+	/**
+	 * Check if user has entitlement to download
+	 *
+	 * Flow:
+	 * 1. Check if user has active subscription or purchased this model
+	 * 2. If yes, proceed to download
+	 * 3. If no, show subscription modal
+	 */
+	async function handleDownload() {
+		if (!data.project || downloading) return;
+
+		downloading = true;
+		downloadError = '';
+
+		try {
+			// Check entitlement first
+			const entitlementResponse = await fetch('/api/subscription/check-entitlement', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					modelId: data.project.id
+				})
+			});
+
+			const entitlementData = await entitlementResponse.json();
+
+			// User is not authenticated
+			if (entitlementResponse.status === 401) {
+				downloadError = 'Please sign in to download models';
+				downloading = false;
+				return;
+			}
+
+			// User can download
+			if (entitlementData.canDownload) {
+				await performDownload();
+			} else {
+				// User needs subscription
+				downloading = false;
+				showSubscriptionModal = true;
+			}
+		} catch (error) {
+			downloadError = error instanceof Error ? error.message : 'Failed to check download access';
+			console.error('Entitlement check error:', error);
+			downloading = false;
 		}
 	}
 
@@ -54,11 +106,8 @@
 	 *
 	 * Note: Does NOT open new tab, downloads directly to user's download folder
 	 */
-	async function handleDownload() {
-		if (!data.project || downloading) return;
-
-		downloading = true;
-		downloadError = '';
+	async function performDownload() {
+		if (!data.project) return;
 
 		try {
 			// Request the file from our SvelteKit download endpoint
@@ -97,6 +146,8 @@
 			a.click();
 			document.body.removeChild(a);
 			window.URL.revokeObjectURL(url); // Clean up blob URL
+
+			// TODO: Record download in downloads table
 		} catch (error) {
 			downloadError = error instanceof Error ? error.message : 'Failed to download file';
 			console.error('Download error:', error);
@@ -106,6 +157,13 @@
 	}
 
 	const badgeConfig = data.project?.badge ? getBadgeConfig(data.project.badge) : null;
+
+	// Handle successful subscription
+	async function handleSubscriptionSuccess() {
+		showSubscriptionModal = false;
+		// Retry download after successful subscription
+		await handleDownload();
+	}
 </script>
 
 <div class="container mx-auto">
@@ -245,3 +303,6 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Subscription Modal -->
+<SubscriptionModal bind:isOpen={showSubscriptionModal} onSuccess={handleSubscriptionSuccess} />
