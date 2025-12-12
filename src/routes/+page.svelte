@@ -286,7 +286,7 @@
 					class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 				>
 					{#each collections as collection}
-					<a href="/collections/{collection.title}" class="group">
+					<a href="/collections/{collection.title.toLowerCase().replace(/\s+/g, '-')}" class="group">
 						<div class="rounded-lg">
 							<div
 								class="grid grid-cols-2 grid-rows-2 gap-0.5 rounded-tl-lg rounded-tr-lg bg-neutral-400 p-0.5"
