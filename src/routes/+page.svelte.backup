@@ -15,9 +15,6 @@
 		faFire,
 		faEye
 	} from '@fortawesome/free-solid-svg-icons';
-	import TagsSkeleton from '$lib/components/skeletons/TagsSkeleton.svelte';
-	import CollectionsSkeleton from '$lib/components/skeletons/CollectionsSkeleton.svelte';
-	import ModelsSkeleton from '$lib/components/skeletons/ModelsSkeleton.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -277,15 +274,10 @@
 				<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
 			</div>
 
-			{#await data.collections}
-				<div class="my-5">
-					<CollectionsSkeleton />
-				</div>
-			{:then collections}
-				<div
-					class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-				>
-					{#each collections as collection}
+			<div
+				class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+			>
+				{#each data.collections as collection}
 					<a href="/collections/{collection.title}" class="group">
 						<div class="rounded-lg">
 							<div
@@ -320,51 +312,14 @@
 							</div>
 						</div>
 					</a>
-					{/each}
-				</div>
-			{/await}
+				{/each}
+			</div>
 
-			{#await data.exclusive}
-				<div class="mt-10">
-					<div class="flex items-end gap-1.5">
-						<a href="/" class="text-2xl leading-none font-bold">Exclusive</a>
-						<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-					</div>
-					<div class="my-5">
-						<ModelsSkeleton />
-					</div>
-				</div>
-			{:then exclusive}
-				<ModelSection title="Exclusive" items={exclusive} href="/exclusive" />
-			{/await}
+			<ModelSection title="Exclusive" items={data.exclusive} href="/exclusive" />
 
-			{#await data.featured}
-				<div class="mt-10">
-					<div class="flex items-end gap-1.5">
-						<a href="/" class="text-2xl leading-none font-bold">Featured</a>
-						<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-					</div>
-					<div class="my-5">
-						<ModelsSkeleton />
-					</div>
-				</div>
-			{:then featured}
-				<ModelSection title="Featured" items={featured} href="/featured" />
-			{/await}
+			<ModelSection title="Featured" items={data.featured} href="/featured" />
 
-			{#await data.trending}
-				<div class="mt-10">
-					<div class="flex items-end gap-1.5">
-						<a href="/" class="text-2xl leading-none font-bold">Trending</a>
-						<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-					</div>
-					<div class="my-5">
-						<ModelsSkeleton />
-					</div>
-				</div>
-			{:then trending}
-				<ModelSection title="Trending" items={trending} href="/trending" />
-			{/await}
+			<ModelSection title="Trending" items={data.trending} href="/trending" />
 
 			<div class="mt-10 hidden items-end gap-1.5">
 				<a href="/" class="text-2xl leading-none font-bold">Ready to Print</a>
