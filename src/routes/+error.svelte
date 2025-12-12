@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { CircleAlert, House, ArrowLeft } from '@lucide/svelte';
 
-	const status = $page.status;
-	const message = $page.error?.message || 'Something went wrong';
+	const status = $derived(page.status);
+	const message = $derived(page.error?.message || 'Something went wrong');
 </script>
 
 <div class="flex flex-col items-center justify-center p-4">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Settings, Download, Bookmark, User } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 
@@ -10,7 +10,7 @@
 	];
 
 	function isActive(href: string) {
-		return $page.url.pathname === href;
+		return page.url.pathname === href;
 	}
 </script>
 

@@ -383,7 +383,7 @@
 				class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 			>
 				{#each blog as item, index}
-					<a href="/wtf" class="group">
+					<a href="/blog/getting-started-with-3d-printing" class="group">
 						<div class="rounded-lg">
 							<div
 								class="rounded-tl-lg rounded-tr-lg bg-cover bg-center"

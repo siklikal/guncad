@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Loader2, Eye, EyeOff } from '@lucide/svelte';
 	import { supabase } from '$lib/supabase';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 
 	let email = $state('');
@@ -34,8 +34,8 @@
 	// Check for callback errors and success messages
 	$effect(() => {
 		if (browser) {
-			const error = $page.url.searchParams.get('error');
-			const success = $page.url.searchParams.get('success');
+			const error = page.url.searchParams.get('error');
+			const success = page.url.searchParams.get('success');
 
 			if (error) {
 				emailError = decodeURIComponent(error);

@@ -5,7 +5,7 @@
 	import { initAuth } from '$lib/stores/auth';
 	import Header from '$lib/components/header.svelte';
 	import Footer from '$lib/components/footer.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 
 	let { children } = $props();
@@ -17,7 +17,7 @@
 
 	// Check if we're on an auth page (no header/padding needed)
 	const authPages = ['/login', '/signup', '/forgot-password'];
-	let isAuthPage = $derived(browser && authPages.includes($page.url.pathname));
+	let isAuthPage = $derived(browser && authPages.includes(page.url.pathname));
 	let showHeader = $derived(browser && !isAuthPage);
 </script>
 

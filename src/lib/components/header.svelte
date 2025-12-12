@@ -58,7 +58,10 @@
 				<div class="hidden md:flex">
 					{#if $user}
 						<DropdownMenu.Root>
-							<DropdownMenu.Trigger><Button>My Account</Button></DropdownMenu.Trigger>
+							<DropdownMenu.Trigger
+								><Button class="btn bg-blue-600 text-white hover:bg-blue-700">Account</Button
+								></DropdownMenu.Trigger
+							>
 							<DropdownMenu.Content class="w-[200px]">
 								<DropdownMenu.Group>
 									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/settings')}
@@ -122,7 +125,7 @@
 			{#if $user}
 				<!-- Account Section -->
 				<div class="border-b border-neutral-700 bg-neutral-800/50 p-4">
-					<p class="mb-3 text-sm font-semibold uppercase text-neutral-400">Account</p>
+					<p class="mb-3 text-sm font-semibold text-neutral-400 uppercase">Account</p>
 					<div class="space-y-1">
 						<a
 							href="/user/settings"
