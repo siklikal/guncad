@@ -1,4 +1,4 @@
-import type { PageServerLoad } from './$types';
+import type { PageLoad } from './$types';
 import { collections } from '$lib/data/collections';
 import { exclusive } from '$lib/data/exclusive';
 import { featured } from '$lib/data/featured';
@@ -190,27 +190,7 @@ async function fetchProjectCategory(
 	}
 }
 
-export const load: PageServerLoad = async ({ fetch }) => {
-	// CRITICAL PATH: Above-the-fold content (wait for these)
-	// Hero section + tags carousel are visible on initial page load
-	const [spotlights, tags] = await Promise.all([
-		fetchSpotlights(fetch),
-		fetchTags(fetch)
-	]);
-
-	// DEFERRED: Below-the-fold content (stream in progressively)
-	// These load in parallel but don't block initial page render
-	return {
-		// Critical: Loaded immediately (visible above the fold)
-		spotlightExclusive: spotlights.exclusive,
-		spotlightFeatured: spotlights.featured,
-		spotlightTrending: spotlights.trending,
-		tags: tags,
-
-		// Deferred: Stream in as they resolve (below the fold)
-		collections: fetchCollections(fetch),
-		exclusive: fetchProjectCategory(fetch, exclusive, 'exclusive'),
-		featured: fetchProjectCategory(fetch, featured, 'featured'),
-		trending: fetchProjectCategory(fetch, trending, 'trending')
-	};
+export const load: PageLoad = async () => {
+	// Return immediately - all data fetching happens in onMount
+	return {};
 };

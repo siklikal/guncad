@@ -7,6 +7,9 @@ async function scrapeProjectDetails(url: string): Promise<{
 	url: string;
 	views: number;
 	likes: number;
+	description: string;
+	tags: string[];
+	lbryUrl: string;
 	user: {
 		username: string;
 		avatar: string;
@@ -121,12 +124,49 @@ async function scrapeProjectDetails(url: string): Promise<{
 			}
 		}
 
+		// Extract description from .project-description
+		let description = '';
+		const descMatch = html.match(
+			/<div[^>]*class="[^"]*project-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+		);
+		if (descMatch) {
+			description = descMatch[1]
+				.replace(/<[^>]+>/g, '') // Remove HTML tags
+				.replace(/&amp;/g, '&')
+				.replace(/&lt;/g, '<')
+				.replace(/&gt;/g, '>')
+				.replace(/&quot;/g, '"')
+				.replace(/&#x27;/g, "'")
+				.replace(/&#039;/g, "'")
+				.trim();
+		}
+
+		// Extract tags from links that match /search?tag=
+		const tags: string[] = [];
+		const tagMatches = html.matchAll(/<a[^>]*href="\/search\?tag=([^"]+)"[^>]*>(.*?)<\/a>/gi);
+		for (const match of tagMatches) {
+			const tagName = decodeURIComponent(match[1]);
+			if (tagName && !tags.includes(tagName)) {
+				tags.push(tagName);
+			}
+		}
+
+		// Extract LBRY URL (lbry://...)
+		let lbryUrl = '';
+		const lbryMatch = html.match(/lbry:\/\/[^\s"'<>]+/i);
+		if (lbryMatch) {
+			lbryUrl = lbryMatch[0];
+		}
+
 		return {
 			title,
 			image: image || 'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
 			url,
 			views,
 			likes,
+			description,
+			tags,
+			lbryUrl,
 			user: {
 				username,
 				avatar
@@ -140,9 +180,12 @@ async function scrapeProjectDetails(url: string): Promise<{
 			url,
 			views: 0,
 			likes: 0,
+			description: '',
+			tags: [],
+			lbryUrl: '',
 			user: {
 				username: 'Unknown User',
-				avatar: 'https://guncadindex.com/static/images/default-avatar.png'
+				avatar: '/default-avatar.avif'
 			}
 		};
 	}

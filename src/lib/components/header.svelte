@@ -10,11 +10,23 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	let mobileMenuOpen = $state(false);
+	let searchQuery = $state('');
 
 	async function handleLogout() {
-		const { error } = await auth.signOut();
+		const { error} = await auth.signOut();
 		if (!error) {
 			goto('/login');
+		}
+	}
+
+	function handleSearch(e: Event) {
+		e.preventDefault();
+		const query = searchQuery.trim();
+		if (query) {
+			goto(`/explore?search=${encodeURIComponent(query)}`);
+			searchQuery = ''; // Clear search after submitting
+		} else {
+			goto('/explore');
 		}
 	}
 
@@ -50,11 +62,14 @@
 				<a href="/downloads" class="link-primary hidden capitalize md:flex">downloads</a>
 			</div>
 			<div class="flex flex-1 items-center justify-end gap-4">
-				<Input
-					type="text"
-					placeholder="Search..."
-					class="w-full md:flex lg:w-[340px] xl:w-[400px]"
-				/>
+				<form onsubmit={handleSearch} class="w-full md:flex lg:w-[340px] xl:w-[400px]">
+					<Input
+						type="text"
+						bind:value={searchQuery}
+						placeholder="Search..."
+						class="w-full"
+					/>
+				</form>
 				<div class="hidden md:flex">
 					{#if $user}
 						<DropdownMenu.Root>

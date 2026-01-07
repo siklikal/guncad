@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { user, auth, loading } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { readyToPrint } from '$lib/data/readyToPrint';
 	import { blog } from '$lib/data/blog';
 	import ModelSection from '$lib/components/ModelSection.svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
+	import { fetchHomepageData } from '$lib/api/homepage';
 	import Fa from 'svelte-fa';
 	import {
 		faChevronRight,
@@ -20,6 +22,23 @@
 	import ModelsSkeleton from '$lib/components/skeletons/ModelsSkeleton.svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	// Homepage data - start fetching immediately with pending promises to show skeletons
+	let pageData = $state<any>({
+		spotlightExclusive: { title: 'The Hello Kitty', image: '', url: '', views: 0, likes: 0 },
+		spotlightFeatured: { title: 'Chode Muzzle Brake', image: '', url: '', views: 0, likes: 0 },
+		spotlightTrending: { title: 'DeadTrolls PA6CF', image: '', url: '', views: 0, likes: 0 },
+		tags: [],
+		// Use pending promises to show skeletons immediately
+		collections: new Promise(() => {}),
+		exclusive: new Promise(() => {}),
+		featured: new Promise(() => {}),
+		trending: new Promise(() => {})
+	});
+
+	onMount(async () => {
+		pageData = await fetchHomepageData();
+	});
 
 	// Note: Authentication is now handled server-side in hooks.server.ts
 	// This prevents the flash of content before redirect that occurred with client-side checks
@@ -91,14 +110,14 @@
 				<div class="flex flex-1 flex-col gap-5 md:flex-row">
 					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-exclusive">
 						<a
-							href={data.spotlightExclusive.id
-								? `/details/${data.spotlightExclusive.id}`
-								: data.spotlightExclusive.url}
+							href={pageData.spotlightExclusive.id
+								? `/details/${pageData.spotlightExclusive.id}`
+								: pageData.spotlightExclusive.url}
 							class="group flex-1"
 						>
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
-								style="background-image: url('{data.spotlightExclusive.image}');"
+								style="background-image: url('{pageData.spotlightExclusive.image}');"
 							>
 								<div class="flex h-full flex-col justify-between">
 									<div class="flex justify-end">
@@ -132,14 +151,14 @@
 
 					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-featured">
 						<a
-							href={data.spotlightFeatured.id
-								? `/details/${data.spotlightFeatured.id}`
-								: data.spotlightFeatured.url}
+							href={pageData.spotlightFeatured.id
+								? `/details/${pageData.spotlightFeatured.id}`
+								: pageData.spotlightFeatured.url}
 							class="group flex-1"
 						>
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
-								style="background-image: url('{data.spotlightFeatured.image}');"
+								style="background-image: url('{pageData.spotlightFeatured.image}');"
 							>
 								<div class="flex h-full flex-col justify-between">
 									<div class="flex justify-end">
@@ -151,7 +170,7 @@
 										class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 									>
 										<p class="p-4 font-semibold group-hover:text-blue-600">
-											{data.spotlightFeatured.title}
+											{pageData.spotlightFeatured.title}
 										</p>
 									</div>
 								</div>
@@ -173,14 +192,14 @@
 
 					<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-trending">
 						<a
-							href={data.spotlightTrending.id
-								? `/details/${data.spotlightTrending.id}`
-								: data.spotlightTrending.url}
+							href={pageData.spotlightTrending.id
+								? `/details/${pageData.spotlightTrending.id}`
+								: pageData.spotlightTrending.url}
 							class="group flex-1"
 						>
 							<div
 								class="h-full flex-1 rounded-lg bg-cover bg-center"
-								style="background-image: url('{data.spotlightTrending.image}');"
+								style="background-image: url('{pageData.spotlightTrending.image}');"
 							>
 								<div class="flex h-full flex-col justify-between">
 									<div class="flex justify-end">
@@ -192,7 +211,7 @@
 										class="flex h-1/4 flex-col justify-end rounded-br-lg rounded-bl-lg bg-linear-to-t from-black via-black/70 to-transparent"
 									>
 										<p class="p-4 font-semibold group-hover:text-blue-600">
-											{data.spotlightTrending.title}
+											{pageData.spotlightTrending.title}
 										</p>
 									</div>
 								</div>
@@ -247,8 +266,8 @@
 						onscroll={updateGradients}
 						class="scrollbar-hide flex w-full space-x-2 overflow-x-auto scroll-smooth"
 					>
-						{#if data.tags && data.tags.length > 0}
-							{#each data.tags as tag}
+						{#if pageData.tags && pageData.tags.length > 0}
+							{#each pageData.tags as tag}
 								<a
 									href="/tag/{tag.slug}"
 									class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap md:px-4 md:py-3 md:text-sm {getTagColorClass(
@@ -277,7 +296,7 @@
 				<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
 			</div>
 
-			{#await data.collections}
+			{#await pageData.collections}
 				<div class="my-5">
 					<CollectionsSkeleton />
 				</div>
@@ -324,7 +343,7 @@
 				</div>
 			{/await}
 
-			{#await data.exclusive}
+			{#await pageData.exclusive}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
 						<a href="/" class="text-2xl leading-none font-bold">Exclusive</a>
@@ -338,7 +357,7 @@
 				<ModelSection title="Exclusive" items={exclusive} href="/exclusive" />
 			{/await}
 
-			{#await data.featured}
+			{#await pageData.featured}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
 						<a href="/" class="text-2xl leading-none font-bold">Featured</a>
@@ -352,7 +371,7 @@
 				<ModelSection title="Featured" items={featured} href="/featured" />
 			{/await}
 
-			{#await data.trending}
+			{#await pageData.trending}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
 						<a href="/" class="text-2xl leading-none font-bold">Trending</a>

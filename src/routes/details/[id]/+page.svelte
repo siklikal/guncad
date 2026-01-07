@@ -274,6 +274,14 @@
 							{/if}
 							{downloading ? 'Downloading...' : 'Download'}
 						</Button>
+						<Button size="lg" variant="outline" class="flex-1 xl:flex-none" onclick={performDownload} disabled={downloading}>
+							{#if downloading}
+								<span class="loading loading-sm loading-spinner"></span>
+							{:else}
+								<Fa icon={faDownload} class="text-sm" />
+							{/if}
+							{downloading ? 'Downloading...' : 'Debug DL'}
+						</Button>
 					</div>
 				</div>
 
