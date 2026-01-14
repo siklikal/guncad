@@ -28,6 +28,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('[Payment] Processing payment for model:', modelId);
 
 		// Build Authorize.Net API request
+		// IMPORTANT: Field order matters! 'order' must come before 'billTo'
 		const authNetRequest = {
 			createTransactionRequest: {
 				merchantAuthentication: {
@@ -43,12 +44,12 @@ export const POST: RequestHandler = async ({ request }) => {
 							dataValue: opaqueDataValue
 						}
 					},
-					billTo: {
-						zip: zipCode
-					},
 					order: {
 						description: `Model Purchase: ${modelTitle}`,
 						invoiceNumber: `MODEL-${modelId}-${Date.now()}`
+					},
+					billTo: {
+						zip: zipCode
 					}
 				}
 			}
