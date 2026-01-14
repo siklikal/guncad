@@ -31,6 +31,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// IMPORTANT: Field order matters in Authorize.Net XML schema!
 		// - 'order' must come before 'billTo'
 		// - Within 'order', 'invoiceNumber' must come before 'description'
+		// - invoiceNumber has a max length of 20 characters
 		const authNetRequest = {
 			createTransactionRequest: {
 				merchantAuthentication: {
@@ -47,7 +48,7 @@ export const POST: RequestHandler = async ({ request }) => {
 						}
 					},
 					order: {
-						invoiceNumber: `MODEL-${modelId}-${Date.now()}`,
+						invoiceNumber: `${Date.now()}`,
 						description: `Model Purchase: ${modelTitle}`
 					},
 					billTo: {
