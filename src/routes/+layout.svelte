@@ -23,6 +23,8 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<!-- Authorize.Net Accept.js SDK for secure payment tokenization -->
+	<script src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
 </svelte:head>
 
 <div class="flex min-h-screen flex-col">

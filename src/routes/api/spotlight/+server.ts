@@ -1,121 +1,64 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { spotlightExclusive } from '$lib/data/spotlightExlcusive';
-import { spotlightFeatured } from '$lib/data/spotlightFeatured';
-import { spotlightTrending } from '$lib/data/spotlightTrending';
+import { spotlight } from '$lib/data/spotlight';
 
-export const GET: RequestHandler = async ({ url: requestUrl }) => {
+export const GET: RequestHandler = async ({ url: requestUrl, fetch }) => {
 	try {
 		const type = requestUrl.searchParams.get('type') || 'exclusive';
 
-		// Select the appropriate URL based on type
-		const urlMap: Record<string, string[]> = {
-			exclusive: spotlightExclusive,
-			featured: spotlightFeatured,
-			trending: spotlightTrending
-		};
+		// Get the URL for the requested spotlight type
+		const spotlightUrl = spotlight[type as keyof typeof spotlight];
 
-		const urlArray = urlMap[type];
-		if (!urlArray || urlArray.length === 0) {
+		if (!spotlightUrl) {
 			throw new Error(`Invalid spotlight type: ${type}`);
 		}
 
-		const url = urlArray[0];
+		// Extract project ID from URL
+		const projectIdMatch = spotlightUrl.match(/detail\/(.+)$/);
+		if (!projectIdMatch) {
+			throw new Error('Could not extract project ID from spotlight URL');
+		}
+		const projectId = projectIdMatch[1];
 
-		// Fetch the HTML page
-		const response = await fetch(url);
+		// Use our project-details endpoint to fetch the data
+		const response = await fetch('/api/project-details', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ urls: [spotlightUrl] })
+		});
 
 		if (!response.ok) {
-			throw new Error('Failed to fetch spotlight page');
+			throw new Error('Failed to fetch spotlight data');
 		}
 
-		const html = await response.text();
+		const data = await response.json();
+		const project = data.projects[0];
 
-		// Extract title from <h1> inside .detailview-meta
-		const titleMatch = html.match(
-			/<div[^>]*class="[^"]*detailview-meta[^"]*"[^>]*>[\s\S]*?<h1[^>]*>(.*?)<\/h1>/i
-		);
-		let title = 'Unknown Title';
-		if (titleMatch) {
-			// Decode HTML entities
-			title = titleMatch[1]
-				.replace(/&amp;/g, '&')
-				.replace(/&lt;/g, '<')
-				.replace(/&gt;/g, '>')
-				.replace(/&quot;/g, '"')
-				.replace(/&#x27;/g, "'")
-				.replace(/&#039;/g, "'")
-				.trim();
+		if (!project) {
+			throw new Error('No project data returned');
 		}
 
-		// Extract image from .expanded-image img src
-		// The img tag itself has the expanded-image class
-		let image = '';
-		const expandedImageMatch = html.match(
-			/<img[^>]*class="[^"]*expanded-image[^"]*"[^>]*src="([^"]+)"/i
-		);
-		if (expandedImageMatch) {
-			image = expandedImageMatch[1];
-			// If image doesn't start with http, make it absolute
-			if (!image.startsWith('http')) {
-				const urlObj = new URL(url);
-				image = `${urlObj.protocol}//${urlObj.host}${image}`;
-			}
-		}
-
-		// Extract views and likes from .odysee-stats-wrapper
-		let views = 0;
-		let likes = 0;
-
-		// Extract the entire odysee-stats-wrapper div content
-		const statsWrapperMatch = html.match(
-			/<div[^>]*class="[^"]*odysee-stats-wrapper[^"]*"[^>]*>([\s\S]*?)<\/div>/i
-		);
-
-		if (statsWrapperMatch) {
-			const statsContent = statsWrapperMatch[1];
-
-			// Extract views - first span with SVG (eye icon)
-			const viewsMatch = statsContent.match(
-				/<span[^>]*>[\s\S]*?<svg[^>]*>[\s\S]*?<\/svg>\s*(\d+)/i
-			);
-			if (viewsMatch) {
-				views = parseInt(viewsMatch[1], 10);
-			}
-
-			// Extract likes - span with class "upvote"
-			const likesMatch = statsContent.match(
-				/<span[^>]*class="[^"]*upvote[^"]*"[^>]*>[\s\S]*?<svg[^>]*>[\s\S]*?<\/svg>\s*(\d+)/i
-			);
-			if (likesMatch) {
-				likes = parseInt(likesMatch[1], 10);
-			}
-		}
-
+		// Return in the expected format for spotlights
 		return json({
-			title,
-			image,
-			url,
-			views,
-			likes
+			title: project.title,
+			image: project.image,
+			url: spotlightUrl,
+			views: project.views,
+			likes: project.likes,
+			id: projectId
 		});
 	} catch (error) {
 		console.error('Error fetching spotlight:', error);
 
-		// Fallback URLs based on type
 		const type = requestUrl.searchParams.get('type') || 'exclusive';
-		const fallbackUrls: Record<string, string> = {
-			exclusive: spotlightExclusive[0] || 'https://guncadindex.com/detail/Hello-Kitty-Beta-1:7',
-			featured: spotlightFeatured[0] || 'https://guncadindex.com/detail/Chode-Muzzle-Brake:c',
-			trending: spotlightTrending[0] || 'https://guncadindex.com/detail/DeadTrolls-PA6CF-20:0'
-		};
+		const fallbackUrl = spotlight[type as keyof typeof spotlight] || spotlight.exclusive;
 
 		return json(
 			{
 				error: `Failed to fetch spotlight ${type}`,
-				title: 'The Hello Kitty',
+				title: 'Unknown Title',
 				image: 'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
-				url: fallbackUrls[type],
+				url: fallbackUrl,
 				views: 0,
 				likes: 0
 			},

@@ -17,6 +17,9 @@
 
 	let { data }: { data: PageData } = $props();
 
+	console.log('Page data:', data);
+	console.log('Project data:', data.project);
+
 	let downloading = $state(false);
 	let downloadError = $state('');
 	let showSubscriptionModal = $state(false);
@@ -229,7 +232,7 @@
 				{/if}
 
 				<div class="flex flex-col items-center gap-5 xl:flex-row">
-					<div class="flex w-full justify-between rounded-lg border border-neutral-400 xl:w-auto">
+					<!-- <div class="flex w-full justify-between rounded-lg border border-neutral-400 xl:w-auto">
 						<div
 							class="flex flex-1 items-center justify-center gap-1 rounded-tl-lg rounded-bl-lg border-r border-neutral-400 bg-neutral-800 p-3"
 						>
@@ -248,39 +251,55 @@
 							<Fa icon={faBookmark} class="text-sm text-neutral-400" />
 							<p class="text-sm font-semibold">{formatNumber(data.project.likes)}</p>
 						</div>
-						<a href="/" class="flex h-full flex-1">
-							<div
-								class="flex flex-1 items-center justify-center gap-1 rounded-tr-lg rounded-br-lg bg-neutral-800 p-3"
-							>
-								<Fa icon={faDownload} class="text-sm text-neutral-400" />
-								<p class="text-sm font-semibold">{formatNumber(data.project.likes)}</p>
-							</div>
-						</a>
-					</div>
+						<div
+							class="flex flex-1 items-center justify-center gap-1 rounded-tr-lg rounded-br-lg bg-neutral-800 p-3"
+						>
+							<Fa icon={faDownload} class="text-sm text-neutral-400" />
+							<p class="text-sm font-semibold">{formatNumber(data.project.likes)}</p>
+						</div>
+					</div> -->
 					<div class="flex w-full gap-2 xl:w-auto">
 						<Button size="lg" class="flex-1 xl:flex-none">
-							<Fa icon={faShare} class="text-sm" />
-							Share
+							{#snippet children()}
+								<Fa icon={faShare} class="text-sm" />
+								Share
+							{/snippet}
 						</Button>
 						<Button size="lg" class="flex-1 xl:flex-none">
-							<Fa icon={faBookmark} class="text-sm" />
-							Bookmark
+							{#snippet children()}
+								<Fa icon={faBookmark} class="text-sm" />
+								Bookmark
+							{/snippet}
 						</Button>
-						<Button size="lg" class="flex-1 xl:flex-none" onclick={handleDownload} disabled={downloading}>
-							{#if downloading}
-								<span class="loading loading-sm loading-spinner"></span>
-							{:else}
-								<Fa icon={faDownload} class="text-sm" />
-							{/if}
-							{downloading ? 'Downloading...' : 'Download'}
+						<Button
+							size="lg"
+							class="flex-1 xl:flex-none"
+							onclick={handleDownload}
+							disabled={downloading}
+						>
+							{#snippet children()}
+								{#if downloading}
+									<span class="loading loading-sm loading-spinner"></span>
+								{:else}
+									<Fa icon={faDownload} class="text-sm" />
+								{/if}
+								{downloading ? 'Processing...' : 'Buy'}
+							{/snippet}
 						</Button>
-						<Button size="lg" variant="outline" class="flex-1 xl:flex-none" onclick={performDownload} disabled={downloading}>
-							{#if downloading}
-								<span class="loading loading-sm loading-spinner"></span>
-							{:else}
-								<Fa icon={faDownload} class="text-sm" />
-							{/if}
-							{downloading ? 'Downloading...' : 'Debug DL'}
+						<Button
+							size="lg"
+							class="hidden flex-1 md:flex xl:flex-none"
+							onclick={performDownload}
+							disabled={downloading}
+						>
+							{#snippet children()}
+								{#if downloading}
+									<span class="loading loading-sm loading-spinner"></span>
+								{:else}
+									<Fa icon={faDownload} class="text-sm" />
+								{/if}
+								{downloading ? 'Downloading...' : 'Debug DL'}
+							{/snippet}
 						</Button>
 					</div>
 				</div>
@@ -313,4 +332,11 @@
 </div>
 
 <!-- Subscription Modal -->
-<SubscriptionModal bind:isOpen={showSubscriptionModal} onSuccess={handleSubscriptionSuccess} />
+{#if data.project}
+	<SubscriptionModal
+		bind:isOpen={showSubscriptionModal}
+		modelId={data.project.id}
+		modelTitle={data.project.title}
+		onSuccess={handleSubscriptionSuccess}
+	/>
+{/if}

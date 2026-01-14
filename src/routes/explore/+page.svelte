@@ -5,6 +5,7 @@
 	import Fa from 'svelte-fa';
 	import { faXmark } from '@fortawesome/free-solid-svg-icons';
 	import ModelCard from '$lib/components/ModelCard.svelte';
+	import { getProjectUrl } from '$lib/utils/projectUrl';
 
 	let { data }: { data: PageData } = $props();
 
@@ -232,7 +233,7 @@
 					views={project.views}
 					likes={project.likes}
 					user={project.user}
-					href={`/details/${project.id}`}
+					href={getProjectUrl(project.title, project.id)}
 				/>
 			{/each}
 		</div>
@@ -250,10 +251,6 @@
 				{:else}
 					<p class="text-sm text-neutral-500">Scroll for more</p>
 				{/if}
-			</div>
-		{:else if projects.length > 0}
-			<div class="mt-8 flex justify-center py-8">
-				<p class="text-sm text-neutral-500">No more models to load</p>
 			</div>
 		{/if}
 	{:else}

@@ -3,9 +3,12 @@ import type { PageLoad } from './$types';
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
 		const projectId = params.id;
+		console.log('Loading project with ID:', projectId);
 
-		// Fetch project details by scraping the GCI detail page
+		// Construct the GCI URL and fetch via our scraping endpoint
 		const gciUrl = `https://guncadindex.com/detail/${projectId}`;
+		console.log('Fetching from GCI:', gciUrl);
+
 		const response = await fetch('/api/project-details', {
 			method: 'POST',
 			headers: {
@@ -29,9 +32,9 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		const project = {
 			id: projectId,
 			title: projectData.title,
-			description: projectData.description,
+			description: projectData.description || 'No description available',
 			image: projectData.image,
-			tags: projectData.tags,
+			tags: projectData.tags || [],
 			views: projectData.views,
 			likes: projectData.likes,
 			releaseTime: null,
@@ -45,9 +48,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				size: 0,
 				hash: ''
 			},
+			badge: null,
 			url: gciUrl
 		};
 
+		console.log('Successfully loaded project:', project.title);
 		return {
 			project,
 			projectId

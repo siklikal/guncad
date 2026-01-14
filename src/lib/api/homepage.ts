@@ -22,7 +22,7 @@ interface TagsResponse {
 // Helper function to fetch tags
 export async function fetchTags() {
 	try {
-		const response = await fetch('https://guncadindex.com/api/tags/?format=json&limit=200', {
+		const response = await fetch('/api/tags?limit=200', {
 			headers: { Accept: 'application/json' }
 		});
 		if (!response.ok) throw new Error('Failed to fetch tags');
@@ -142,7 +142,7 @@ export async function fetchCollections() {
 	}
 }
 
-// Helper function to fetch project category
+// Helper function to fetch project category using curated URLs
 export async function fetchProjectCategory(
 	urls: string[],
 	badge: 'exclusive' | 'featured' | 'trending'

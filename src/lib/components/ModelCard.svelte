@@ -52,8 +52,8 @@
 	<div class="group">
 		<a {href} class="relative block" {title}>
 			<div
-				class="rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-				style="background-image: url('{image}'); aspect-ratio: 16 / 9;"
+				class="rounded-tl-lg rounded-tr-lg bg-blue-600 bg-cover bg-center"
+				style="background-image: url('{image}'); aspect-ratio: 14 / 9;"
 			>
 				{#if badgeConfig}
 					<div class="flex justify-end">
@@ -84,19 +84,5 @@
 				{user.username}
 			</p>
 		</a>
-		<div class="flex items-center justify-between gap-2.5 md:justify-end">
-			<div class="flex items-center gap-1">
-				<Fa icon={faEye} class="text-sm text-neutral-400" />
-				<p class="text-xs text-neutral-400">
-					{formatNumber(views)}
-				</p>
-			</div>
-			<div class="flex items-center gap-1">
-				<Fa icon={faHeart} class="text-sm text-neutral-400" />
-				<p class="text-xs text-neutral-400">
-					{formatNumber(likes)}
-				</p>
-			</div>
-		</div>
 	</div>
 </div>
