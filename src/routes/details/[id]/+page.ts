@@ -53,9 +53,29 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		};
 
 		console.log('Successfully loaded project:', project.title);
+
+		// Check if user has purchased this model
+		let hasPurchased = false;
+		try {
+			const purchaseResponse = await fetch('/api/check-purchase', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ modelId: projectId })
+			});
+
+			if (purchaseResponse.ok) {
+				const purchaseData = await purchaseResponse.json();
+				hasPurchased = purchaseData.purchased;
+			}
+		} catch (error) {
+			console.error('Failed to check purchase status:', error);
+			// Continue without purchase info if check fails
+		}
+
 		return {
 			project,
-			projectId
+			projectId,
+			hasPurchased
 		};
 	} catch (error) {
 		console.error('Error loading project details:', error);

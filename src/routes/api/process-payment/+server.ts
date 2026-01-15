@@ -3,9 +3,11 @@ import type { RequestHandler } from './$types';
 import {
 	ADN_API_LOGIN_ID,
 	ADN_TRANSACTION_KEY,
-	ADN_SANDBOX_API_ENDPOINT
+	ADN_SANDBOX_API_ENDPOINT,
+	SUPABASE_SERVICE_ROLE_KEY
 } from '$env/static/private';
-import { PUBLIC_MODEL_PURCHASE_PRICE } from '$env/static/public';
+import { PUBLIC_MODEL_PURCHASE_PRICE, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { createClient } from '@supabase/supabase-js';
 
 interface PaymentRequest {
 	opaqueDataDescriptor: string;
@@ -15,8 +17,14 @@ interface PaymentRequest {
 	zipCode: string;
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
+		const session = locals.session;
+
+		if (!session?.user) {
+			return json({ error: 'Unauthorized' }, { status: 401 });
+		}
+
 		const {
 			opaqueDataDescriptor,
 			opaqueDataValue,
@@ -25,7 +33,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			zipCode
 		}: PaymentRequest = await request.json();
 
-		console.log('[Payment] Processing payment for model:', modelId);
+		console.log('[Payment] Processing payment for model:', modelId, 'User:', session.user.id);
 
 		// Build Authorize.Net API request
 		// IMPORTANT: Field order matters in Authorize.Net XML schema!
@@ -81,8 +89,28 @@ export const POST: RequestHandler = async ({ request }) => {
 				// Payment approved
 				console.log('[Payment] Payment approved:', transactionResponse.transId);
 
-				// TODO: Record purchase in database
-				// TODO: Grant download access to user
+				// Record payment in Supabase
+				const supabase = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+				const { error: dbError } = await supabase.from('payments').insert({
+					user_id: session.user.id,
+					model_id: modelId,
+										amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
+					currency: 'USD',
+					status: 'completed',
+					payment_type: 'model',
+					authorize_net_transaction_id: transactionResponse.transId,
+					authorize_net_response_code: transactionResponse.responseCode,
+					authorize_net_auth_code: transactionResponse.authCode,
+					authorize_net_message: 'Payment successful'
+				});
+
+				if (dbError) {
+					console.error('[Payment] Failed to record payment in database:', dbError);
+					// Don't fail the request - payment was successful
+				} else {
+					console.log('[Payment] Payment recorded in database');
+				}
 
 				return json({
 					success: true,
@@ -113,10 +141,12 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	} catch (error) {
 		console.error('[Payment] Error processing payment:', error);
+		const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+		console.error('[Payment] Error details:', errorMessage);
 		return json(
 			{
 				success: false,
-				error: 'Internal server error'
+				error: errorMessage
 			},
 			{ status: 500 }
 		);

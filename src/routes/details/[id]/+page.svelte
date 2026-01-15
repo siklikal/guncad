@@ -9,8 +9,10 @@
 		faFire,
 		faBookmark,
 		faShare,
-		faDownload
+		faDownload,
+		faShoppingCart
 	} from '@fortawesome/free-solid-svg-icons';
+	import { Check } from 'lucide-svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
@@ -21,8 +23,11 @@
 	console.log('Project data:', data.project);
 
 	let downloading = $state(false);
+	let debugDownloading = $state(false);
 	let downloadError = $state('');
 	let showSubscriptionModal = $state(false);
+	let hasPurchased = $state(data.hasPurchased || false);
+	let showSuccessAnimation = $state(false);
 
 	function formatNumber(num: number): string {
 		return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
@@ -161,11 +166,34 @@
 
 	const badgeConfig = data.project?.badge ? getBadgeConfig(data.project.badge) : null;
 
-	// Handle successful subscription
+	// Handle buy button click - immediately show modal
+	function handleBuyClick() {
+		showSubscriptionModal = true;
+	}
+
+	// Handle successful payment
 	async function handleSubscriptionSuccess() {
 		showSubscriptionModal = false;
-		// Retry download after successful subscription
-		await handleDownload();
+
+		// Show success animation
+		showSuccessAnimation = true;
+		setTimeout(() => {
+			showSuccessAnimation = false;
+			hasPurchased = true;
+		}, 2000);
+	}
+
+	// Handle debug download button (separate from buy button)
+	async function handleDebugDownload() {
+		if (!data.project || debugDownloading) return;
+		debugDownloading = true;
+		downloadError = '';
+
+		try {
+			await performDownload();
+		} finally {
+			debugDownloading = false;
+		}
 	}
 </script>
 
@@ -271,34 +299,52 @@
 								Bookmark
 							{/snippet}
 						</Button>
-						<Button
-							size="lg"
-							class="flex-1 xl:flex-none"
-							onclick={handleDownload}
-							disabled={downloading}
-						>
-							{#snippet children()}
-								{#if downloading}
-									<span class="loading loading-sm loading-spinner"></span>
-								{:else}
-									<Fa icon={faDownload} class="text-sm" />
-								{/if}
-								{downloading ? 'Processing...' : 'Buy'}
-							{/snippet}
-						</Button>
+
+						{#if hasPurchased}
+							<!-- Download button (shown after purchase) -->
+							<Button
+								size="lg"
+								class="flex-1 xl:flex-none"
+								onclick={handleDownload}
+								disabled={downloading}
+							>
+								{#snippet children()}
+									{#if downloading}
+										<span class="loading loading-sm loading-spinner"></span>
+									{:else}
+										<Fa icon={faDownload} class="text-sm" />
+									{/if}
+									{downloading ? 'Downloading...' : 'Download'}
+								{/snippet}
+							</Button>
+						{:else}
+							<!-- Buy button (shown before purchase) -->
+							<Button
+								size="lg"
+								class="flex-1 xl:flex-none"
+								onclick={handleBuyClick}
+							>
+								{#snippet children()}
+									<Fa icon={faShoppingCart} class="text-sm" />
+									Buy
+								{/snippet}
+							</Button>
+						{/if}
+
+						<!-- Debug download button -->
 						<Button
 							size="lg"
 							class="hidden flex-1 md:flex xl:flex-none"
-							onclick={performDownload}
-							disabled={downloading}
+							onclick={handleDebugDownload}
+							disabled={debugDownloading}
 						>
 							{#snippet children()}
-								{#if downloading}
+								{#if debugDownloading}
 									<span class="loading loading-sm loading-spinner"></span>
 								{:else}
 									<Fa icon={faDownload} class="text-sm" />
 								{/if}
-								{downloading ? 'Downloading...' : 'Debug DL'}
+								{debugDownloading ? 'Downloading...' : 'Debug DL'}
 							{/snippet}
 						</Button>
 					</div>
@@ -330,6 +376,23 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Success Animation Overlay -->
+{#if showSuccessAnimation}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="animate-in zoom-in-95 duration-300 flex flex-col items-center gap-4">
+			<div class="flex h-24 w-24 items-center justify-center rounded-full bg-green-500">
+				<Check class="h-12 w-12 text-white animate-in zoom-in-95 delay-150" />
+			</div>
+			<h2 class="text-2xl font-bold text-white">Payment Successful!</h2>
+			<p class="text-neutral-300">You can now download this model</p>
+		</div>
+	</div>
+{/if}
 
 <!-- Subscription Modal -->
 {#if data.project}

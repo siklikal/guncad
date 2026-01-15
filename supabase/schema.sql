@@ -1,6 +1,10 @@
--- Payment System Database Schema
--- Created: 2025-12-12
--- Purpose: Support Authorize.Net subscription and per-model payment system
+-- ============================================================================
+-- GUNCAD COMPLETE DATABASE SCHEMA
+-- ============================================================================
+-- This is the complete database schema for GunCAD.
+-- Run this file to set up the database from scratch.
+-- Last updated: 2025-01-15
+-- ============================================================================
 
 -- ============================================================================
 -- SUBSCRIPTIONS TABLE
