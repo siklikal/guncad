@@ -92,10 +92,21 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				// Record payment in Supabase
 				const supabase = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-				const { error: dbError } = await supabase.from('payments').insert({
+				// Test connection
+				console.log('[Payment] Supabase URL:', PUBLIC_SUPABASE_URL);
+				console.log('[Payment] Service role key exists:', !!SUPABASE_SERVICE_ROLE_KEY);
+
+				console.log('[Payment] Recording payment with data:', {
 					user_id: session.user.id,
 					model_id: modelId,
-										amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
+					amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
+					transaction_id: transactionResponse.transId
+				});
+
+				const { data: insertData, error: dbError } = await supabase.from('payments').insert({
+					user_id: session.user.id,
+					model_id: modelId,
+					amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
 					currency: 'USD',
 					status: 'completed',
 					payment_type: 'model',
@@ -103,13 +114,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					authorize_net_response_code: transactionResponse.responseCode,
 					authorize_net_auth_code: transactionResponse.authCode,
 					authorize_net_message: 'Payment successful'
-				});
+				}).select();
 
 				if (dbError) {
 					console.error('[Payment] Failed to record payment in database:', dbError);
+					console.error('[Payment] Error details:', JSON.stringify(dbError, null, 2));
 					// Don't fail the request - payment was successful
 				} else {
-					console.log('[Payment] Payment recorded in database');
+					console.log('[Payment] Payment recorded in database successfully:', insertData);
 				}
 
 				return json({
