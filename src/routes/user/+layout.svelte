@@ -17,7 +17,7 @@
 <div class="container mx-auto flex">
 	<!-- Sidebar -->
 	<aside class="hidden w-64 border-r border-border bg-card md:block">
-		<div class="sticky top-16 px-6">
+		<div class="sticky top-16 p-6">
 			<h2 class="mb-4 text-lg font-semibold">Account</h2>
 			<nav class="space-y-1">
 				{#each navItems as item}
