@@ -28,6 +28,54 @@
 	let showSubscriptionModal = $state(false);
 	let hasPurchased = $state(data.hasPurchased || false);
 	let showSuccessAnimation = $state(false);
+	let isBookmarked = $state(false);
+	let bookmarkLoading = $state(false);
+
+	// Check bookmark status on mount
+	$effect(() => {
+		if (data.project) {
+			checkBookmarkStatus();
+		}
+	});
+
+	async function checkBookmarkStatus() {
+		try {
+			const response = await fetch('/api/bookmarks/check', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ modelId: data.project?.id })
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				isBookmarked = result.bookmarked;
+			}
+		} catch (error) {
+			console.error('Failed to check bookmark status:', error);
+		}
+	}
+
+	async function toggleBookmark() {
+		if (!data.project || bookmarkLoading) return;
+
+		bookmarkLoading = true;
+		try {
+			const response = await fetch('/api/bookmarks/toggle', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ modelId: data.project.id })
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				isBookmarked = result.bookmarked;
+			}
+		} catch (error) {
+			console.error('Failed to toggle bookmark:', error);
+		} finally {
+			bookmarkLoading = false;
+		}
+	}
 
 	function formatNumber(num: number): string {
 		return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
@@ -311,9 +359,23 @@
 								Share
 							{/snippet}
 						</Button>
-						<Button size="lg" class="flex-1 xl:flex-none">
+						<Button
+							size="lg"
+							class="flex-1 xl:flex-none"
+							onclick={toggleBookmark}
+							disabled={bookmarkLoading}
+						>
 							{#snippet children()}
-								<Fa icon={faBookmark} class="text-sm" />
+								<span class="inline-block w-4">
+									{#if bookmarkLoading}
+										<div class="spinner"></div>
+									{:else}
+										<Fa
+											icon={faBookmark}
+											class="text-sm {isBookmarked ? 'text-red-500' : ''}"
+										/>
+									{/if}
+								</span>
 								Bookmark
 							{/snippet}
 						</Button>

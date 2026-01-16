@@ -202,12 +202,20 @@
 				<span>Search: <span class="font-semibold">{searchQuery}</span></span>
 				<Fa icon={faXmark} class="text-lg" />
 			</button>
-			<p class="mt-2 text-sm text-neutral-400">{count} results found</p>
+			{#if initialLoading}
+				<div class="mt-2 h-5 w-32 animate-pulse rounded bg-neutral-700"></div>
+			{:else}
+				<p class="mt-2 text-sm text-neutral-400">{count} results found</p>
+			{/if}
 		</div>
 	{:else}
 		<div class="mb-6">
 			<h1 class="text-3xl font-bold md:text-4xl">Latest Releases</h1>
-			<p class="mt-2 text-neutral-400">{count} models available</p>
+			{#if initialLoading}
+				<div class="mt-2 h-6 w-48 animate-pulse rounded bg-neutral-700"></div>
+			{:else}
+				<p class="mt-2 text-neutral-400">{count} models available</p>
+			{/if}
 		</div>
 	{/if}
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Fa from 'svelte-fa';
-	import { faDownload, faShoppingCart, faCalendar } from '@fortawesome/free-solid-svg-icons';
+	import { faDownload, faShoppingCart, faCalendar, faBookmark } from '@fortawesome/free-solid-svg-icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { onMount } from 'svelte';
 
@@ -13,10 +13,12 @@
 		currency: string;
 		purchased_at: string;
 		transaction_id: string;
+		isBookmarked?: boolean;
 	}
 
 	// Track which model is currently downloading
 	let downloadingModel = $state<string | null>(null);
+	let bookmarkingModel = $state<string | null>(null);
 	let purchases = $state<Purchase[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -32,6 +34,9 @@
 
 			const data = await response.json();
 			purchases = data.purchases || [];
+
+			// Check bookmark status for each purchase
+			await checkAllBookmarks();
 		} catch (err) {
 			console.error('Error loading purchases:', err);
 			error = 'Failed to load your purchases';
@@ -39,6 +44,50 @@
 			loading = false;
 		}
 	});
+
+	async function checkAllBookmarks() {
+		for (let i = 0; i < purchases.length; i++) {
+			try {
+				const response = await fetch('/api/bookmarks/check', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ modelId: purchases[i].model_id })
+				});
+
+				if (response.ok) {
+					const result = await response.json();
+					purchases[i].isBookmarked = result.bookmarked;
+				}
+			} catch (error) {
+				console.error('Failed to check bookmark status:', error);
+			}
+		}
+	}
+
+	async function toggleBookmark(modelId: string) {
+		if (bookmarkingModel) return;
+
+		bookmarkingModel = modelId;
+		try {
+			const response = await fetch('/api/bookmarks/toggle', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ modelId })
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				const purchase = purchases.find((p) => p.model_id === modelId);
+				if (purchase) {
+					purchase.isBookmarked = result.bookmarked;
+				}
+			}
+		} catch (error) {
+			console.error('Failed to toggle bookmark:', error);
+		} finally {
+			bookmarkingModel = null;
+		}
+	}
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -111,32 +160,6 @@
 	}
 </script>
 
-<style>
-	.spinner {
-		border: 2px solid rgba(0, 0, 0, 0.1);
-		border-top-color: black;
-		border-radius: 50%;
-		width: 16px;
-		height: 16px;
-		animation: spin 0.6s linear infinite;
-		display: inline-block;
-	}
-
-	.spinner-lg {
-		width: 48px;
-		height: 48px;
-		border-width: 3px;
-		border-color: rgba(255, 255, 255, 0.3);
-		border-top-color: white;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-</style>
-
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
 		<h1 class="mb-2 text-4xl font-bold">My Downloads</h1>
@@ -152,10 +175,14 @@
 			{error}
 		</div>
 	{:else if purchases.length === 0}
-		<div class="flex flex-col items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800/50 py-16">
+		<div
+			class="flex flex-col items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800/50 px-6 py-16"
+		>
 			<Fa icon={faShoppingCart} class="mb-4 text-4xl text-neutral-600" />
 			<h2 class="mb-2 text-xl font-semibold text-neutral-300">No purchases yet</h2>
-			<p class="text-neutral-400">You haven't purchased any models. Browse the catalog to find models you'd like to download.</p>
+			<p class="text-center text-neutral-400">
+				You haven't purchased any models. Explore to find models you'd like to download.
+			</p>
 		</div>
 	{:else}
 		<!-- Desktop Table View -->
@@ -164,10 +191,10 @@
 				<thead class="bg-neutral-800">
 					<tr>
 						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Model</th>
-						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300"
-							>Purchase Date</th
+						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Purchase Date</th
 						>
 						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Price</th>
+						<th class="px-6 py-4 text-center text-sm font-semibold text-neutral-300">Bookmark</th>
 						<th class="px-6 py-4 text-right text-sm font-semibold text-neutral-300">Action</th>
 					</tr>
 				</thead>
@@ -198,6 +225,27 @@
 								<span class="font-semibold text-green-400"
 									>{formatPrice(purchase.amount, purchase.currency)}</span
 								>
+							</td>
+							<td class="px-6 py-4 text-center">
+								<Button
+									size="sm"
+									variant="ghost"
+									onclick={() => toggleBookmark(purchase.model_id)}
+									disabled={bookmarkingModel === purchase.model_id}
+								>
+									{#snippet children()}
+										<span class="inline-block w-4">
+											{#if bookmarkingModel === purchase.model_id}
+												<div class="spinner"></div>
+											{:else}
+												<Fa
+													icon={faBookmark}
+													class="text-sm {purchase.isBookmarked ? 'text-red-500' : ''}"
+												/>
+											{/if}
+										</span>
+									{/snippet}
+								</Button>
 							</td>
 							<td class="px-6 py-4 text-right">
 								<Button
@@ -245,24 +293,70 @@
 						>
 					</div>
 
-					<Button
-						class="w-full"
-						onclick={() => handleDownload(purchase.model_id, purchase.model_title)}
-						disabled={downloadingModel === purchase.model_id}
-					>
-						{#snippet children()}
-							<span class="inline-block w-4">
-								{#if downloadingModel === purchase.model_id}
-									<div class="spinner"></div>
-								{:else}
-									<Fa icon={faDownload} class="text-sm" />
-								{/if}
-							</span>
-							Download
-						{/snippet}
-					</Button>
+					<div class="flex gap-2">
+						<Button
+							variant="outline"
+							onclick={() => toggleBookmark(purchase.model_id)}
+							disabled={bookmarkingModel === purchase.model_id}
+						>
+							{#snippet children()}
+								<span class="inline-block w-4">
+									{#if bookmarkingModel === purchase.model_id}
+										<div class="spinner"></div>
+									{:else}
+										<Fa
+											icon={faBookmark}
+											class="text-sm {purchase.isBookmarked ? 'text-red-500' : ''}"
+										/>
+									{/if}
+								</span>
+							{/snippet}
+						</Button>
+						<Button
+							class="flex-1"
+							onclick={() => handleDownload(purchase.model_id, purchase.model_title)}
+							disabled={downloadingModel === purchase.model_id}
+						>
+							{#snippet children()}
+								<span class="inline-block w-4">
+									{#if downloadingModel === purchase.model_id}
+										<div class="spinner"></div>
+									{:else}
+										<Fa icon={faDownload} class="text-sm" />
+									{/if}
+								</span>
+								Download
+							{/snippet}
+						</Button>
+					</div>
 				</div>
 			{/each}
 		</div>
 	{/if}
 </div>
+
+<style>
+	.spinner {
+		border: 2px solid rgba(0, 0, 0, 0.1);
+		border-top-color: black;
+		border-radius: 50%;
+		width: 16px;
+		height: 16px;
+		animation: spin 0.6s linear infinite;
+		display: inline-block;
+	}
+
+	.spinner-lg {
+		width: 48px;
+		height: 48px;
+		border-width: 3px;
+		border-color: rgba(255, 255, 255, 0.3);
+		border-top-color: white;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

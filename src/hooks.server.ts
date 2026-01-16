@@ -45,8 +45,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.session = session;
 
 	// Define protected routes (routes that require authentication)
-	const protectedRoutes = ['/', '/details', '/collections', '/tag', '/exclusive', '/featured', '/trending', '/premium-models'];
-	const publicRoutes = ['/login', '/terms'];
+	const protectedRoutes = ['/', '/details', '/collections', '/tag', '/exclusive', '/featured', '/trending', '/premium-models', '/user'];
+	const publicRoutes = ['/login', '/terms', '/pending-approval'];
 
 	// Check if current path is a protected route
 	const isProtectedRoute = protectedRoutes.some((route) =>
@@ -58,9 +58,33 @@ export const handle: Handle = async ({ event, resolve }) => {
 		throw redirect(303, '/login');
 	}
 
-	// If accessing login page while already logged in, redirect to home
+	// If user has a session, check if they're approved
+	if (session && isProtectedRoute) {
+		const { data: profile } = await event.locals.supabase
+			.from('user_profiles')
+			.select('is_approved')
+			.eq('id', session.user.id)
+			.single();
+
+		// If user is not approved, redirect to pending approval page
+		if (profile && !profile.is_approved) {
+			throw redirect(303, '/pending-approval');
+		}
+	}
+
+	// If accessing login page while already logged in and approved, redirect to home
 	if (event.url.pathname === '/login' && session) {
-		throw redirect(303, '/');
+		const { data: profile } = await event.locals.supabase
+			.from('user_profiles')
+			.select('is_approved')
+			.eq('id', session.user.id)
+			.single();
+
+		if (profile?.is_approved) {
+			throw redirect(303, '/');
+		} else {
+			throw redirect(303, '/pending-approval');
+		}
 	}
 
 	return resolve(event);

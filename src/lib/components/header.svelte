@@ -58,8 +58,7 @@
 				<a href="/" class="site-logo text-xl font-bold text-white uppercase">Guncad</a>
 				<a href="/explore" class="link-primary hidden capitalize md:flex">explore</a>
 				<a href="/collections" class="link-primary hidden capitalize md:flex">collections</a>
-				<a href="/leaderboard" class="link-primary hidden capitalize md:flex">leaderboard</a>
-				<a href="/downloads" class="link-primary hidden capitalize md:flex">downloads</a>
+				<a href="/blog" class="link-primary hidden capitalize md:flex">blog</a>
 			</div>
 			<div class="flex flex-1 items-center justify-end gap-4">
 				<form onsubmit={handleSearch} class="w-full md:flex lg:w-[340px] xl:w-[400px]">
@@ -127,14 +126,9 @@
 				class="border-b border-neutral-700 p-4 capitalize hover:bg-neutral-800">collections</a
 			>
 			<a
-				href="/leaderboard"
+				href="/blog"
 				onclick={closeMobileMenu}
-				class="border-b border-neutral-700 p-4 capitalize hover:bg-neutral-800">leaderboard</a
-			>
-			<a
-				href="/downloads"
-				onclick={closeMobileMenu}
-				class="border-b border-neutral-700 p-4 capitalize hover:bg-neutral-800">downloads</a
+				class="border-b border-neutral-700 p-4 capitalize hover:bg-neutral-800">blog</a
 			>
 
 			{#if $user}
