@@ -1,13 +1,44 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import Fa from 'svelte-fa';
 	import { faDownload, faShoppingCart, faCalendar } from '@fortawesome/free-solid-svg-icons';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { onMount } from 'svelte';
 
-	let { data }: { data: PageData } = $props();
+	interface Purchase {
+		id: string;
+		model_id: string;
+		model_title: string;
+		model_image: string;
+		amount: number;
+		currency: string;
+		purchased_at: string;
+		transaction_id: string;
+	}
 
 	// Track which model is currently downloading
 	let downloadingModel = $state<string | null>(null);
+	let purchases = $state<Purchase[]>([]);
+	let loading = $state(true);
+	let error = $state<string | null>(null);
+
+	// Fetch purchases on mount
+	onMount(async () => {
+		try {
+			const response = await fetch('/api/user/purchases');
+
+			if (!response.ok) {
+				throw new Error('Failed to fetch purchases');
+			}
+
+			const data = await response.json();
+			purchases = data.purchases || [];
+		} catch (err) {
+			console.error('Error loading purchases:', err);
+			error = 'Failed to load your purchases';
+		} finally {
+			loading = false;
+		}
+	});
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -80,26 +111,51 @@
 	}
 </script>
 
+<style>
+	.spinner {
+		border: 2px solid rgba(0, 0, 0, 0.1);
+		border-top-color: black;
+		border-radius: 50%;
+		width: 16px;
+		height: 16px;
+		animation: spin 0.6s linear infinite;
+		display: inline-block;
+	}
+
+	.spinner-lg {
+		width: 48px;
+		height: 48px;
+		border-width: 3px;
+		border-color: rgba(255, 255, 255, 0.3);
+		border-top-color: white;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>
+
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
 		<h1 class="mb-2 text-4xl font-bold">My Downloads</h1>
 		<p class="text-neutral-400">Models you've purchased</p>
 	</div>
 
-	{#if data.error}
-		<div class="rounded-lg border border-red-500 bg-red-500/10 p-4 text-red-400">
-			{data.error}
+	{#if loading}
+		<div class="flex items-center justify-center py-16">
+			<div class="spinner spinner-lg"></div>
 		</div>
-	{:else if data.purchases.length === 0}
+	{:else if error}
+		<div class="rounded-lg border border-red-500 bg-red-500/10 p-4 text-red-400">
+			{error}
+		</div>
+	{:else if purchases.length === 0}
 		<div class="flex flex-col items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800/50 py-16">
 			<Fa icon={faShoppingCart} class="mb-4 text-4xl text-neutral-600" />
 			<h2 class="mb-2 text-xl font-semibold text-neutral-300">No purchases yet</h2>
-			<p class="mb-6 text-neutral-400">Purchase models to see them here</p>
-			<Button>
-				{#snippet children()}
-					Browse Models
-				{/snippet}
-			</Button>
+			<p class="text-neutral-400">You haven't purchased any models. Browse the catalog to find models you'd like to download.</p>
 		</div>
 	{:else}
 		<!-- Desktop Table View -->
@@ -116,7 +172,7 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-neutral-700">
-					{#each data.purchases as purchase}
+					{#each purchases as purchase}
 						<tr class="bg-neutral-800/30 hover:bg-neutral-800/50">
 							<td class="px-6 py-4">
 								<a
@@ -150,12 +206,14 @@
 									disabled={downloadingModel === purchase.model_id}
 								>
 									{#snippet children()}
-										{#if downloadingModel === purchase.model_id}
-											<span class="loading loading-sm loading-spinner"></span>
-										{:else}
-											<Fa icon={faDownload} class="text-sm" />
-										{/if}
-										{downloadingModel === purchase.model_id ? 'Downloading...' : 'Download'}
+										<span class="inline-block w-4">
+											{#if downloadingModel === purchase.model_id}
+												<div class="spinner"></div>
+											{:else}
+												<Fa icon={faDownload} class="text-sm" />
+											{/if}
+										</span>
+										Download
 									{/snippet}
 								</Button>
 							</td>
@@ -167,7 +225,7 @@
 
 		<!-- Mobile Card View -->
 		<div class="space-y-4 lg:hidden">
-			{#each data.purchases as purchase}
+			{#each purchases as purchase}
 				<div class="rounded-lg border border-neutral-700 bg-neutral-800/30 p-4">
 					<a href="/details/{purchase.model_id}" class="mb-4 block">
 						<div
@@ -193,12 +251,14 @@
 						disabled={downloadingModel === purchase.model_id}
 					>
 						{#snippet children()}
-							{#if downloadingModel === purchase.model_id}
-								<span class="loading loading-sm loading-spinner"></span>
-							{:else}
-								<Fa icon={faDownload} class="text-sm" />
-							{/if}
-							{downloadingModel === purchase.model_id ? 'Downloading...' : 'Download'}
+							<span class="inline-block w-4">
+								{#if downloadingModel === purchase.model_id}
+									<div class="spinner"></div>
+								{:else}
+									<Fa icon={faDownload} class="text-sm" />
+								{/if}
+							</span>
+							Download
 						{/snippet}
 					</Button>
 				</div>

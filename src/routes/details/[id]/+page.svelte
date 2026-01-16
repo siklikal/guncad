@@ -197,6 +197,24 @@
 	}
 </script>
 
+<style>
+	.spinner {
+		border: 2px solid rgba(0, 0, 0, 0.1);
+		border-top-color: black;
+		border-radius: 50%;
+		width: 16px;
+		height: 16px;
+		animation: spin 0.6s linear infinite;
+		display: inline-block;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>
+
 <div class="container mx-auto">
 	{#if data.error}
 		<div class="alert alert-error">
@@ -309,12 +327,14 @@
 								disabled={downloading}
 							>
 								{#snippet children()}
-									{#if downloading}
-										<span class="loading loading-sm loading-spinner"></span>
-									{:else}
-										<Fa icon={faDownload} class="text-sm" />
-									{/if}
-									{downloading ? 'Downloading...' : 'Download'}
+									<span class="inline-block w-4">
+										{#if downloading}
+											<div class="spinner"></div>
+										{:else}
+											<Fa icon={faDownload} class="text-sm" />
+										{/if}
+									</span>
+									Download
 								{/snippet}
 							</Button>
 						{:else}
@@ -339,12 +359,14 @@
 							disabled={debugDownloading}
 						>
 							{#snippet children()}
-								{#if debugDownloading}
-									<span class="loading loading-sm loading-spinner"></span>
-								{:else}
-									<Fa icon={faDownload} class="text-sm" />
-								{/if}
-								{debugDownloading ? 'Downloading...' : 'Debug DL'}
+								<span class="inline-block w-4">
+									{#if debugDownloading}
+										<div class="spinner"></div>
+									{:else}
+										<Fa icon={faDownload} class="text-sm" />
+									{/if}
+								</span>
+								Debug DL
 							{/snippet}
 						</Button>
 					</div>
