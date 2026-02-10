@@ -55,16 +55,50 @@
 	let count = $state(0);
 	let hasMore = $state(false);
 	let currentSearchQuery = $state(data.searchQuery);
+	let currentSort = $state(data.sort || (data.searchQuery ? 'rank' : 'newest'));
+	let currentTime = $state(data.time || 'alltime');
 
 	let observer: IntersectionObserver;
 	let loadMoreTrigger = $state<HTMLDivElement | undefined>(undefined);
 
 	let searchQuery = $derived(data.searchQuery);
+	let sortParam = $derived(data.sort || (data.searchQuery ? 'rank' : 'newest'));
+	let timeParam = $derived(data.time || 'alltime');
+
+	const sortOptions = [
+		{ value: 'rank', label: 'Relevance' },
+		{ value: 'updated', label: 'Updated' },
+		{ value: 'newest', label: 'Newest' },
+		{ value: 'biggest', label: 'Biggest' },
+		{ value: 'popular', label: 'Popular' },
+		{ value: 'unique', label: 'Unique' },
+		{ value: 'random', label: 'Random' }
+	];
+
+	const timeOptions = [
+		{ value: 'alltime', label: 'All Time' },
+		{ value: 'day', label: 'Today' },
+		{ value: 'week', label: 'This Week' },
+		{ value: 'month', label: 'This Month' },
+		{ value: 'season', label: 'This Season' },
+		{ value: 'year', label: 'This Year' }
+	];
+
+	let selectedSort = $state(sortParam);
+	let selectedTime = $state(timeParam);
 
 	// Fetch initial data when component mounts or search query changes
 	$effect(() => {
-		if (currentSearchQuery !== searchQuery) {
+		if (
+			currentSearchQuery !== searchQuery ||
+			currentSort !== sortParam ||
+			currentTime !== timeParam
+		) {
 			currentSearchQuery = searchQuery;
+			currentSort = sortParam;
+			currentTime = timeParam;
+			selectedSort = sortParam;
+			selectedTime = timeParam;
 			fetchProjects();
 		}
 	});
@@ -82,10 +116,12 @@
 			// Use local API endpoint which proxies to GCI
 			const apiUrl = new URL('/api/releases', window.location.origin);
 			apiUrl.searchParams.set('limit', '20');
+			apiUrl.searchParams.set('sort', currentSort);
+			apiUrl.searchParams.set('time', currentTime);
 
 			// Only add search if present
-			if (searchQuery) {
-				apiUrl.searchParams.set('search', searchQuery);
+			if (currentSearchQuery) {
+				apiUrl.searchParams.set('search', currentSearchQuery);
 			}
 
 			console.log('Fetching from:', apiUrl.toString());
@@ -157,10 +193,12 @@
 			const apiUrl = new URL('/api/releases', window.location.origin);
 			apiUrl.searchParams.set('limit', '20');
 			apiUrl.searchParams.set('offset', offset.toString());
+			apiUrl.searchParams.set('sort', currentSort);
+			apiUrl.searchParams.set('time', currentTime);
 
 			// Only add search if present
-			if (searchQuery) {
-				apiUrl.searchParams.set('search', searchQuery);
+			if (currentSearchQuery) {
+				apiUrl.searchParams.set('search', currentSearchQuery);
 			}
 
 			const response = await fetch(apiUrl.toString());
@@ -182,7 +220,33 @@
 	}
 
 	function clearSearch() {
-		goto('/explore');
+		const params = new URLSearchParams();
+		if (selectedSort) {
+			params.set('sort', selectedSort);
+		}
+		if (selectedTime) {
+			params.set('time', selectedTime);
+		}
+		const queryString = params.toString();
+		goto(queryString ? `/explore?${queryString}` : '/explore');
+	}
+
+	function updateFilters() {
+		const params = new URLSearchParams();
+		if (searchQuery) {
+			params.set('search', searchQuery);
+		}
+		if (selectedSort) {
+			params.set('sort', selectedSort);
+		}
+		if (selectedTime) {
+			params.set('time', selectedTime);
+		}
+		goto(`/explore?${params.toString()}`, {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
 	}
 </script>
 
@@ -194,28 +258,72 @@
 <div class="container mx-auto">
 	<!-- Active Search Badge -->
 	{#if searchQuery}
-		<div class="mb-6">
-			<button
-				onclick={clearSearch}
-				class="inline-flex items-center gap-2 rounded-full border border-neutral-600 bg-neutral-800 px-4 py-2 text-sm hover:bg-neutral-700"
-			>
-				<span>Search: <span class="font-semibold">{searchQuery}</span></span>
-				<Fa icon={faXmark} class="text-lg" />
-			</button>
-			{#if initialLoading}
-				<div class="mt-2 h-5 w-32 animate-pulse rounded bg-neutral-700"></div>
-			{:else}
-				<p class="mt-2 text-sm text-neutral-400">{count} results found</p>
-			{/if}
+		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+			<div>
+				<button
+					onclick={clearSearch}
+					class="inline-flex items-center gap-2 rounded-full border border-neutral-600 bg-neutral-800 px-4 py-2 text-sm hover:bg-neutral-700"
+				>
+					<span>Search: <span class="font-semibold">{searchQuery}</span></span>
+					<Fa icon={faXmark} class="text-lg" />
+				</button>
+				{#if initialLoading}
+					<div class="mt-2 h-5 w-32 animate-pulse rounded bg-neutral-700"></div>
+				{:else}
+					<p class="mt-2 text-sm text-neutral-400">{count} results found</p>
+				{/if}
+			</div>
+			<div class="flex items-center gap-2">
+				<select
+					class="rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white"
+					bind:value={selectedSort}
+					onchange={updateFilters}
+				>
+					{#each sortOptions as option}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
+				<select
+					class="rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white"
+					bind:value={selectedTime}
+					onchange={updateFilters}
+				>
+					{#each timeOptions as option}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
+			</div>
 		</div>
 	{:else}
-		<div class="mb-6">
-			<h1 class="text-3xl font-bold md:text-4xl">Latest Releases</h1>
-			{#if initialLoading}
-				<div class="mt-2 h-6 w-48 animate-pulse rounded bg-neutral-700"></div>
-			{:else}
-				<p class="mt-2 text-neutral-400">{count} models available</p>
-			{/if}
+		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+			<div>
+				<h1 class="text-3xl font-bold md:text-4xl">Latest Releases</h1>
+				{#if initialLoading}
+					<div class="mt-2 h-6 w-48 animate-pulse rounded bg-neutral-700"></div>
+				{:else}
+					<p class="mt-2 text-neutral-400">{count} models available</p>
+				{/if}
+			</div>
+			<div class="flex items-center gap-2">
+				<select
+					class="rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white"
+					bind:value={selectedSort}
+					onchange={updateFilters}
+				>
+					{#each sortOptions as option}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
+				<select
+					class="rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white"
+					bind:value={selectedTime}
+					onchange={updateFilters}
+				>
+					{#each timeOptions as option}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
+			</div>
 		</div>
 	{/if}
 

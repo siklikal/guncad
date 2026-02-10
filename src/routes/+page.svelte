@@ -4,21 +4,15 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { readyToPrint } from '$lib/data/readyToPrint';
-	import { blog } from '$lib/data/blog';
 	import ModelSection from '$lib/components/ModelSection.svelte';
-	import { getTagColorClass } from '$lib/utils/tagColors';
 	import { fetchHomepageData } from '$lib/api/homepage';
 	import Fa from 'svelte-fa';
 	import {
 		faChevronRight,
-		faChevronLeft,
 		faGem,
 		faStar,
-		faFire,
-		faEye
+		faFire
 	} from '@fortawesome/free-solid-svg-icons';
-	import TagsSkeleton from '$lib/components/skeletons/TagsSkeleton.svelte';
-	import CollectionsSkeleton from '$lib/components/skeletons/CollectionsSkeleton.svelte';
 	import ModelsSkeleton from '$lib/components/skeletons/ModelsSkeleton.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -31,9 +25,9 @@
 		tags: [],
 		// Use pending promises to show skeletons immediately
 		collections: new Promise(() => {}),
-		exclusive: new Promise(() => {}),
-		featured: new Promise(() => {}),
-		trending: new Promise(() => {})
+		popular: new Promise(() => {}),
+		newest: new Promise(() => {}),
+		recentlyUpdated: new Promise(() => {})
 	});
 
 	onMount(async () => {
@@ -50,25 +44,6 @@
 		}
 	}
 
-	let carouselElement: HTMLDivElement;
-	let showLeftGradient = $state(false);
-	let showRightGradient = $state(true);
-
-	function updateGradients() {
-		if (!carouselElement) return;
-
-		const { scrollLeft, scrollWidth, clientWidth } = carouselElement;
-		showLeftGradient = scrollLeft > 0;
-		showRightGradient = scrollLeft < scrollWidth - clientWidth - 10;
-	}
-
-	function scrollLeftBtn() {
-		carouselElement?.scrollBy({ left: -300, behavior: 'smooth' });
-	}
-
-	function scrollRightBtn() {
-		carouselElement?.scrollBy({ left: 300, behavior: 'smooth' });
-	}
 </script>
 
 <div>
@@ -122,7 +97,7 @@
 								<div class="flex h-full flex-col justify-between">
 									<div class="flex justify-end">
 										<div class="flex h-10 w-10 items-center justify-center rounded-bl-lg bg-black">
-											<Fa icon={faGem} class="text-xl text-blue-600" />
+											<Fa icon={faFire} class="text-xl text-red-600" />
 										</div>
 									</div>
 									<div
@@ -136,13 +111,13 @@
 							</div>
 						</a>
 						<a
-							href="/premium-models"
+							href="/search?sort=popular"
 							class="group/category flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 						>
 							<div class="flex items-center gap-2">
-								<Fa icon={faGem} class="text-lg text-blue-600" />
+								<Fa icon={faFire} class="text-lg text-red-600" />
 								<span class="text-sm text-white group-hover/category:text-blue-600"
-									>Exclusive Models</span
+									>Most Popular</span
 								>
 							</div>
 							<Fa icon={faChevronRight} />
@@ -177,13 +152,13 @@
 							</div>
 						</a>
 						<a
-							href="/premium-models"
+							href="/search?sort=newest"
 							class="group/category flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 						>
 							<div class="flex items-center gap-2">
 								<Fa icon={faStar} class="text-lg text-green-600" />
 								<span class="text-sm text-white group-hover/category:text-blue-600"
-									>Featured Models</span
+									>Newest</span
 								>
 							</div>
 							<Fa icon={faChevronRight} />
@@ -204,7 +179,7 @@
 								<div class="flex h-full flex-col justify-between">
 									<div class="flex justify-end">
 										<div class="flex h-10 w-10 items-center justify-center rounded-bl-lg bg-black">
-											<Fa icon={faFire} class="text-xl text-red-600" />
+											<Fa icon={faGem} class="text-xl text-blue-600" />
 										</div>
 									</div>
 									<div
@@ -218,13 +193,13 @@
 							</div>
 						</a>
 						<a
-							href="/premium-models"
+							href="/search?sort=updated"
 							class="group/category flex w-full items-center justify-between rounded-lg bg-black px-4 py-2 no-underline"
 						>
 							<div class="flex items-center gap-2">
-								<Fa icon={faFire} class="text-lg text-red-600" />
+								<Fa icon={faGem} class="text-lg text-blue-600" />
 								<span class="text-sm text-white group-hover/category:text-blue-600"
-									>Trending Models</span
+									>Recently Updated</span
 								>
 							</div>
 							<Fa icon={faChevronRight} />
@@ -233,156 +208,46 @@
 				</div>
 			</div>
 
-			<div class="mt-10 flex items-end gap-1.5">
-				<a href="/" class="text-2xl leading-none font-bold">Popular Tags</a>
-				<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-			</div>
-
-			<div class="my-5 flex items-center gap-4">
-				<button
-					onclick={scrollLeftBtn}
-					class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
-				>
-					<Fa icon={faChevronLeft} class="text-xl" />
-				</button>
-
-				<div class="relative w-full overflow-hidden">
-					<!-- Left gradient fade -->
-					{#if showLeftGradient}
-						<div
-							class="pointer-events-none absolute top-0 left-0 z-10 h-full w-24 bg-linear-to-r from-neutral-900 to-transparent"
-						></div>
-					{/if}
-
-					<!-- Right gradient fade -->
-					{#if showRightGradient}
-						<div
-							class="pointer-events-none absolute top-0 right-0 z-10 h-full w-24 bg-linear-to-l from-neutral-900 to-transparent"
-						></div>
-					{/if}
-
-					<div
-						bind:this={carouselElement}
-						onscroll={updateGradients}
-						class="scrollbar-hide flex w-full space-x-2 overflow-x-auto scroll-smooth"
-					>
-						{#if pageData.tags && pageData.tags.length > 0}
-							{#each pageData.tags as tag}
-								<a
-									href="/tag/{tag.slug}"
-									class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap md:px-4 md:py-3 md:text-sm {getTagColorClass(
-										tag.slug
-									)}"
-								>
-									{tag.name}
-								</a>
-							{/each}
-						{:else}
-							<p class="text-neutral-400">No tags available</p>
-						{/if}
-					</div>
-				</div>
-
-				<button
-					onclick={scrollRightBtn}
-					class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black"
-				>
-					<Fa icon={faChevronRight} class="text-xl" />
-				</button>
-			</div>
-
-			<div class="mt-10 flex items-end gap-1.5">
-				<a href="/" class="text-2xl leading-none font-bold">Collections</a>
-				<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-			</div>
-
-			{#await pageData.collections}
-				<div class="my-5">
-					<CollectionsSkeleton />
-				</div>
-			{:then collections}
-				<div
-					class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-				>
-					{#each collections as collection}
-					<a href="/collections/{collection.title.toLowerCase().replace(/\s+/g, '-')}" class="group">
-						<div class="rounded-lg">
-							<div
-								class="grid grid-cols-2 grid-rows-2 gap-0.5 rounded-tl-lg rounded-tr-lg bg-neutral-400 p-0.5"
-							>
-								{#each collection.fetchedImages.slice(0, 4) as image, idx}
-									<div
-										class="bg-cover bg-center {idx === 0
-											? 'rounded-tl-lg'
-											: idx === 1
-												? 'rounded-tr-lg'
-												: ''}"
-										style="background-image: url('{image}'); aspect-ratio: 16 / 9;"
-									></div>
-								{/each}
-							</div>
-							<div class="flex flex-col gap-2 rounded-br-lg rounded-bl-lg bg-black px-5 py-3">
-								<div class="flex items-center justify-between">
-									<p class="line-clamp-1 font-bold group-hover:text-blue-600">{collection.title}</p>
-									<div class="flex items-center gap-1">
-										<Fa icon={faEye} class="text-sm text-neutral-400" />
-										<p class="text-sm text-neutral-400">
-											{collection.views >= 1000
-												? `${(collection.views / 1000).toFixed(1)}k`
-												: collection.views}
-										</p>
-									</div>
-								</div>
-								<p class="line-clamp-3 text-xs leading-relaxed text-neutral-400">
-									{collection.description}
-								</p>
-							</div>
-						</div>
-					</a>
-					{/each}
-				</div>
-			{/await}
-
-			{#await pageData.exclusive}
+			{#await pageData.popular}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
-						<a href="/" class="text-2xl leading-none font-bold">Exclusive</a>
-						<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+						<a href="/search?sort=popular" class="text-2xl leading-none font-bold">Most Popular</a>
+						<a href="/search?sort=popular" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
 					</div>
 					<div class="my-5">
 						<ModelsSkeleton />
 					</div>
 				</div>
-			{:then exclusive}
-				<ModelSection title="Exclusive" items={exclusive} href="/exclusive" />
+			{:then popular}
+				<ModelSection title="Most Popular" items={popular} href="/search?sort=popular" />
 			{/await}
 
-			{#await pageData.featured}
+			{#await pageData.newest}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
-						<a href="/" class="text-2xl leading-none font-bold">Featured</a>
-						<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+						<a href="/search?sort=newest" class="text-2xl leading-none font-bold">Newest</a>
+						<a href="/search?sort=newest" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
 					</div>
 					<div class="my-5">
 						<ModelsSkeleton />
 					</div>
 				</div>
-			{:then featured}
-				<ModelSection title="Featured" items={featured} href="/featured" />
+			{:then newest}
+				<ModelSection title="Newest" items={newest} href="/search?sort=newest" />
 			{/await}
 
-			{#await pageData.trending}
+			{#await pageData.recentlyUpdated}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
-						<a href="/" class="text-2xl leading-none font-bold">Trending</a>
-						<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+						<a href="/search?sort=updated" class="text-2xl leading-none font-bold">Recently Updated</a>
+						<a href="/search?sort=updated" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
 					</div>
 					<div class="my-5">
 						<ModelsSkeleton />
 					</div>
 				</div>
-			{:then trending}
-				<ModelSection title="Trending" items={trending} href="/trending" />
+			{:then recentlyUpdated}
+				<ModelSection title="Recently Updated" items={recentlyUpdated} href="/search?sort=updated" />
 			{/await}
 
 			<div class="mt-10 hidden items-end gap-1.5">
@@ -432,36 +297,6 @@
 										<p class="text-sm text-white">Print</p>
 									</div>
 								</button>
-							</div>
-						</div>
-					</a>
-				{/each}
-			</div>
-
-			<div class="mt-10 flex items-end gap-1.5">
-				<a href="/" class="text-2xl leading-none font-bold">Blog</a>
-				<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-			</div>
-
-			<div
-				class="responsive-grid-5 my-5 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-			>
-				{#each blog as item, index}
-					<a href="/blog/getting-started-with-3d-printing" class="group">
-						<div class="rounded-lg">
-							<div
-								class="rounded-tl-lg rounded-tr-lg bg-cover bg-center"
-								style="background-image: url('images/blog-{index + 1}.jpg'); aspect-ratio: 16 / 9;"
-							></div>
-							<div
-								class="flex flex-1 flex-col justify-between gap-4 rounded-br-lg rounded-bl-lg bg-black p-4"
-							>
-								<p class="line-clamp-2 font-semibold group-hover:text-blue-600">
-									{item.title}
-								</p>
-								<p class="text-sm text-neutral-400">
-									{item.category}
-								</p>
 							</div>
 						</div>
 					</a>

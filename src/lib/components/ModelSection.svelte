@@ -26,6 +26,17 @@
 	}
 
 	let { title, items, href = '/collections', badge = null }: ModelSectionProps = $props();
+
+	// Debug: Log items to check if they have IDs
+	$effect(() => {
+		if (items && items.length > 0) {
+			console.log(`[ModelSection ${title}] First item:`, {
+				hasId: !!items[0].id,
+				id: items[0].id,
+				title: items[0].title
+			});
+		}
+	});
 </script>
 
 <div class="mt-10 flex items-end gap-1.5">

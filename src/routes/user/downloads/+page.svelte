@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Fa from 'svelte-fa';
-	import { faDownload, faShoppingCart, faCalendar, faBookmark } from '@fortawesome/free-solid-svg-icons';
+	import { faDownload, faShoppingCart, faCalendar } from '@fortawesome/free-solid-svg-icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { onMount } from 'svelte';
 
@@ -13,12 +13,10 @@
 		currency: string;
 		purchased_at: string;
 		transaction_id: string;
-		isBookmarked?: boolean;
 	}
 
 	// Track which model is currently downloading
 	let downloadingModel = $state<string | null>(null);
-	let bookmarkingModel = $state<string | null>(null);
 	let purchases = $state<Purchase[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -34,9 +32,6 @@
 
 			const data = await response.json();
 			purchases = data.purchases || [];
-
-			// Check bookmark status for each purchase
-			await checkAllBookmarks();
 		} catch (err) {
 			console.error('Error loading purchases:', err);
 			error = 'Failed to load your purchases';
@@ -44,50 +39,6 @@
 			loading = false;
 		}
 	});
-
-	async function checkAllBookmarks() {
-		for (let i = 0; i < purchases.length; i++) {
-			try {
-				const response = await fetch('/api/bookmarks/check', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ modelId: purchases[i].model_id })
-				});
-
-				if (response.ok) {
-					const result = await response.json();
-					purchases[i].isBookmarked = result.bookmarked;
-				}
-			} catch (error) {
-				console.error('Failed to check bookmark status:', error);
-			}
-		}
-	}
-
-	async function toggleBookmark(modelId: string) {
-		if (bookmarkingModel) return;
-
-		bookmarkingModel = modelId;
-		try {
-			const response = await fetch('/api/bookmarks/toggle', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ modelId })
-			});
-
-			if (response.ok) {
-				const result = await response.json();
-				const purchase = purchases.find((p) => p.model_id === modelId);
-				if (purchase) {
-					purchase.isBookmarked = result.bookmarked;
-				}
-			}
-		} catch (error) {
-			console.error('Failed to toggle bookmark:', error);
-		} finally {
-			bookmarkingModel = null;
-		}
-	}
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -194,7 +145,6 @@
 						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Purchase Date</th
 						>
 						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Price</th>
-						<th class="px-6 py-4 text-center text-sm font-semibold text-neutral-300">Bookmark</th>
 						<th class="px-6 py-4 text-right text-sm font-semibold text-neutral-300">Action</th>
 					</tr>
 				</thead>
@@ -225,27 +175,6 @@
 								<span class="font-semibold text-green-400"
 									>{formatPrice(purchase.amount, purchase.currency)}</span
 								>
-							</td>
-							<td class="px-6 py-4 text-center">
-								<Button
-									size="sm"
-									variant="ghost"
-									onclick={() => toggleBookmark(purchase.model_id)}
-									disabled={bookmarkingModel === purchase.model_id}
-								>
-									{#snippet children()}
-										<span class="inline-block w-4">
-											{#if bookmarkingModel === purchase.model_id}
-												<div class="spinner"></div>
-											{:else}
-												<Fa
-													icon={faBookmark}
-													class="text-sm {purchase.isBookmarked ? 'text-red-500' : ''}"
-												/>
-											{/if}
-										</span>
-									{/snippet}
-								</Button>
 							</td>
 							<td class="px-6 py-4 text-right">
 								<Button
@@ -293,42 +222,22 @@
 						>
 					</div>
 
-					<div class="flex gap-2">
-						<Button
-							variant="outline"
-							onclick={() => toggleBookmark(purchase.model_id)}
-							disabled={bookmarkingModel === purchase.model_id}
-						>
-							{#snippet children()}
-								<span class="inline-block w-4">
-									{#if bookmarkingModel === purchase.model_id}
-										<div class="spinner"></div>
-									{:else}
-										<Fa
-											icon={faBookmark}
-											class="text-sm {purchase.isBookmarked ? 'text-red-500' : ''}"
-										/>
-									{/if}
-								</span>
-							{/snippet}
-						</Button>
-						<Button
-							class="flex-1"
-							onclick={() => handleDownload(purchase.model_id, purchase.model_title)}
-							disabled={downloadingModel === purchase.model_id}
-						>
-							{#snippet children()}
-								<span class="inline-block w-4">
-									{#if downloadingModel === purchase.model_id}
-										<div class="spinner"></div>
-									{:else}
-										<Fa icon={faDownload} class="text-sm" />
-									{/if}
-								</span>
-								Download
-							{/snippet}
-						</Button>
-					</div>
+					<Button
+						class="w-full"
+						onclick={() => handleDownload(purchase.model_id, purchase.model_title)}
+						disabled={downloadingModel === purchase.model_id}
+					>
+						{#snippet children()}
+							<span class="inline-block w-4">
+								{#if downloadingModel === purchase.model_id}
+									<div class="spinner"></div>
+								{:else}
+									<Fa icon={faDownload} class="text-sm" />
+								{/if}
+							</span>
+							Download
+						{/snippet}
+					</Button>
 				</div>
 			{/each}
 		</div>

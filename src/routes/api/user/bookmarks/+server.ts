@@ -26,44 +26,63 @@ export const GET: RequestHandler = async ({ locals, fetch }) => {
 			return json({ error: 'Failed to fetch bookmarks' }, { status: 500 });
 		}
 
-		// Fetch project details for each bookmark from GCI
-		const bookmarksWithDetails = await Promise.all(
-			(bookmarks || []).map(async (bookmark) => {
-				try {
-					// Fetch project details from GCI
-					const gciUrl = `https://guncadindex.com/detail/${bookmark.model_id}`;
-					const projectResponse = await fetch('/api/project-details', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ urls: [gciUrl] })
-					});
+		// Batch fetch all project details from GCI in a single API call
+		let bookmarksWithDetails = [];
 
-					if (projectResponse.ok) {
-						const projectData = await projectResponse.json();
-						const project = projectData.projects[0];
+		if (bookmarks && bookmarks.length > 0) {
+			// Build array of all GCI URLs
+			const gciUrls = bookmarks.map(
+				(bookmark) => `https://guncadindex.com/detail/${bookmark.model_id}`
+			);
+
+			try {
+				// Single batched API call to fetch all project details
+				const projectResponse = await fetch('/api/project-details', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ urls: gciUrls })
+				});
+
+				if (projectResponse.ok) {
+					const projectData = await projectResponse.json();
+					const projects = projectData.projects;
+
+					// Map projects to bookmarks (order is preserved)
+					bookmarksWithDetails = bookmarks.map((bookmark, index) => {
+						const project = projects[index];
 
 						return {
 							id: bookmark.id,
 							model_id: bookmark.model_id,
 							model_title: project?.title || bookmark.model_id,
-							model_image: project?.image || 'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
+							model_image:
+								project?.image ||
+								'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
 							bookmarked_at: bookmark.created_at
 						};
-					}
-				} catch (error) {
-					console.error(`Failed to fetch details for ${bookmark.model_id}:`, error);
+					});
+				} else {
+					// If batch fetch fails, return bookmarks with fallback data
+					bookmarksWithDetails = bookmarks.map((bookmark) => ({
+						id: bookmark.id,
+						model_id: bookmark.model_id,
+						model_title: bookmark.model_id,
+						model_image: 'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
+						bookmarked_at: bookmark.created_at
+					}));
 				}
-
-				// Fallback if project details fetch fails
-				return {
+			} catch (error) {
+				console.error('[user/bookmarks] Failed to fetch project details:', error);
+				// Return bookmarks with fallback data
+				bookmarksWithDetails = bookmarks.map((bookmark) => ({
 					id: bookmark.id,
 					model_id: bookmark.model_id,
 					model_title: bookmark.model_id,
 					model_image: 'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
 					bookmarked_at: bookmark.created_at
-				};
-			})
-		);
+				}));
+			}
+		}
 
 		return json({ bookmarks: bookmarksWithDetails });
 	} catch (error) {

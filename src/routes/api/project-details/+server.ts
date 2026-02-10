@@ -10,36 +10,19 @@ async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch):
 	}
 
 	const lbryId = projectIdMatch[1]; // e.g., "Tiny-11:5"
-	const lbryUrl = `lbry://${lbryId}`; // e.g., "lbry://Tiny-11:5"
 
-	// Extract the claim name for search (part before the colon)
-	const claimName = lbryId.split(':')[0]; // e.g., "Tiny-11"
-
-	// Search GCI API using the claim name
-	const searchUrl = `https://guncadindex.com/api/releases/?format=json&query=${encodeURIComponent(claimName)}`;
-	const searchResponse = await serverFetch(searchUrl, {
+	// Use the direct GCI API endpoint for the specific release
+	// This is much more efficient than searching and filtering
+	const apiUrl = `https://guncadindex.com/api/releases/${lbryId}/`;
+	const response = await serverFetch(apiUrl, {
 		headers: { Accept: 'application/json' }
 	});
 
-	if (!searchResponse.ok) {
-		throw new Error(`GCI API search failed: ${searchResponse.status}`);
+	if (!response.ok) {
+		throw new Error(`GCI API failed: ${response.status}`);
 	}
 
-	const searchData = await searchResponse.json();
-
-	if (!searchData.results || searchData.results.length === 0) {
-		throw new Error(`No results found for: ${claimName}`);
-	}
-
-	// Find the exact match by LBRY URL
-	const release = searchData.results.find((r: any) => r.url_lbry === lbryUrl);
-
-	if (!release) {
-		// If no exact match, return the first result as fallback
-		console.warn(`No exact match for ${lbryUrl}, using first result`);
-		return searchData.results[0];
-	}
-
+	const release = await response.json();
 	return release;
 }
 

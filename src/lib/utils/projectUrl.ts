@@ -15,5 +15,5 @@ export function createProjectSlug(title: string, id: string): string {
  * Get the full URL path for a project details page
  */
 export function getProjectUrl(title: string, id: string): string {
-	return `/details/${createProjectSlug(title, id)}`;
+	return `/details/${id}`;
 }

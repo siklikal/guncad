@@ -1,7 +1,4 @@
 import { collections } from '$lib/data/collections';
-import { exclusive } from '$lib/data/exclusive';
-import { featured } from '$lib/data/featured';
-import { trending } from '$lib/data/trending';
 
 interface Tag {
 	id: string;
@@ -131,7 +128,6 @@ export async function fetchCollections() {
 		});
 
 		const collectionsWithImages = await Promise.all(collectionImagePromises);
-		console.log('Collections with images fetched:', collectionsWithImages.length);
 		return collectionsWithImages;
 	} catch (error) {
 		console.error('Error fetching collections:', error);
@@ -142,33 +138,36 @@ export async function fetchCollections() {
 	}
 }
 
-// Helper function to fetch project category using curated URLs
-export async function fetchProjectCategory(
-	urls: string[],
-	badge: 'exclusive' | 'featured' | 'trending'
+// Helper function to fetch projects by GCI API sort order
+export async function fetchSortedProjects(
+	sort: 'popular' | 'newest' | 'updated',
+	limit: number = 5
 ) {
 	try {
-		const response = await fetch('/api/project-details', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ urls })
+		const response = await fetch(`/api/gci-sorted?sort=${sort}&limit=${limit}`, {
+			headers: { 'Content-Type': 'application/json' }
 		});
 
 		if (!response.ok) {
-			console.error(`Failed to fetch ${badge} projects`);
+			console.error(`Failed to fetch ${sort} projects`);
 			return [];
 		}
 
 		const data = await response.json();
-		const projects = data.projects.map((project: any, index: number) => {
-			const projectId = urls[index].split('/detail/')[1];
-			return { ...project, badge, id: projectId };
-		});
+		console.log(`${sort} projects fetched:`, data.projects.length);
 
-		console.log(`${badge} projects fetched:`, projects.length);
-		return projects;
+		// Debug: Show first 3 newest projects
+		if (sort === 'newest' && data.projects.length > 0) {
+			const count = Math.min(3, data.projects.length);
+			console.log(`[DEBUG] First ${count} newest projects:`, data.projects.slice(0, count));
+		}
+
+		if (data.projects.length > 0) {
+			console.log(`${sort} first project sample:`, data.projects[0]);
+		}
+		return data.projects;
 	} catch (error) {
-		console.error(`Error fetching ${badge} projects:`, error);
+		console.error(`Error fetching ${sort} projects:`, error);
 		return [];
 	}
 }
@@ -182,10 +181,10 @@ export async function fetchHomepageData() {
 		spotlightFeatured: spotlights.featured,
 		spotlightTrending: spotlights.trending,
 		tags: tags,
-		// Start fetching below-the-fold content
+		// Start fetching below-the-fold content using GCI sort API
 		collections: fetchCollections(),
-		exclusive: fetchProjectCategory(exclusive, 'exclusive'),
-		featured: fetchProjectCategory(featured, 'featured'),
-		trending: fetchProjectCategory(trending, 'trending')
+		popular: fetchSortedProjects('popular', 5),
+		newest: fetchSortedProjects('newest', 5),
+		recentlyUpdated: fetchSortedProjects('updated', 5)
 	};
 }

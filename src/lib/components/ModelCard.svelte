@@ -78,7 +78,7 @@
 		<a href="/user/{user.username}" class="group/user flex min-w-0 items-center gap-1">
 			<div
 				class="h-6 w-6 shrink-0 rounded-full bg-cover bg-center"
-				style="background-image: url('{user.avatar}');"
+				style="background-image: url('{user.avatar && user.avatar !== 'https://guncadindex.com/static/images/default-avatar.png' ? user.avatar : '/images/default-avatar.avif'}');"
 			></div>
 			<p class="truncate text-xs text-neutral-400 group-hover/user:text-blue-600 md:text-sm">
 				{user.username}

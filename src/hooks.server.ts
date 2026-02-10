@@ -37,12 +37,23 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	});
 
-	// Get the current session from cookies
+	// Get the current user (validates JWT token with Supabase auth server)
 	const {
-		data: { session }
-	} = await event.locals.supabase.auth.getSession();
+		data: { user },
+		error
+	} = await event.locals.supabase.auth.getUser();
 
-	event.locals.session = session;
+	// Create session object from user if authenticated
+	event.locals.session = user
+		? {
+				user,
+				access_token: '',
+				refresh_token: '',
+				expires_in: 0,
+				expires_at: 0,
+				token_type: 'bearer'
+		  }
+		: null;
 
 	// Define protected routes (routes that require authentication)
 	const protectedRoutes = ['/', '/details', '/collections', '/tag', '/exclusive', '/featured', '/trending', '/premium-models', '/user'];
@@ -54,16 +65,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 	);
 
 	// If accessing a protected route without a session, redirect to login
-	if (isProtectedRoute && !session) {
+	if (isProtectedRoute && !event.locals.session) {
 		throw redirect(303, '/login');
 	}
 
 	// If user has a session, check if they're approved
-	if (session && isProtectedRoute) {
+	if (event.locals.session && isProtectedRoute) {
 		const { data: profile } = await event.locals.supabase
 			.from('user_profiles')
 			.select('is_approved')
-			.eq('id', session.user.id)
+			.eq('id', event.locals.session.user.id)
 			.single();
 
 		// If user is not approved, redirect to pending approval page
@@ -73,11 +84,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// If accessing login page while already logged in and approved, redirect to home
-	if (event.url.pathname === '/login' && session) {
+	if (event.url.pathname === '/login' && event.locals.session) {
 		const { data: profile } = await event.locals.supabase
 			.from('user_profiles')
 			.select('is_approved')
-			.eq('id', session.user.id)
+			.eq('id', event.locals.session.user.id)
 			.single();
 
 		if (profile?.is_approved) {

@@ -19,31 +19,34 @@
 
 	let { data }: { data: PageData } = $props();
 
-	console.log('Page data:', data);
-	console.log('Project data:', data.project);
-
 	let downloading = $state(false);
 	let debugDownloading = $state(false);
 	let downloadError = $state('');
 	let showSubscriptionModal = $state(false);
-	let hasPurchased = $state(data.hasPurchased || false);
 	let showSuccessAnimation = $state(false);
 	let isBookmarked = $state(false);
 	let bookmarkLoading = $state(false);
+	let project = $state<any>(null);
+	let hasPurchased = $state(false);
 
-	// Check bookmark status on mount
+	// Unwrap streaming promises when they resolve
 	$effect(() => {
-		if (data.project) {
-			checkBookmarkStatus();
-		}
+		Promise.all([data.project, data.hasPurchased]).then(([p, purchased]) => {
+			project = p;
+			hasPurchased = purchased;
+			if (p) {
+				checkBookmarkStatus();
+			}
+		});
 	});
 
 	async function checkBookmarkStatus() {
+		if (!project) return;
 		try {
 			const response = await fetch('/api/bookmarks/check', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ modelId: data.project?.id })
+				body: JSON.stringify({ modelId: project.id })
 			});
 
 			if (response.ok) {
@@ -56,14 +59,14 @@
 	}
 
 	async function toggleBookmark() {
-		if (!data.project || bookmarkLoading) return;
+		if (!project || bookmarkLoading) return;
 
 		bookmarkLoading = true;
 		try {
 			const response = await fetch('/api/bookmarks/toggle', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ modelId: data.project.id })
+				body: JSON.stringify({ modelId: project.id })
 			});
 
 			if (response.ok) {
@@ -103,7 +106,7 @@
 	 * 3. If no, show subscription modal
 	 */
 	async function handleDownload() {
-		if (!data.project || downloading) return;
+		if (!project || downloading) return;
 
 		downloading = true;
 		downloadError = '';
@@ -116,7 +119,7 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					modelId: data.project.id
+					modelId: project.id
 				})
 			});
 
@@ -163,7 +166,7 @@
 	 * Note: Does NOT open new tab, downloads directly to user's download folder
 	 */
 	async function performDownload() {
-		if (!data.project) return;
+		if (!project) return;
 
 		try {
 			// Request the file from our SvelteKit download endpoint
@@ -174,8 +177,8 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					uri: data.project.canonicalUrl,
-					fileName: data.project.source?.name || `${data.project.id}.zip`
+					uri: project.canonicalUrl,
+					fileName: project.source?.name || `${project.id}.zip`
 				})
 			});
 
@@ -189,7 +192,7 @@
 			const fileNameMatch = contentDisposition?.match(/filename="(.+)"/);
 			const fileName = fileNameMatch
 				? fileNameMatch[1]
-				: data.project.source?.name || `${data.project.id}.zip`;
+				: project.source?.name || `${project.id}.zip`;
 
 			// Convert response to blob and trigger browser download
 			// Using blob URL prevents opening new tab and downloads file directly
@@ -212,7 +215,7 @@
 		}
 	}
 
-	const badgeConfig = data.project?.badge ? getBadgeConfig(data.project.badge) : null;
+	let badgeConfig = $derived(project?.badge ? getBadgeConfig(project.badge) : null);
 
 	// Handle buy button click - immediately show modal
 	function handleBuyClick() {
@@ -233,7 +236,7 @@
 
 	// Handle debug download button (separate from buy button)
 	async function handleDebugDownload() {
-		if (!data.project || debugDownloading) return;
+		if (!project || debugDownloading) return;
 		debugDownloading = true;
 		downloadError = '';
 
@@ -245,36 +248,42 @@
 	}
 </script>
 
-<style>
-	.spinner {
-		border: 2px solid rgba(0, 0, 0, 0.1);
-		border-top-color: black;
-		border-radius: 50%;
-		width: 16px;
-		height: 16px;
-		animation: spin 0.6s linear infinite;
-		display: inline-block;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-</style>
-
 <div class="container mx-auto">
-	{#if data.error}
-		<div class="alert alert-error">
-			<span>{data.error}</span>
+	{#await data.project}
+		<!-- Loading skeleton -->
+		<div class="grid gap-8 lg:grid-cols-2">
+			<div class="relative">
+				<div class="animate-pulse rounded-lg bg-neutral-800" style="aspect-ratio: 16 / 9;"></div>
+			</div>
+			<div class="flex flex-col gap-6">
+				<div>
+					<div class="mb-4 h-10 w-3/4 animate-pulse rounded bg-neutral-800"></div>
+					<div class="h-8 w-32 animate-pulse rounded-full bg-neutral-800"></div>
+				</div>
+				<div class="flex flex-wrap gap-2">
+					<div class="h-8 w-20 animate-pulse rounded-full bg-neutral-800"></div>
+					<div class="h-8 w-24 animate-pulse rounded-full bg-neutral-800"></div>
+					<div class="h-8 w-16 animate-pulse rounded-full bg-neutral-800"></div>
+				</div>
+				<div class="flex gap-2">
+					<div class="h-12 flex-1 animate-pulse rounded bg-neutral-800"></div>
+					<div class="h-12 flex-1 animate-pulse rounded bg-neutral-800"></div>
+				</div>
+				<div class="h-48 animate-pulse rounded-lg bg-neutral-800"></div>
+			</div>
 		</div>
-	{:else if data.project}
+	{:then loadedProject}
+		{#if !loadedProject}
+			<div class="alert alert-error">
+				<span>Project not found</span>
+			</div>
+		{:else}
 		<div class="grid gap-8 lg:grid-cols-2">
 			<!-- Project Image -->
 			<div class="relative">
 				<div
 					class="rounded-lg bg-cover bg-center"
-					style="background-image: url('{data.project.image}'); aspect-ratio: 16 / 9;"
+					style="background-image: url('{loadedProject.image}'); aspect-ratio: 16 / 9;"
 				>
 					{#if badgeConfig}
 						<div class="flex justify-end">
@@ -290,29 +299,32 @@
 			<!-- Project Details -->
 			<div class="flex flex-col gap-6">
 				<div>
-					<h1 class="mb-4 text-3xl font-bold md:text-4xl">{data.project.title}</h1>
+					<h1 class="mb-4 text-3xl font-bold md:text-4xl">{loadedProject.title}</h1>
 
 					<!-- User Info -->
 					<a
-						href="/user/{data.project.user.username}"
+						href="/user/{loadedProject.user.username}"
 						class="group/user inline-flex items-center gap-1.5"
 					>
 						<div
 							class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center"
-							style="background-image: url('{data.project.user.avatar ||
-								'/images/default-avatar.avif'}');"
+							style="background-image: url('{loadedProject.user.avatar &&
+							loadedProject.user.avatar !==
+								'https://guncadindex.com/static/images/default-avatar.png'
+								? loadedProject.user.avatar
+								: '/images/default-avatar.avif'}');"
 						></div>
 						<div>
 							<p class="text-sm font-semibold group-hover/user:text-blue-600">
-								{data.project.user.username}
+								{loadedProject.user.username}
 							</p>
 						</div>
 					</a>
 				</div>
 
-				{#if data.project.tags && data.project.tags.length > 0}
+				{#if loadedProject.tags && loadedProject.tags.length > 0}
 					<div class="flex flex-wrap gap-2">
-						{#each data.project.tags as tag}
+						{#each loadedProject.tags as tag}
 							<a
 								href="/tag/{tag.toLowerCase()}"
 								class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap {getTagColorClass(
@@ -331,25 +343,25 @@
 							class="flex flex-1 items-center justify-center gap-1 rounded-tl-lg rounded-bl-lg border-r border-neutral-400 bg-neutral-800 p-3"
 						>
 							<Fa icon={faEye} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(data.project.views)}</p>
+							<p class="text-sm font-semibold">{formatNumber(loadedProject.views)}</p>
 						</div>
 						<div
 							class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
 						>
 							<Fa icon={faHeart} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(data.project.likes)}</p>
+							<p class="text-sm font-semibold">{formatNumber(loadedProject.likes)}</p>
 						</div>
 						<div
 							class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
 						>
 							<Fa icon={faBookmark} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(data.project.likes)}</p>
+							<p class="text-sm font-semibold">{formatNumber(loadedProject.likes)}</p>
 						</div>
 						<div
 							class="flex flex-1 items-center justify-center gap-1 rounded-tr-lg rounded-br-lg bg-neutral-800 p-3"
 						>
 							<Fa icon={faDownload} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(data.project.likes)}</p>
+							<p class="text-sm font-semibold">{formatNumber(loadedProject.likes)}</p>
 						</div>
 					</div> -->
 					<div class="flex w-full gap-2 xl:w-auto">
@@ -370,10 +382,7 @@
 									{#if bookmarkLoading}
 										<div class="spinner"></div>
 									{:else}
-										<Fa
-											icon={faBookmark}
-											class="text-sm {isBookmarked ? 'text-red-500' : ''}"
-										/>
+										<Fa icon={faBookmark} class="text-sm {isBookmarked ? 'text-red-500' : ''}" />
 									{/if}
 								</span>
 								Bookmark
@@ -401,11 +410,7 @@
 							</Button>
 						{:else}
 							<!-- Buy button (shown before purchase) -->
-							<Button
-								size="lg"
-								class="flex-1 xl:flex-none"
-								onclick={handleBuyClick}
-							>
+							<Button size="lg" class="flex-1 xl:flex-none" onclick={handleBuyClick}>
 								{#snippet children()}
 									<Fa icon={faShoppingCart} class="text-sm" />
 									Buy
@@ -414,7 +419,7 @@
 						{/if}
 
 						<!-- Debug download button -->
-						<Button
+						<!-- <Button
 							size="lg"
 							class="hidden flex-1 md:flex xl:flex-none"
 							onclick={handleDebugDownload}
@@ -430,7 +435,7 @@
 								</span>
 								Debug DL
 							{/snippet}
-						</Button>
+						</Button> -->
 					</div>
 				</div>
 
@@ -444,21 +449,13 @@
 					<p
 						class="wrap-brea-words rounded-lg bg-black p-6 text-sm leading-relaxed whitespace-pre-wrap"
 					>
-						{data.project.description || 'No description available'}
+						{loadedProject.description || 'No description available'}
 					</p>
 				</div>
 			</div>
 		</div>
-	{:else}
-		<div class="flex h-64 items-center justify-center">
-			<div class="text-center">
-				<div
-					class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"
-				></div>
-				<p class="text-neutral-400">Loading project...</p>
-			</div>
-		</div>
-	{/if}
+		{/if}
+	{/await}
 </div>
 
 <!-- Success Animation Overlay -->
@@ -468,9 +465,9 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<div class="animate-in zoom-in-95 duration-300 flex flex-col items-center gap-4">
+		<div class="flex animate-in flex-col items-center gap-4 duration-300 zoom-in-95">
 			<div class="flex h-24 w-24 items-center justify-center rounded-full bg-green-500">
-				<Check class="h-12 w-12 text-white animate-in zoom-in-95 delay-150" />
+				<Check class="h-12 w-12 animate-in text-white delay-150 zoom-in-95" />
 			</div>
 			<h2 class="text-2xl font-bold text-white">Payment Successful!</h2>
 			<p class="text-neutral-300">You can now download this model</p>
@@ -479,11 +476,29 @@
 {/if}
 
 <!-- Subscription Modal -->
-{#if data.project}
+{#if project}
 	<SubscriptionModal
 		bind:isOpen={showSubscriptionModal}
-		modelId={data.project.id}
-		modelTitle={data.project.title}
+		modelId={project.id}
+		modelTitle={project.title}
 		onSuccess={handleSubscriptionSuccess}
 	/>
 {/if}
+
+<style>
+	.spinner {
+		border: 2px solid rgba(0, 0, 0, 0.1);
+		border-top-color: black;
+		border-radius: 50%;
+		width: 16px;
+		height: 16px;
+		animation: spin 0.6s linear infinite;
+		display: inline-block;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>
