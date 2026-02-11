@@ -7,6 +7,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
+	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
 
@@ -38,3 +39,5 @@
 		{@render children()}
 	{/if}
 </div>
+
+<Toaster richColors />

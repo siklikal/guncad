@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Settings, Download, Bookmark, User } from '@lucide/svelte';
+	import { Settings, Download, Bookmark, Heart, User } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 
 	const navItems = [
 		{ href: '/user/settings', label: 'Settings', icon: Settings },
 		{ href: '/user/downloads', label: 'Downloads', icon: Download },
+		{ href: '/user/likes', label: 'Liked', icon: Heart },
 		{ href: '/user/bookmarks', label: 'Bookmarks', icon: Bookmark }
 	];
 

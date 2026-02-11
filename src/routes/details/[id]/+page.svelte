@@ -8,14 +8,15 @@
 		faStar,
 		faFire,
 		faBookmark,
-		faShare,
 		faDownload,
-		faShoppingCart
+		faShoppingCart,
+		faCopy
 	} from '@fortawesome/free-solid-svg-icons';
 	import { Check } from 'lucide-svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
 
@@ -28,6 +29,14 @@
 	let bookmarkLoading = $state(false);
 	let project = $state<any>(null);
 	let hasPurchased = $state(false);
+	let isLiked = $state(false);
+	let likeLoading = $state(false);
+	let projectStats = $state<{ views: number; likes: number; bookmarks: number; downloads: number }>({
+		views: 0,
+		likes: 0,
+		bookmarks: 0,
+		downloads: 0
+	});
 
 	// Unwrap streaming promises when they resolve
 	$effect(() => {
@@ -36,9 +45,54 @@
 			hasPurchased = purchased;
 			if (p) {
 				checkBookmarkStatus();
+				fetchProjectStats();
+				trackView();
 			}
 		});
 	});
+
+	// Track view when project loads
+	async function trackView() {
+		if (!project) return;
+		try {
+			const response = await fetch('/api/project-stats/track-view', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					projectId: project.id,
+					baseViews: project.views || 0,
+					baseLikes: project.likes || 0
+				})
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				if (result.stats) {
+					projectStats = { ...projectStats, ...result.stats };
+				}
+			}
+
+		} catch (error) {
+			console.error('Failed to track view:', error);
+		}
+	}
+
+	// Fetch project stats and like status
+	async function fetchProjectStats() {
+		if (!project) return;
+		try {
+			const response = await fetch(`/api/project-stats/${project.id}`);
+			if (response.ok) {
+				const result = await response.json();
+				if (result.stats) {
+					projectStats = { ...projectStats, ...result.stats };
+				}
+				isLiked = result.isLiked || false;
+			}
+		} catch (error) {
+			console.error('Failed to fetch project stats:', error);
+		}
+	}
 
 	async function checkBookmarkStatus() {
 		if (!project) return;
@@ -77,6 +131,35 @@
 			console.error('Failed to toggle bookmark:', error);
 		} finally {
 			bookmarkLoading = false;
+		}
+	}
+
+	async function toggleLike() {
+		if (!project || likeLoading) return;
+
+		likeLoading = true;
+		try {
+			const response = await fetch('/api/project-stats/toggle-like', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ projectId: project.id })
+			});
+
+			if (response.status === 401) {
+				return;
+			}
+
+			if (response.ok) {
+				const result = await response.json();
+				isLiked = result.isLiked;
+				if (result.stats) {
+					projectStats = { ...projectStats, ...result.stats };
+				}
+			}
+		} catch (error) {
+			console.error('Failed to toggle like:', error);
+		} finally {
+			likeLoading = false;
 		}
 	}
 
@@ -206,7 +289,18 @@
 			document.body.removeChild(a);
 			window.URL.revokeObjectURL(url); // Clean up blob URL
 
-			// TODO: Record download in downloads table
+			// Track download in project stats
+			try {
+				await fetch('/api/project-stats/track-download', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ projectId: project.id })
+				});
+				// Refresh stats after download
+				fetchProjectStats();
+			} catch (error) {
+				console.error('Failed to track download:', error);
+			}
 		} catch (error) {
 			downloadError = error instanceof Error ? error.message : 'Failed to download file';
 			console.error('Download error:', error);
@@ -246,6 +340,20 @@
 			debugDownloading = false;
 		}
 	}
+
+	// Handle copy URL to clipboard
+	async function handleCopyUrl() {
+		if (!project) return;
+
+		try {
+			const url = window.location.href;
+			await navigator.clipboard.writeText(url);
+			toast.success('Link copied to clipboard!');
+		} catch (error) {
+			console.error('Failed to copy URL:', error);
+			toast.error('Failed to copy link');
+		}
+	}
 </script>
 
 <div class="container mx-auto">
@@ -278,148 +386,174 @@
 				<span>Project not found</span>
 			</div>
 		{:else}
-		<div class="grid gap-8 lg:grid-cols-2">
-			<!-- Project Image -->
-			<div class="relative">
-				<div
-					class="rounded-lg bg-cover bg-center"
-					style="background-image: url('{loadedProject.image}'); aspect-ratio: 16 / 9;"
-				>
-					{#if badgeConfig}
-						<div class="flex justify-end">
-							<div class="flex items-center gap-2 rounded-tr-lg rounded-bl-lg bg-black px-4 py-2">
-								<Fa icon={badgeConfig.icon} class={`text-lg ${badgeConfig.color}`} />
-								<span class="text-sm font-semibold text-white">{badgeConfig.label}</span>
+			<div class="grid gap-8 lg:grid-cols-2">
+				<!-- Project Image -->
+				<div class="relative">
+					<div
+						class="rounded-lg bg-cover bg-center"
+						style="background-image: url('{loadedProject.image}'); aspect-ratio: 16 / 9;"
+					>
+						{#if badgeConfig}
+							<div class="flex justify-end">
+								<div class="flex items-center gap-2 rounded-tr-lg rounded-bl-lg bg-black px-4 py-2">
+									<Fa icon={badgeConfig.icon} class={`text-lg ${badgeConfig.color}`} />
+									<span class="text-sm font-semibold text-white">{badgeConfig.label}</span>
+								</div>
+							</div>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Project Details -->
+				<div class="flex flex-col gap-6">
+					<div>
+						<h1 class="mb-4 text-3xl font-bold md:text-4xl">{loadedProject.title}</h1>
+
+						<!-- User Info -->
+						<a
+							href="/user/{loadedProject.user.username}"
+							class="group/user inline-flex items-center gap-1.5"
+						>
+							<div
+								class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center"
+								style="background-image: url('{loadedProject.user.avatar &&
+								loadedProject.user.avatar !==
+									'https://guncadindex.com/static/images/default-avatar.png'
+									? loadedProject.user.avatar
+									: '/images/default-avatar.avif'}');"
+							></div>
+							<div>
+								<p class="text-sm font-semibold group-hover/user:text-blue-600">
+									{loadedProject.user.username}
+								</p>
+							</div>
+						</a>
+					</div>
+
+					<!-- {#if loadedProject.tags && loadedProject.tags.length > 0}
+						<div class="flex flex-wrap gap-2">
+							{#each loadedProject.tags as tag}
+								<a
+									href="/tag/{tag.toLowerCase()}"
+									class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap {getTagColorClass(
+										tag.toLowerCase()
+									)}"
+								>
+									{tag}
+								</a>
+							{/each}
+						</div>
+					{/if} -->
+
+					<div class="flex flex-col items-center justify-between gap-5 2xl:flex-row">
+						<div class="flex w-full justify-between rounded-lg border border-neutral-400 xl:w-auto">
+							<div
+								class="flex flex-1 items-center justify-center gap-1 rounded-tl-lg rounded-bl-lg border-r border-neutral-400 bg-neutral-800 p-3"
+							>
+								<Fa icon={faEye} class="text-sm text-neutral-400" />
+								<p class="text-sm font-semibold">
+									{formatNumber(projectStats.views || loadedProject.views)}
+								</p>
+							</div>
+							<div
+								class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
+							>
+								<Fa icon={faHeart} class="text-sm text-neutral-400" />
+								<p class="text-sm font-semibold">
+									{formatNumber(projectStats.likes || loadedProject.likes)}
+								</p>
+							</div>
+							<div
+								class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
+							>
+								<Fa icon={faBookmark} class="text-sm text-neutral-400" />
+								<p class="text-sm font-semibold">{formatNumber(projectStats.bookmarks)}</p>
+							</div>
+							<div
+								class="flex flex-1 items-center justify-center gap-1 rounded-tr-lg rounded-br-lg bg-neutral-800 p-3"
+							>
+								<Fa icon={faDownload} class="text-sm text-neutral-400" />
+								<p class="text-sm font-semibold">{formatNumber(projectStats.downloads)}</p>
 							</div>
 						</div>
-					{/if}
-				</div>
-			</div>
 
-			<!-- Project Details -->
-			<div class="flex flex-col gap-6">
-				<div>
-					<h1 class="mb-4 text-3xl font-bold md:text-4xl">{loadedProject.title}</h1>
-
-					<!-- User Info -->
-					<a
-						href="/user/{loadedProject.user.username}"
-						class="group/user inline-flex items-center gap-1.5"
-					>
-						<div
-							class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center"
-							style="background-image: url('{loadedProject.user.avatar &&
-							loadedProject.user.avatar !==
-								'https://guncadindex.com/static/images/default-avatar.png'
-								? loadedProject.user.avatar
-								: '/images/default-avatar.avif'}');"
-						></div>
-						<div>
-							<p class="text-sm font-semibold group-hover/user:text-blue-600">
-								{loadedProject.user.username}
-							</p>
-						</div>
-					</a>
-				</div>
-
-				{#if loadedProject.tags && loadedProject.tags.length > 0}
-					<div class="flex flex-wrap gap-2">
-						{#each loadedProject.tags as tag}
-							<a
-								href="/tag/{tag.toLowerCase()}"
-								class="shrink-0 rounded-full border bg-black px-3 py-2 text-xs whitespace-nowrap {getTagColorClass(
-									tag.toLowerCase()
-								)}"
-							>
-								{tag}
-							</a>
-						{/each}
-					</div>
-				{/if}
-
-				<div class="flex flex-col items-center gap-5 xl:flex-row">
-					<!-- <div class="flex w-full justify-between rounded-lg border border-neutral-400 xl:w-auto">
-						<div
-							class="flex flex-1 items-center justify-center gap-1 rounded-tl-lg rounded-bl-lg border-r border-neutral-400 bg-neutral-800 p-3"
-						>
-							<Fa icon={faEye} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(loadedProject.views)}</p>
-						</div>
-						<div
-							class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
-						>
-							<Fa icon={faHeart} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(loadedProject.likes)}</p>
-						</div>
-						<div
-							class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
-						>
-							<Fa icon={faBookmark} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(loadedProject.likes)}</p>
-						</div>
-						<div
-							class="flex flex-1 items-center justify-center gap-1 rounded-tr-lg rounded-br-lg bg-neutral-800 p-3"
-						>
-							<Fa icon={faDownload} class="text-sm text-neutral-400" />
-							<p class="text-sm font-semibold">{formatNumber(loadedProject.likes)}</p>
-						</div>
-					</div> -->
-					<div class="flex w-full gap-2 xl:w-auto">
-						<Button size="lg" class="flex-1 xl:flex-none">
-							{#snippet children()}
-								<Fa icon={faShare} class="text-sm" />
-								Share
-							{/snippet}
-						</Button>
-						<Button
-							size="lg"
-							class="flex-1 xl:flex-none"
-							onclick={toggleBookmark}
-							disabled={bookmarkLoading}
-						>
-							{#snippet children()}
-								<span class="inline-block w-4">
-									{#if bookmarkLoading}
-										<div class="spinner"></div>
-									{:else}
-										<Fa icon={faBookmark} class="text-sm {isBookmarked ? 'text-red-500' : ''}" />
-									{/if}
-								</span>
-								Bookmark
-							{/snippet}
-						</Button>
-
-						{#if hasPurchased}
-							<!-- Download button (shown after purchase) -->
+						<div class="flex w-full gap-2 xl:w-auto">
+							<Button size="lg" class="flex-1 xl:flex-none" onclick={handleCopyUrl}>
+								{#snippet children()}
+									<Fa icon={faCopy} class="text-sm" />
+									Copy Link
+								{/snippet}
+							</Button>
 							<Button
 								size="lg"
 								class="flex-1 xl:flex-none"
-								onclick={handleDownload}
-								disabled={downloading}
+								onclick={toggleBookmark}
+								disabled={bookmarkLoading}
 							>
 								{#snippet children()}
 									<span class="inline-block w-4">
-										{#if downloading}
-											<div class="spinner"></div>
+										{#if bookmarkLoading}
+											<div
+												class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
+											></div>
 										{:else}
-											<Fa icon={faDownload} class="text-sm" />
+											<Fa icon={faBookmark} class="text-sm {isBookmarked ? 'text-red-500' : ''}" />
 										{/if}
 									</span>
-									Download
+									Bookmark
 								{/snippet}
 							</Button>
-						{:else}
-							<!-- Buy button (shown before purchase) -->
-							<Button size="lg" class="flex-1 xl:flex-none" onclick={handleBuyClick}>
+							<Button
+								size="lg"
+								class="flex-1 xl:flex-none"
+								onclick={toggleLike}
+								disabled={likeLoading}
+							>
 								{#snippet children()}
-									<Fa icon={faShoppingCart} class="text-sm" />
-									Buy
+									<span class="inline-block w-4">
+										{#if likeLoading}
+											<div
+												class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
+											></div>
+										{:else}
+											<Fa icon={faHeart} class="text-sm {isLiked ? 'text-red-500' : ''}" />
+										{/if}
+									</span>
+									Like
 								{/snippet}
 							</Button>
-						{/if}
 
-						<!-- Debug download button -->
-						<!-- <Button
+							{#if hasPurchased}
+								<!-- Download button (shown after purchase) -->
+								<Button
+									size="lg"
+									class="flex-1 xl:flex-none"
+									onclick={handleDownload}
+									disabled={downloading}
+								>
+									{#snippet children()}
+										<span class="inline-block w-4">
+											{#if downloading}
+												<div class="spinner"></div>
+											{:else}
+												<Fa icon={faDownload} class="text-sm" />
+											{/if}
+										</span>
+										Download
+									{/snippet}
+								</Button>
+							{:else}
+								<!-- Buy button (shown before purchase) -->
+								<Button size="lg" class="flex-1 xl:flex-none" onclick={handleBuyClick}>
+									{#snippet children()}
+										<Fa icon={faShoppingCart} class="text-sm" />
+										Buy
+									{/snippet}
+								</Button>
+							{/if}
+
+							<!-- Debug download button -->
+							<!-- <Button
 							size="lg"
 							class="hidden flex-1 md:flex xl:flex-none"
 							onclick={handleDebugDownload}
@@ -436,24 +570,24 @@
 								Debug DL
 							{/snippet}
 						</Button> -->
+						</div>
 					</div>
-				</div>
 
-				{#if downloadError}
-					<div class="alert alert-error">
-						<span>{downloadError}</span>
+					{#if downloadError}
+						<div class="alert alert-error">
+							<span>{downloadError}</span>
+						</div>
+					{/if}
+
+					<div>
+						<p
+							class="wrap-brea-words rounded-lg bg-black p-6 text-sm leading-relaxed whitespace-pre-wrap"
+						>
+							{loadedProject.description || 'No description available'}
+						</p>
 					</div>
-				{/if}
-
-				<div>
-					<p
-						class="wrap-brea-words rounded-lg bg-black p-6 text-sm leading-relaxed whitespace-pre-wrap"
-					>
-						{loadedProject.description || 'No description available'}
-					</p>
 				</div>
 			</div>
-		</div>
 		{/if}
 	{/await}
 </div>

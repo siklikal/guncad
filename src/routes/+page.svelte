@@ -211,43 +211,43 @@
 			{#await pageData.popular}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
-						<a href="/search?sort=popular" class="text-2xl leading-none font-bold">Most Popular</a>
-						<a href="/search?sort=popular" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+						<a href="/explore?sort=popular&time=alltime" class="text-2xl leading-none font-bold hover:text-blue-600">Most Popular</a>
+						<a href="/explore?sort=popular&time=alltime" class="flex items-end hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></a>
 					</div>
 					<div class="my-5">
 						<ModelsSkeleton />
 					</div>
 				</div>
 			{:then popular}
-				<ModelSection title="Most Popular" items={popular} href="/search?sort=popular" />
+				<ModelSection title="Most Popular" items={popular} href="/explore?sort=popular&time=alltime" />
 			{/await}
 
 			{#await pageData.newest}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
-						<a href="/search?sort=newest" class="text-2xl leading-none font-bold">Newest</a>
-						<a href="/search?sort=newest" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+						<a href="/explore?sort=newest&time=alltime" class="text-2xl leading-none font-bold hover:text-blue-600">Newest</a>
+						<a href="/explore?sort=newest&time=alltime" class="flex items-end hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></a>
 					</div>
 					<div class="my-5">
 						<ModelsSkeleton />
 					</div>
 				</div>
 			{:then newest}
-				<ModelSection title="Newest" items={newest} href="/search?sort=newest" />
+				<ModelSection title="Newest" items={newest} href="/explore?sort=newest&time=alltime" />
 			{/await}
 
 			{#await pageData.recentlyUpdated}
 				<div class="mt-10">
 					<div class="flex items-end gap-1.5">
-						<a href="/search?sort=updated" class="text-2xl leading-none font-bold">Recently Updated</a>
-						<a href="/search?sort=updated" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+						<a href="/explore?sort=updated&time=alltime" class="text-2xl leading-none font-bold hover:text-blue-600">Recently Updated</a>
+						<a href="/explore?sort=updated&time=alltime" class="flex items-end hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></a>
 					</div>
 					<div class="my-5">
 						<ModelsSkeleton />
 					</div>
 				</div>
 			{:then recentlyUpdated}
-				<ModelSection title="Recently Updated" items={recentlyUpdated} href="/search?sort=updated" />
+				<ModelSection title="Recently Updated" items={recentlyUpdated} href="/explore?sort=updated&time=alltime" />
 			{/await}
 
 			<div class="mt-10 hidden items-end gap-1.5">

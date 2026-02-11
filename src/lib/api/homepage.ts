@@ -182,7 +182,6 @@ export async function fetchHomepageData() {
 		spotlightTrending: spotlights.trending,
 		tags: tags,
 		// Start fetching below-the-fold content using GCI sort API
-		collections: fetchCollections(),
 		popular: fetchSortedProjects('popular', 5),
 		newest: fetchSortedProjects('newest', 5),
 		recentlyUpdated: fetchSortedProjects('updated', 5)

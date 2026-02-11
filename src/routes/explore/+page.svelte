@@ -66,14 +66,21 @@
 	let timeParam = $derived(data.time || 'alltime');
 
 	const sortOptions = [
-		{ value: 'rank', label: 'Relevance' },
-		{ value: 'updated', label: 'Updated' },
 		{ value: 'newest', label: 'Newest' },
+		{ value: 'rank', label: 'Relevance' },
+		{ value: 'updated', label: 'Recently Updated' },
 		{ value: 'biggest', label: 'Biggest' },
-		{ value: 'popular', label: 'Popular' },
+		{ value: 'popular', label: 'Most Popular' },
 		{ value: 'unique', label: 'Unique' },
 		{ value: 'random', label: 'Random' }
 	];
+
+	// Derived page title based on selected sort
+	let pageTitle = $derived(
+		searchQuery
+			? `Search Results`
+			: sortOptions.find((opt) => opt.value === selectedSort)?.label || 'Latest Releases'
+	);
 
 	const timeOptions = [
 		{ value: 'alltime', label: 'All Time' },
@@ -99,6 +106,13 @@
 			currentTime = timeParam;
 			selectedSort = sortParam;
 			selectedTime = timeParam;
+
+			// Auto-select 'Relevance' when search is performed
+			if (searchQuery && !data.sort) {
+				selectedSort = 'rank';
+				currentSort = 'rank';
+			}
+
 			fetchProjects();
 		}
 	});
@@ -255,7 +269,7 @@
 	<meta name="description" content="Explore the latest 3D-printed firearm models and accessories" />
 </svelte:head>
 
-<div class="container mx-auto">
+<div class="px-4">
 	<!-- Active Search Badge -->
 	{#if searchQuery}
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -297,7 +311,7 @@
 	{:else}
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
 			<div>
-				<h1 class="text-3xl font-bold md:text-4xl">Latest Releases</h1>
+				<h1 class="text-3xl font-bold md:text-4xl">{pageTitle}</h1>
 				{#if initialLoading}
 					<div class="mt-2 h-6 w-48 animate-pulse rounded bg-neutral-700"></div>
 				{:else}
@@ -343,14 +357,16 @@
 			class="responsive-grid-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 		>
 			{#each projects as project}
-				<ModelCard
-					title={project.title}
-					image={project.image}
-					views={project.views}
-					likes={project.likes}
-					user={project.user}
-					href={getProjectUrl(project.title, project.id)}
-				/>
+				<div class="animate-in fade-in" style="animation-duration: 400ms;">
+					<ModelCard
+						title={project.title}
+						image={project.image}
+						views={project.views}
+						likes={project.likes}
+						user={project.user}
+						href={getProjectUrl(project.title, project.id)}
+					/>
+				</div>
 			{/each}
 		</div>
 

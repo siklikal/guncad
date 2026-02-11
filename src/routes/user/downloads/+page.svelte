@@ -119,7 +119,7 @@
 
 	{#if loading}
 		<div class="flex items-center justify-center py-16">
-			<div class="spinner spinner-lg"></div>
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
 		</div>
 	{:else if error}
 		<div class="rounded-lg border border-red-500 bg-red-500/10 p-4 text-red-400">
@@ -185,7 +185,7 @@
 									{#snippet children()}
 										<span class="inline-block w-4">
 											{#if downloadingModel === purchase.model_id}
-												<div class="spinner"></div>
+												<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 											{:else}
 												<Fa icon={faDownload} class="text-sm" />
 											{/if}
@@ -230,7 +230,7 @@
 						{#snippet children()}
 							<span class="inline-block w-4">
 								{#if downloadingModel === purchase.model_id}
-									<div class="spinner"></div>
+									<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 								{:else}
 									<Fa icon={faDownload} class="text-sm" />
 								{/if}
@@ -246,8 +246,8 @@
 
 <style>
 	.spinner {
-		border: 2px solid rgba(0, 0, 0, 0.1);
-		border-top-color: black;
+		border: 2px solid rgba(37, 99, 235, 0.2);
+		border-top-color: rgb(37, 99, 235);
 		border-radius: 50%;
 		width: 16px;
 		height: 16px;
@@ -258,9 +258,9 @@
 	.spinner-lg {
 		width: 48px;
 		height: 48px;
-		border-width: 3px;
-		border-color: rgba(255, 255, 255, 0.3);
-		border-top-color: white;
+		border-width: 4px;
+		border-color: rgba(37, 99, 235, 0.2);
+		border-top-color: rgb(37, 99, 235);
 	}
 
 	@keyframes spin {

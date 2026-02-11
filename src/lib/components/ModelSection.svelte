@@ -39,10 +39,10 @@
 	});
 </script>
 
-<div class="mt-10 flex items-end gap-1.5">
-	<a href="/" class="text-2xl leading-none font-bold">{title}</a>
-	<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
-</div>
+<a href={href} class="group mt-10 flex items-end gap-1.5">
+	<h2 class="text-2xl leading-none font-bold group-hover:text-blue-600">{title}</h2>
+	<div class="flex items-end group-hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></div>
+</a>
 
 <div
 	class="responsive-grid-5 my-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"

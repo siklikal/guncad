@@ -46,12 +46,10 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 	});
 
 	try {
-		// Build GCI API URL - fetch more to account for filtering
-		// Fetch 3x the requested amount to ensure we have enough after filtering SecondWatch
-		const fetchLimit = limit * 3;
+		// Build GCI API URL
 		const apiUrl = new URL('https://guncadindex.com/api/releases/');
 		apiUrl.searchParams.set('format', 'json');
-		apiUrl.searchParams.set('limit', fetchLimit.toString());
+		apiUrl.searchParams.set('limit', limit.toString());
 		apiUrl.searchParams.set('offset', offset.toString());
 
 		// GCI API uses 'query' parameter for search, not 'search'
@@ -83,22 +81,8 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			hasNext: !!data.next
 		});
 
-		// Filter out SecondWatch channel first
-		const filteredReleases = data.results.filter((release) => {
-			const channelName = release.channel?.name || '';
-			const isSecondWatch = channelName === 'SecondWatch';
-			if (isSecondWatch) {
-				console.log(`[API /api/releases] Filtering out SecondWatch: ${release.name}`);
-			}
-			return !isSecondWatch;
-		});
-
-		console.log(
-			`[API /api/releases] After filtering: ${filteredReleases.length} items (from ${data.results.length})`
-		);
-
-		// Take only requested amount after filtering and map to our format
-		const projects = filteredReleases.slice(0, limit).map((release) => {
+		// Map GCI API data directly
+		const projects = data.results.map((release) => {
 			const slug = release.url_lbry ? release.url_lbry.replace('lbry://', '') : release.id;
 
 			return {
@@ -119,14 +103,10 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			console.log('[API /api/releases] Sample project:', projects[0]);
 		}
 
-		// Determine if there are more results
-		// We have more if: 1) GCI API says there's more, OR 2) we have more filtered items than we're returning
-		const hasMore = data.next !== null || filteredReleases.length > limit;
-
 		const result = {
 			releases: projects,
 			count: data.count,
-			hasMore: hasMore
+			hasMore: data.next !== null
 		};
 
 		console.log('[API /api/releases] Returning:', {

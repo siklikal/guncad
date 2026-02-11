@@ -52,7 +52,7 @@
 	<div class="group">
 		<a {href} class="relative block" {title}>
 			<div
-				class="rounded-tl-lg rounded-tr-lg bg-blue-600 bg-cover bg-center"
+				class="rounded-lg bg-blue-600 bg-cover bg-center"
 				style="background-image: url('{image}'); aspect-ratio: 14 / 9;"
 			>
 				{#if badgeConfig}
@@ -66,23 +66,52 @@
 				{/if}
 			</div>
 		</a>
-		<div class="bg-black ps-4 pe-4 pt-4 pb-2 md:py-4 md:pb-2">
+		<div class="pt-2 pb-2">
 			<a {href} class="line-clamp-1 text-sm font-semibold group-hover:text-blue-600 md:text-base">
 				{title}
 			</a>
 		</div>
 	</div>
-	<div
-		class="flex justify-between gap-2 rounded-br-lg rounded-bl-lg bg-black px-4 pb-4 md:flex-row md:gap-4"
-	>
-		<a href="/user/{user.username}" class="group/user flex min-w-0 items-center gap-1">
+	<div class="flex justify-between gap-1 pb-4 md:flex-row md:gap-4">
+		<a href="/user/{user.username}" class="group/user flex min-w-0 flex-[0.45] items-center gap-1">
 			<div
-				class="h-6 w-6 shrink-0 rounded-full bg-cover bg-center"
-				style="background-image: url('{user.avatar && user.avatar !== 'https://guncadindex.com/static/images/default-avatar.png' ? user.avatar : '/images/default-avatar.avif'}');"
+				class="h-5 w-5 shrink-0 rounded-full bg-cover bg-center"
+				style="background-image: url('{user.avatar &&
+				user.avatar !== 'https://guncadindex.com/static/images/default-avatar.png'
+					? user.avatar
+					: '/images/default-avatar.avif'}');"
 			></div>
-			<p class="truncate text-xs text-neutral-400 group-hover/user:text-blue-600 md:text-sm">
+			<p class="truncate text-xs text-neutral-400 group-hover/user:text-blue-600">
 				{user.username}
 			</p>
 		</a>
+		<div class="flex flex-[0.55] justify-end gap-3">
+			<div class="flex items-center gap-1 text-xs">
+				<Fa icon={faEye} />
+				<p class="text-neutral-400">{formatNumber(views)}</p>
+			</div>
+			<div class="flex items-center gap-1 text-xs">
+				<Fa icon={faDownload} />
+				<p class="text-neutral-400">0</p>
+			</div>
+			<div class="flex items-center gap-1 text-xs">
+				<Fa icon={faHeart} />
+				<p class="text-neutral-400">{formatNumber(likes)}</p>
+			</div>
+		</div>
 	</div>
+	<!-- <div class="flex justify-between rounded-br-lg rounded-bl-lg bg-black p-4">
+		<div class="flex items-center gap-1 text-xs">
+			<Fa icon={faEye} />
+			<p class="text-neutral-400">55</p>
+		</div>
+		<div class="flex items-center gap-1 text-xs">
+			<Fa icon={faDownload} />
+			<p class="text-neutral-400">55</p>
+		</div>
+		<div class="flex items-center gap-1 text-xs">
+			<Fa icon={faHeart} />
+			<p class="text-neutral-400">55</p>
+		</div>
+	</div> -->
 </div>
