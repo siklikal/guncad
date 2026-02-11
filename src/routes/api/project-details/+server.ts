@@ -20,10 +20,21 @@ async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch):
 	// This is much more efficient than searching and filtering
 	const apiUrl = `https://guncadindex.com/api/releases/${lbryId}/`;
 	const response = await serverFetch(apiUrl, {
-		headers: { Accept: 'application/json' }
+		headers: {
+			Accept: 'application/json',
+			'User-Agent': 'guncad-vercel/1.0 (+https://guncad.vercel.app)',
+			Referer: 'https://guncad.vercel.app'
+		}
 	});
 
 	if (!response.ok) {
+		const errorBody = await response.text();
+		console.error('[project-details] GCI API failed', {
+			status: response.status,
+			statusText: response.statusText,
+			headers: Object.fromEntries(response.headers.entries()),
+			body: errorBody.slice(0, 1000)
+		});
 		throw new Error(`GCI API failed: ${response.status}`);
 	}
 

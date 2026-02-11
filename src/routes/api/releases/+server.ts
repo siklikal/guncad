@@ -69,13 +69,23 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		console.log('[API /api/releases] Fetching from GCI:', apiUrl.toString());
 
 		const response = await fetch(apiUrl.toString(), {
-			headers: { Accept: 'application/json' }
+			headers: {
+				Accept: 'application/json',
+				'User-Agent': 'guncad-vercel/1.0 (+https://guncad.vercel.app)',
+				Referer: 'https://guncad.vercel.app'
+			}
 		});
 
 		console.log('[API /api/releases] GCI response status:', response.status);
 
 		if (!response.ok) {
-			console.error('[API /api/releases] GCI API failed with status:', response.status);
+			const errorBody = await response.text();
+			console.error('[API /api/releases] GCI API failed', {
+				status: response.status,
+				statusText: response.statusText,
+				headers: Object.fromEntries(response.headers.entries()),
+				body: errorBody.slice(0, 1000)
+			});
 			return json({ error: 'Failed to fetch releases' }, { status: 500 });
 		}
 

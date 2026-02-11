@@ -13,10 +13,21 @@ export const GET: RequestHandler = async ({ url, fetch: serverFetch }) => {
 
 		const gciUrl = `https://guncadindex.com/api/releases/?format=json&sort=${sort}&time=alltime&limit=${limit}`;
 		const response = await serverFetch(gciUrl, {
-			headers: { Accept: 'application/json' }
+			headers: {
+				Accept: 'application/json',
+				'User-Agent': 'guncad-vercel/1.0 (+https://guncad.vercel.app)',
+				Referer: 'https://guncad.vercel.app'
+			}
 		});
 
 		if (!response.ok) {
+			const errorBody = await response.text();
+			console.error('[gci-sorted] GCI API failed', {
+				status: response.status,
+				statusText: response.statusText,
+				headers: Object.fromEntries(response.headers.entries()),
+				body: errorBody.slice(0, 1000)
+			});
 			throw new Error(`GCI API failed: ${response.status}`);
 		}
 
