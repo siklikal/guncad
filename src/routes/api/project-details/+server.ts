@@ -1,6 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+export const config = {
+	runtime: 'nodejs',
+	regions: ['cle1']
+};
+
 async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch): Promise<any> {
 	// Extract the LBRY identifier from the GCI URL
 	// Format: https://guncadindex.com/detail/Tiny-11:5

@@ -1,6 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+export const config = {
+	runtime: 'nodejs',
+	regions: ['cle1']
+};
+
 export const GET: RequestHandler = async ({ url, fetch: serverFetch }) => {
 	try {
 		const sort = url.searchParams.get('sort') || 'newest';
