@@ -26,101 +26,61 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Check if user has already liked this project
 		const { data: existingLike } = await supabase
 			.from('user_likes')
-			.select('*')
+			.select('id')
 			.eq('user_id', user.id)
 			.eq('project_id', projectId)
-			.single();
+			.maybeSingle();
 
 		let isLiked = false;
 
 		if (existingLike) {
-			// Unlike: remove from user_likes
-			const { error: deleteError } = await supabase
-				.from('user_likes')
-				.delete()
-				.eq('user_id', user.id)
-				.eq('project_id', projectId);
-
-			if (deleteError) throw deleteError;
-
-			// Decrement our_likes in project_stats
-			const { data: stats } = await supabase
-				.from('project_stats')
-				.select('*')
-				.eq('project_id', projectId)
-				.single();
-
-			if (stats) {
-				await supabase
-					.from('project_stats')
-					.update({
-						our_likes: Math.max(0, stats.our_likes - 1),
-						updated_at: new Date().toISOString()
-					})
-					.eq('project_id', projectId);
-			}
-
+			// Unlike: remove from user_likes and decrement our_likes
+			await Promise.all([
+				supabase
+					.from('user_likes')
+					.delete()
+					.eq('user_id', user.id)
+					.eq('project_id', projectId),
+				supabase.rpc('decrement_likes', { p_project_id: projectId })
+			]);
 			isLiked = false;
 		} else {
-			// Like: add to user_likes
-			const { error: insertError } = await supabase.from('user_likes').insert({
-				user_id: user.id,
-				project_id: projectId
-			});
-
-			if (insertError) throw insertError;
-
-			// Increment our_likes in project_stats (or create if doesn't exist)
-			const { data: stats } = await supabase
-				.from('project_stats')
-				.select('*')
-				.eq('project_id', projectId)
-				.single();
-
-			if (stats) {
-				await supabase
-					.from('project_stats')
-					.update({
-						our_likes: stats.our_likes + 1,
-						updated_at: new Date().toISOString()
-					})
-					.eq('project_id', projectId);
-			} else {
-				// Create new stats record if it doesn't exist
-				await supabase.from('project_stats').insert({
-					project_id: projectId,
-					base_views: 0,
-					base_likes: 0,
-					our_views: 0,
-					our_likes: 1,
-					our_downloads: 0
-				});
-			}
-
+			// Like: add to user_likes and increment our_likes
+			await Promise.all([
+				supabase.from('user_likes').insert({
+					user_id: user.id,
+					project_id: projectId
+				}),
+				supabase.rpc('increment_likes', { p_project_id: projectId })
+			]);
 			isLiked = true;
 		}
 
-		// Fetch updated stats
-		const { data: updatedStats } = await supabase
-			.from('project_stats')
-			.select('*')
-			.eq('project_id', projectId)
-			.single();
+		// Fetch all final data in parallel
+		const [statsResult, bookmarksResult, downloadsResult] = await Promise.all([
+			supabase.from('project_stats').select('*').eq('project_id', projectId).maybeSingle(),
+			supabase
+				.from('bookmarks')
+				.select('*', { count: 'exact', head: true })
+				.eq('model_id', projectId),
+			supabase
+				.from('downloads')
+				.select('*', { count: 'exact', head: true })
+				.eq('model_id', projectId)
+		]);
 
-		// Get bookmarks count for this project
-		const { count: bookmarksCount } = await supabase
-			.from('bookmarks')
-			.select('*', { count: 'exact', head: true })
-			.eq('model_id', projectId);
+		const stats = statsResult.data;
+		const bookmarksCount = bookmarksResult.count;
+		const downloadsCount = downloadsResult.count;
 
 		return json({
 			success: true,
 			isLiked,
 			stats: {
-				views: (updatedStats?.base_views || 0) + (updatedStats?.our_views || 0),
-				likes: (updatedStats?.base_likes || 0) + (updatedStats?.our_likes || 0),
+				views: (stats?.base_views || 0) + (stats?.our_views || 0),
+				likes: (stats?.base_likes || 0) + (stats?.our_likes || 0),
 				bookmarks: bookmarksCount || 0,
-				downloads: updatedStats?.our_downloads || 0
+				downloads: (stats?.our_downloads || 0) + (downloadsCount || 0)
 			}
 		});
 	} catch (error) {

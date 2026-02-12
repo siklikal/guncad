@@ -302,3 +302,37 @@ create policy "Users can delete their own likes"
 -- Comments
 comment on table public.user_likes is 'Tracks which users have liked which projects';
 comment on column public.user_likes.project_id is 'The LBRY project ID (e.g., "Model-Name:1")';
+
+-- ============================================================================
+-- OPTIMIZED FUNCTIONS FOR LIKES
+-- ============================================================================
+-- Atomic increment/decrement functions for better performance
+
+CREATE OR REPLACE FUNCTION increment_likes(p_project_id text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  INSERT INTO project_stats (project_id, base_views, base_likes, our_views, our_likes, our_downloads)
+  VALUES (p_project_id, 0, 0, 0, 1, 0)
+  ON CONFLICT (project_id)
+  DO UPDATE SET
+    our_likes = project_stats.our_likes + 1,
+    updated_at = now();
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION decrement_likes(p_project_id text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE project_stats
+  SET
+    our_likes = GREATEST(0, our_likes - 1),
+    updated_at = now()
+  WHERE project_id = p_project_id;
+END;
+$$;

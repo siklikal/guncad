@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 					tags: projectData.tags || [],
 					views: projectData.views,
 					likes: projectData.likes,
-					releaseTime: null,
+					released: projectData.released,
 					claimId: projectId,
 					permanentUrl: gciUrl,
 					canonicalUrl: projectData.lbryUrl || `lbry://${projectId}`,

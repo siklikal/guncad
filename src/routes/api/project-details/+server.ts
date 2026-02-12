@@ -70,7 +70,8 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 							'https://guncadindex.com/static/images/default-avatar.png'
 					},
 					description: release.description || '',
-					lbryUrl: release.url_lbry || ''
+					lbryUrl: release.url_lbry || '',
+					released: release.released || null
 				};
 			} catch (error) {
 				console.error(`Error fetching project details from ${url}:`, error);
@@ -88,7 +89,8 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 						avatar: 'https://guncadindex.com/static/images/default-avatar.png'
 					},
 					description: '',
-					lbryUrl: ''
+					lbryUrl: '',
+					released: null
 				};
 			}
 		});

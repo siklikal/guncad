@@ -10,7 +10,8 @@
 		faBookmark,
 		faDownload,
 		faShoppingCart,
-		faCopy
+		faCopy,
+		faCalendar
 	} from '@fortawesome/free-solid-svg-icons';
 	import { Check } from 'lucide-svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
@@ -31,12 +32,14 @@
 	let hasPurchased = $state(false);
 	let isLiked = $state(false);
 	let likeLoading = $state(false);
-	let projectStats = $state<{ views: number; likes: number; bookmarks: number; downloads: number }>({
-		views: 0,
-		likes: 0,
-		bookmarks: 0,
-		downloads: 0
-	});
+	let projectStats = $state<{ views: number; likes: number; bookmarks: number; downloads: number }>(
+		{
+			views: 0,
+			likes: 0,
+			bookmarks: 0,
+			downloads: 0
+		}
+	);
 
 	// Unwrap streaming promises when they resolve
 	$effect(() => {
@@ -71,7 +74,6 @@
 					projectStats = { ...projectStats, ...result.stats };
 				}
 			}
-
 		} catch (error) {
 			console.error('Failed to track view:', error);
 		}
@@ -165,6 +167,16 @@
 
 	function formatNumber(num: number): string {
 		return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
+	}
+
+	function formatReleaseDate(dateString: string | null): string {
+		if (!dateString) return 'N/A';
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
 	}
 
 	function getBadgeConfig(type: string | null) {
@@ -445,8 +457,127 @@
 						</div>
 					{/if} -->
 
-					<div class="flex flex-col items-center justify-between gap-5 2xl:flex-row">
-						<div class="flex w-full justify-between rounded-lg border border-neutral-400 xl:w-auto">
+					<div class="grid w-full grid-cols-2 overflow-hidden rounded-lg border border-neutral-400 xl:flex xl:w-auto">
+						<div
+							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-2 xl:rounded-l-lg"
+						>
+							<Fa icon={faCalendar} class="text-sm text-neutral-400" />
+							<p class="text-xs font-semibold">
+								{formatReleaseDate(loadedProject.released)}
+							</p>
+						</div>
+						<div
+							class="flex flex-1 items-center justify-center gap-2 bg-neutral-800 p-2 xl:border-r xl:border-neutral-400"
+						>
+							<Fa icon={faEye} class="text-sm text-neutral-400" />
+							<p class="text-xs font-semibold">
+								{formatNumber(projectStats.views || loadedProject.views)}
+							</p>
+						</div>
+						<div
+							class="flex flex-1 items-center justify-center gap-2 border-r border-t border-neutral-400 bg-neutral-800 p-2 xl:border-t-0"
+						>
+							<Fa icon={faHeart} class="text-sm text-neutral-400" />
+							<p class="text-xs font-semibold">
+								{formatNumber(projectStats.likes || loadedProject.likes)}
+							</p>
+						</div>
+						<!-- <div
+							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-3"
+						>
+							<Fa icon={faBookmark} class="text-sm text-neutral-400" />
+							<p class="text-xs font-semibold">{formatNumber(projectStats.bookmarks)}</p>
+						</div> -->
+						<div
+							class="flex flex-1 items-center justify-center gap-2 border-t border-neutral-400 bg-neutral-800 p-2 xl:rounded-r-lg xl:border-t-0"
+						>
+							<Fa icon={faDownload} class="text-sm text-neutral-400" />
+							<p class="text-xs font-semibold">{formatNumber(projectStats.downloads)}</p>
+						</div>
+					</div>
+
+					<div class="grid w-full grid-cols-2 gap-2 xl:flex xl:w-auto">
+						<Button size="lg" class="flex-1" onclick={handleCopyUrl}>
+							{#snippet children()}
+								<Fa icon={faCopy} class="text-sm" />
+								Copy Link
+							{/snippet}
+						</Button>
+						<Button size="lg" class="flex-1" onclick={toggleBookmark} disabled={bookmarkLoading}>
+							{#snippet children()}
+								<span class="inline-block w-4">
+									{#if bookmarkLoading}
+										<div
+											class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
+										></div>
+									{:else}
+										<Fa icon={faBookmark} class="text-sm {isBookmarked ? 'text-red-500' : ''}" />
+									{/if}
+								</span>
+								Bookmark
+							{/snippet}
+						</Button>
+						<Button size="lg" class="flex-1" onclick={toggleLike} disabled={likeLoading}>
+							{#snippet children()}
+								<span class="inline-block w-4">
+									{#if likeLoading}
+										<div
+											class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
+										></div>
+									{:else}
+										<Fa icon={faHeart} class="text-sm {isLiked ? 'text-red-500' : ''}" />
+									{/if}
+								</span>
+								Like
+							{/snippet}
+						</Button>
+
+						{#if hasPurchased}
+							<!-- Download button (shown after purchase) -->
+							<Button size="lg" class="flex-1" onclick={handleDownload} disabled={downloading}>
+								{#snippet children()}
+									<span class="inline-block w-4">
+										{#if downloading}
+											<div class="spinner"></div>
+										{:else}
+											<Fa icon={faDownload} class="text-sm" />
+										{/if}
+									</span>
+									Download
+								{/snippet}
+							</Button>
+						{:else}
+							<!-- Buy button (shown before purchase) -->
+							<Button size="lg" class="flex-1" onclick={handleBuyClick}>
+								{#snippet children()}
+									<Fa icon={faShoppingCart} class="text-sm" />
+									Buy
+								{/snippet}
+							</Button>
+						{/if}
+
+						<!-- Debug download button -->
+						<!-- <Button
+							size="lg"
+							class="hidden flex-1 md:flex xl:flex-none"
+							onclick={handleDebugDownload}
+							disabled={debugDownloading}
+						>
+							{#snippet children()}
+								<span class="inline-block w-4">
+									{#if debugDownloading}
+										<div class="spinner"></div>
+									{:else}
+										<Fa icon={faDownload} class="text-sm" />
+									{/if}
+								</span>
+								Debug DL
+							{/snippet}
+						</Button> -->
+					</div>
+
+					<div class="flex hidden flex-col items-center justify-between gap-5 2xl:flex-row">
+						<div class="grid w-full grid-cols-2 overflow-hidden rounded-lg border border-neutral-400 xl:flex xl:w-auto">
 							<div
 								class="flex flex-1 items-center justify-center gap-1 rounded-tl-lg rounded-bl-lg border-r border-neutral-400 bg-neutral-800 p-3"
 							>
@@ -477,7 +608,7 @@
 							</div>
 						</div>
 
-						<div class="flex w-full gap-2 xl:w-auto">
+						<div class="grid w-full grid-cols-2 gap-2 xl:flex xl:w-auto">
 							<Button size="lg" class="flex-1 xl:flex-none" onclick={handleCopyUrl}>
 								{#snippet children()}
 									<Fa icon={faCopy} class="text-sm" />

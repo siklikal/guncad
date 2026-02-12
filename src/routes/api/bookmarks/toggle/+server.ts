@@ -26,33 +26,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.select('id')
 			.eq('user_id', session.user.id)
 			.eq('model_id', modelId)
-			.single();
+			.maybeSingle();
 
 		if (existing) {
 			// Remove bookmark
-			const { error } = await supabase
+			await supabase
 				.from('bookmarks')
 				.delete()
 				.eq('user_id', session.user.id)
 				.eq('model_id', modelId);
 
-			if (error) {
-				console.error('[toggle-bookmark] Error removing bookmark:', error);
-				return json({ error: 'Failed to remove bookmark' }, { status: 500 });
-			}
-
 			return json({ bookmarked: false });
 		} else {
 			// Add bookmark
-			const { error } = await supabase.from('bookmarks').insert({
+			await supabase.from('bookmarks').insert({
 				user_id: session.user.id,
 				model_id: modelId
 			});
-
-			if (error) {
-				console.error('[toggle-bookmark] Error adding bookmark:', error);
-				return json({ error: 'Failed to add bookmark' }, { status: 500 });
-			}
 
 			return json({ bookmarked: true });
 		}
