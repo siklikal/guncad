@@ -87,16 +87,16 @@
 		</a>
 		<div class="flex flex-[0.55] justify-end gap-3">
 			<div class="flex items-center gap-1 text-xs">
-				<Fa icon={faEye} />
-				<p class="text-neutral-400">{formatNumber(views)}</p>
+				<Fa icon={faEye} class="text-neutral-400" />
+				<p>{formatNumber(views)}</p>
 			</div>
 			<div class="flex items-center gap-1 text-xs">
-				<Fa icon={faDownload} />
-				<p class="text-neutral-400">0</p>
+				<Fa icon={faDownload} class="text-neutral-400" />
+				<p>0</p>
 			</div>
 			<div class="flex items-center gap-1 text-xs">
-				<Fa icon={faHeart} />
-				<p class="text-neutral-400">{formatNumber(likes)}</p>
+				<Fa icon={faHeart} class="text-neutral-400" />
+				<p>{formatNumber(likes)}</p>
 			</div>
 		</div>
 	</div>
