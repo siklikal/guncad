@@ -55,10 +55,7 @@
 	<div class="mx-auto max-w-[1920px] px-4 py-3 md:px-8">
 		<div class="flex items-center justify-between gap-4">
 			<div class="flex items-center gap-6">
-				<a href="/" class="site-logo flex items-center gap-2 text-xl font-bold text-white uppercase">
-					<img src="/images/favicon/favicon-32x32.png" alt="Guncad" class="h-8 w-8" />
-					Guncad
-				</a>
+				<a href="/" class="site-logo text-xl font-bold text-white uppercase">Guncad</a>
 				<a href="/explore" class="link-primary hidden capitalize md:flex">explore</a>
 			</div>
 			<div class="flex flex-1 items-center justify-end gap-4">
