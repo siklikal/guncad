@@ -56,32 +56,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			isLiked = true;
 		}
 
-		// Fetch all final data in parallel
-		const [statsResult, bookmarksResult, downloadsResult] = await Promise.all([
-			supabase.from('project_stats').select('*').eq('project_id', projectId).maybeSingle(),
-			supabase
-				.from('bookmarks')
-				.select('*', { count: 'exact', head: true })
-				.eq('model_id', projectId),
-			supabase
-				.from('downloads')
-				.select('*', { count: 'exact', head: true })
-				.eq('model_id', projectId)
-		]);
-
-		const stats = statsResult.data;
-		const bookmarksCount = bookmarksResult.count;
-		const downloadsCount = downloadsResult.count;
+		// Just fetch the updated likes count
+		const { data: stats } = await supabase
+			.from('project_stats')
+			.select('base_likes, our_likes')
+			.eq('project_id', projectId)
+			.maybeSingle();
 
 		return json({
 			success: true,
 			isLiked,
-			stats: {
-				views: (stats?.base_views || 0) + (stats?.our_views || 0),
-				likes: (stats?.base_likes || 0) + (stats?.our_likes || 0),
-				bookmarks: bookmarksCount || 0,
-				downloads: (stats?.our_downloads || 0) + (downloadsCount || 0)
-			}
+			likes: (stats?.base_likes || 0) + (stats?.our_likes || 0)
 		});
 	} catch (error) {
 		console.error('[toggle-like] Error:', error);

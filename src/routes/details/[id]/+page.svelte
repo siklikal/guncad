@@ -154,7 +154,9 @@
 			if (response.ok) {
 				const result = await response.json();
 				isLiked = result.isLiked;
-				if (result.stats) {
+				if (result.likes !== undefined) {
+					projectStats.likes = result.likes;
+				} else if (result.stats) {
 					projectStats = { ...projectStats, ...result.stats };
 				}
 			}
