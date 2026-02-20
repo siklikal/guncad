@@ -1,30 +1,12 @@
 import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit';
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+import { hashSessionToken, SESSION_COOKIE_NAME } from '$lib/server/accountAuth';
 
-/**
- * SvelteKit server hook that runs on EVERY request before any page loads
- *
- * This ensures authentication is checked server-side BEFORE rendering any page,
- * preventing the flash of unauthenticated content that occurs with client-side checks.
- *
- * Protected routes (require login):
- * - / (home page)
- * - /details/*
- * - /collections/*
- * - /tag/*
- * - /exclusive
- * - /featured
- * - /trending
- * - /premium-models
- *
- * Public routes (no login required):
- * - /login
- * - /terms
- */
 export const handle: Handle = async ({ event, resolve }) => {
-	// Create a Supabase client for server-side auth checking
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
 		cookies: {
 			get: (key) => event.cookies.get(key),
@@ -37,65 +19,81 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	});
 
-	// Get the current user (validates JWT token with Supabase auth server)
-	const {
-		data: { user },
-		error
-	} = await event.locals.supabase.auth.getUser();
+	event.locals.session = null;
 
-	// Create session object from user if authenticated
-	event.locals.session = user
-		? {
-				user,
-				access_token: '',
-				refresh_token: '',
-				expires_in: 0,
-				expires_at: 0,
-				token_type: 'bearer'
-		  }
-		: null;
+	const sessionToken = event.cookies.get(SESSION_COOKIE_NAME);
+	if (sessionToken) {
+		const tokenHash = hashSessionToken(sessionToken);
+		const supabaseAdmin = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-	// Define protected routes (routes that require authentication)
-	const protectedRoutes = ['/', '/details', '/collections', '/tag', '/exclusive', '/featured', '/trending', '/premium-models', '/user'];
-	const publicRoutes = ['/login', '/terms', '/pending-approval'];
+		const { data: authSession } = await supabaseAdmin
+			.from('auth_sessions')
+			.select('user_id, expires_at')
+			.eq('session_token_hash', tokenHash)
+			.gt('expires_at', new Date().toISOString())
+			.single();
 
-	// Check if current path is a protected route
-	const isProtectedRoute = protectedRoutes.some((route) =>
-		event.url.pathname === route || event.url.pathname.startsWith(route + '/')
+		if (authSession) {
+			const { data: profile } = await supabaseAdmin
+				.from('user_profiles')
+				.select('status')
+				.eq('id', authSession.user_id)
+				.single();
+
+			const isActive = profile?.status === 'active';
+
+			if (isActive) {
+				event.locals.session = {
+					user: {
+						id: authSession.user_id
+					}
+				};
+
+				await supabaseAdmin
+					.from('auth_sessions')
+					.update({ last_seen_at: new Date().toISOString() })
+					.eq('session_token_hash', tokenHash);
+			} else {
+				await supabaseAdmin.from('auth_sessions').delete().eq('session_token_hash', tokenHash);
+				event.cookies.delete(SESSION_COOKIE_NAME, {
+					path: '/',
+					httpOnly: true,
+					secure: true,
+					sameSite: 'lax'
+				});
+			}
+		} else {
+			event.cookies.delete(SESSION_COOKIE_NAME, {
+				path: '/',
+				httpOnly: true,
+				secure: true,
+				sameSite: 'lax'
+			});
+		}
+	}
+
+	const protectedRoutes = [
+		'/',
+		'/details',
+		'/collections',
+		'/tag',
+		'/exclusive',
+		'/featured',
+		'/trending',
+		'/premium-models',
+		'/user'
+	];
+
+	const isProtectedRoute = protectedRoutes.some(
+		(route) => event.url.pathname === route || event.url.pathname.startsWith(route + '/')
 	);
 
-	// If accessing a protected route without a session, redirect to login
 	if (isProtectedRoute && !event.locals.session) {
 		throw redirect(303, '/login');
 	}
 
-	// If user has a session, check if they're approved
-	if (event.locals.session && isProtectedRoute) {
-		const { data: profile } = await event.locals.supabase
-			.from('user_profiles')
-			.select('is_approved')
-			.eq('id', event.locals.session.user.id)
-			.single();
-
-		// If user is not approved, redirect to pending approval page
-		if (profile && !profile.is_approved) {
-			throw redirect(303, '/pending-approval');
-		}
-	}
-
-	// If accessing login page while already logged in and approved, redirect to home
 	if (event.url.pathname === '/login' && event.locals.session) {
-		const { data: profile } = await event.locals.supabase
-			.from('user_profiles')
-			.select('is_approved')
-			.eq('id', event.locals.session.user.id)
-			.single();
-
-		if (profile?.is_approved) {
-			throw redirect(303, '/');
-		} else {
-			throw redirect(303, '/pending-approval');
-		}
+		throw redirect(303, '/');
 	}
 
 	return resolve(event);

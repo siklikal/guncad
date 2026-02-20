@@ -6,134 +6,123 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { Eye, EyeOff, Loader2 } from '@lucide/svelte';
+	import { Copy, Loader2 } from '@lucide/svelte';
+	import { formatAccountNumber, normalizeAccountNumber } from '$lib/utils/accountNumber';
 
-	let email = $state('');
-	let password = $state('');
+	let accountNumber = $state('');
 	let acceptedTos = $state(false);
-	let showPassword = $state(false);
-	let isSignUp = $state(false);
+	let createdAccountNumber = $state('');
+	let copied = $state(false);
 	let error = $state('');
-	let loading = $state(false);
+	let loadingLogin = $state(false);
+	let loadingCreate = $state(false);
 
-	// If already logged in, redirect to home
 	$effect(() => {
 		if ($user) {
 			goto('/');
 		}
 	});
 
-	async function handleSubmit() {
-		error = '';
-		loading = true;
+	function setAccountNumberFromRaw(value: string) {
+		const normalized = normalizeAccountNumber(value).slice(0, 16);
+		accountNumber = formatAccountNumber(normalized);
+	}
 
-		const result = isSignUp
-			? await auth.signUp(email, password)
-			: await auth.signIn(email, password);
+	function handleAccountInput(value: string) {
+		setAccountNumberFromRaw(value);
+	}
+
+	function handleAccountPaste(event: ClipboardEvent) {
+		event.preventDefault();
+		const pasted = event.clipboardData?.getData('text') ?? '';
+		setAccountNumberFromRaw(pasted);
+	}
+
+	async function handleLogin() {
+		error = '';
+		loadingLogin = true;
+
+		const result = await auth.signIn(accountNumber);
+		if (result.error) {
+			loadingLogin = false;
+			error = result.error.message;
+			return;
+		}
+	}
+
+	async function handleCreateAccount() {
+		error = '';
+		loadingCreate = true;
+		createdAccountNumber = '';
+
+		const result = await auth.createAccount(acceptedTos);
+		loadingCreate = false;
 
 		if (result.error) {
-			loading = false;
 			error = result.error.message;
-		} else {
-			// Success! Keep loading true - the effect will redirect
-			// and the loading spinner will stay visible during navigation
-			if (isSignUp) {
-				loading = false;
-				// Check if user was actually created (user exists if it's a new signup)
-				// If user is null but no error, it means email already exists
-				if (
-					result.data.user &&
-					result.data.user.identities &&
-					result.data.user.identities.length === 0
-				) {
-					error = 'An account with this email already exists. Please login instead.';
-				} else {
-					error = 'Check your email to confirm your account!';
-				}
-			}
-			// For sign in, keep loading = true so spinner stays visible during redirect
+			return;
 		}
+
+		createdAccountNumber = formatAccountNumber(result.data.accountNumber);
+		accountNumber = createdAccountNumber;
+	}
+
+	async function handleCopy() {
+		if (!createdAccountNumber) return;
+		await navigator.clipboard.writeText(normalizeAccountNumber(createdAccountNumber));
+		copied = true;
+		setTimeout(() => {
+			copied = false;
+		}, 1800);
 	}
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-neutral-950 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header>
-			<Card.Title class="text-center text-3xl">
-				{isSignUp ? 'Sign Up' : 'Sign in to Guncad'}
-			</Card.Title>
+			<Card.Title class="text-center text-3xl">Guncad Account Access</Card.Title>
+			<Card.Description class="pt-2 text-center">
+				Use your 16-digit account number to sign in.
+			</Card.Description>
 		</Card.Header>
+
 		<Card.Content>
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
-					handleSubmit();
+					handleLogin();
 				}}
+				class="space-y-4"
 			>
-				<div class="space-y-4">
-					<div class="space-y-2">
-						<Label for="email">Email</Label>
-						<Input
-							id="email"
-							type="email"
-							bind:value={email}
-							required
-							placeholder="you@example.com"
-						/>
-					</div>
-
-					<div class="space-y-2">
-						<Label for="password">Password</Label>
-						<div class="relative">
-							<Input
-								id="password"
-								type={showPassword ? 'text' : 'password'}
-								bind:value={password}
-								required
-								placeholder="••••••••"
-								minlength="6"
-								class="pr-10"
-							/>
-							<button
-								type="button"
-								onclick={() => (showPassword = !showPassword)}
-								class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-							>
-								{#if showPassword}
-									<EyeOff class="h-4 w-4" />
-								{:else}
-									<Eye class="h-4 w-4" />
-								{/if}
-							</button>
-						</div>
-					</div>
-
-					{#if isSignUp}
-						<div class="flex items-center space-x-2">
-							<Checkbox id="terms" bind:checked={acceptedTos} required />
-							<Label for="terms" class="text-sm font-normal">
-								I accept the <a href="/terms" target="_blank" class="text-primary hover:underline"
-									>Terms of Service</a
-								>
-							</Label>
-						</div>
-					{/if}
-
-					{#if error}
-						<div class="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-							{error}
-						</div>
-					{/if}
-
-					<Button type="submit" class="w-full" disabled={loading}>
-						{#if loading}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-							Loading...
-						{:else}
-							{isSignUp ? 'Sign Up' : 'Login'}
-						{/if}
-					</Button>
+				<div class="space-y-2">
+					<Label for="account-number">Account Number</Label>
+					<Input
+						id="account-number"
+						type="text"
+						value={accountNumber}
+						oninput={(e) => handleAccountInput((e.target as HTMLInputElement).value)}
+						onpaste={handleAccountPaste}
+						required
+						maxlength={19}
+						placeholder="1234 5678 9012 3456"
+						inputmode="numeric"
+					/>
 				</div>
+
+				{#if error}
+					<div class="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+						{error}
+					</div>
+				{/if}
+
+				<Button type="submit" class="w-full" disabled={loadingLogin}>
+					{#if loadingLogin}
+						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+						Signing in...
+					{:else}
+						Sign In
+					{/if}
+				</Button>
 			</form>
 
 			<div class="relative my-6">
@@ -141,23 +130,48 @@
 					<span class="w-full border-t"></span>
 				</div>
 				<div class="relative flex justify-center text-xs uppercase">
-					<span class="bg-card px-2 text-muted-foreground">OR</span>
+					<span class="bg-card px-2 text-muted-foreground">Create New Account</span>
 				</div>
 			</div>
 
-			<p class="text-center text-sm text-muted-foreground">
-				{isSignUp ? 'Already have an account?' : "Don't have an account?"}
+			<div class="space-y-4">
+				<div class="flex items-center gap-2">
+					<Checkbox id="terms" bind:checked={acceptedTos} />
+					<Label for="terms" class="text-sm font-normal">
+						I accept the <a href="/terms" target="_blank" class="text-primary hover:underline"
+							>Terms of Service</a
+						>
+					</Label>
+				</div>
+
 				<Button
-					variant="link"
-					class="px-1"
-					onclick={() => {
-						isSignUp = !isSignUp;
-						error = '';
-					}}
+					type="button"
+					variant="outline"
+					class="w-full"
+					disabled={loadingCreate || !acceptedTos}
+					onclick={handleCreateAccount}
 				>
-					{isSignUp ? 'Login' : 'Sign Up'}
+					{#if loadingCreate}
+						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+						Creating...
+					{:else}
+						Generate Account Number
+					{/if}
 				</Button>
-			</p>
+
+				{#if createdAccountNumber}
+					<div class="rounded-md border border-blue-700 bg-blue-900/20 p-3">
+						<p class="text-xs text-neutral-300">Save this number now. It is your only login.</p>
+						<div class="mt-2 flex items-center justify-between gap-2">
+							<p class="font-mono text-lg">{createdAccountNumber}</p>
+							<Button size="sm" type="button" variant="outline" onclick={handleCopy}>
+								<Copy class="mr-1 h-3.5 w-3.5" />
+								{copied ? 'Copied' : 'Copy'}
+							</Button>
+						</div>
+					</div>
+				{/if}
+			</div>
 		</Card.Content>
 	</Card.Root>
 </div>

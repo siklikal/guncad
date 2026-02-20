@@ -1,50 +1,78 @@
 import { writable } from 'svelte/store';
-import type { User } from '@supabase/supabase-js';
-import { supabase } from '$lib/supabase';
+import { normalizeAccountNumber, isValidAccountNumber } from '$lib/utils/accountNumber';
 
-// Create a writable store for the current user
-export const user = writable<User | null>(null);
+export const user = writable<{ id: string } | null>(null);
 export const loading = writable<boolean>(true);
 
-// Initialize auth state and listen for changes
 export function initAuth() {
-	// Get initial session
-	supabase.auth.getSession().then(({ data: { session } }) => {
-		user.set(session?.user ?? null);
-		loading.set(false);
-	});
+	let stopped = false;
 
-	// Listen for auth changes (login, logout, token refresh)
-	const {
-		data: { subscription }
-	} = supabase.auth.onAuthStateChange((_event, session) => {
-		user.set(session?.user ?? null);
-	});
+	(async () => {
+		try {
+			const response = await fetch('/api/account/session');
+			const data = await response.json();
+			if (!stopped) {
+				user.set(data.user ?? null);
+				loading.set(false);
+			}
+		} catch {
+			if (!stopped) {
+				user.set(null);
+				loading.set(false);
+			}
+		}
+	})();
 
-	// Return unsubscribe function
-	return () => subscription.unsubscribe();
+	return () => {
+		stopped = true;
+	};
 }
 
-// Auth helper functions
 export const auth = {
-	signUp: async (email: string, password: string) => {
-		const { data, error } = await supabase.auth.signUp({
-			email,
-			password
+	createAccount: async (acceptedTos: boolean) => {
+		const response = await fetch('/api/account/create', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ acceptedTos })
 		});
-		return { data, error };
+		const data = await response.json();
+		return {
+			data,
+			error: response.ok ? null : { message: data.error || 'Failed to create account' }
+		};
 	},
 
-	signIn: async (email: string, password: string) => {
-		const { data, error } = await supabase.auth.signInWithPassword({
-			email,
-			password
+	signIn: async (accountNumber: string) => {
+		const normalized = normalizeAccountNumber(accountNumber);
+		if (!isValidAccountNumber(normalized)) {
+			return {
+				data: null,
+				error: { message: 'Account number must be 16 digits' }
+			};
+		}
+
+		const response = await fetch('/api/account/login', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ accountNumber: normalized })
 		});
-		return { data, error };
+		const data = await response.json();
+		if (response.ok) {
+			const sessionRes = await fetch('/api/account/session');
+			const sessionData = await sessionRes.json();
+			user.set(sessionData.user ?? null);
+		}
+		return {
+			data,
+			error: response.ok ? null : { message: data.error || 'Login failed' }
+		};
 	},
 
 	signOut: async () => {
-		const { error } = await supabase.auth.signOut();
-		return { error };
+		const response = await fetch('/api/account/logout', { method: 'POST' });
+		user.set(null);
+		return {
+			error: response.ok ? null : { message: 'Failed to sign out' }
+		};
 	}
 };

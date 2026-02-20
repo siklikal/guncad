@@ -4,6 +4,14 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 
+interface BookmarkWithDetails {
+	id: string;
+	model_id: string;
+	model_title: string;
+	model_image: string;
+	bookmarked_at: string;
+}
+
 export const GET: RequestHandler = async ({ locals, fetch }) => {
 	try {
 		const session = locals.session;
@@ -27,7 +35,7 @@ export const GET: RequestHandler = async ({ locals, fetch }) => {
 		}
 
 		// Batch fetch all project details from GCI in a single API call
-		let bookmarksWithDetails = [];
+		let bookmarksWithDetails: BookmarkWithDetails[] = [];
 
 		if (bookmarks && bookmarks.length > 0) {
 			// Build array of all GCI URLs

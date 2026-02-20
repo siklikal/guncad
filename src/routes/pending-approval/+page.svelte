@@ -31,15 +31,14 @@
 						<span class="font-semibold">Awaiting Admin Approval</span>
 					</div>
 					<p class="text-sm text-muted-foreground">
-						An administrator needs to approve your account before you can access the site. You'll
-						receive an email notification once your account has been approved.
+						An administrator needs to approve your account before you can access the site.
 					</p>
 				</div>
 
 				<div class="space-y-2 text-sm text-muted-foreground">
 					<p>In the meantime:</p>
 					<ul class="list-inside list-disc space-y-1 text-left">
-						<li>Check your email for confirmation</li>
+						<li>Save your account number in a secure location</li>
 						<li>Contact support if you have questions</li>
 						<li>This page will automatically redirect once you're approved</li>
 					</ul>

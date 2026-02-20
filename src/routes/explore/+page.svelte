@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { PageData, Snapshot } from './$types';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Fa from 'svelte-fa';
 	import { faXmark } from '@fortawesome/free-solid-svg-icons';
 	import ModelCard from '$lib/components/ModelCard.svelte';
@@ -93,9 +93,103 @@
 
 	let selectedSort = $state(sortParam);
 	let selectedTime = $state(timeParam);
+	let restoredFromSnapshot = false;
+	let scrollY = 0;
+	let hasMounted = false;
+	let activeRouteKey = $state(`${searchQuery}|${sortParam}|${timeParam}`);
+	const CACHE_PREFIX = 'explore-cache:';
+
+	function getRouteKey(
+		query: string = searchQuery,
+		sort: string = sortParam,
+		time: string = timeParam
+	): string {
+		return `${query}|${sort}|${time}`;
+	}
+
+	function loadCachedState(routeKey: string) {
+		if (typeof window === 'undefined') return null;
+		try {
+			const raw = sessionStorage.getItem(`${CACHE_PREFIX}${routeKey}`);
+			if (!raw) return null;
+			return JSON.parse(raw) as {
+				projects: Project[];
+				count: number;
+				hasMore: boolean;
+				scrollY: number;
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	function saveCachedState(routeKey: string) {
+		if (typeof window === 'undefined') return;
+		try {
+			sessionStorage.setItem(
+				`${CACHE_PREFIX}${routeKey}`,
+				JSON.stringify({
+					projects,
+					count,
+					hasMore,
+					scrollY: window.scrollY
+				})
+			);
+		} catch {
+			// Ignore cache write errors (quota/private mode/etc)
+		}
+	}
+
+	// Snapshot: preserve loaded projects and scroll position on back-navigation
+	export const snapshot: Snapshot<{
+		projects: Project[];
+		count: number;
+		hasMore: boolean;
+		scrollY: number;
+		currentSearchQuery: string;
+		currentSort: string;
+		currentTime: string;
+		selectedSort: string;
+		selectedTime: string;
+	}> = {
+		capture: () => ({
+			projects,
+			count,
+			hasMore,
+			scrollY: window.scrollY,
+			currentSearchQuery,
+			currentSort,
+			currentTime,
+			selectedSort,
+			selectedTime
+		}),
+		restore: (value) => {
+			projects = value.projects;
+			count = value.count;
+			hasMore = value.hasMore;
+			scrollY = value.scrollY;
+			currentSearchQuery = value.currentSearchQuery;
+			currentSort = value.currentSort;
+			currentTime = value.currentTime;
+			selectedSort = value.selectedSort;
+			selectedTime = value.selectedTime;
+			initialLoading = false;
+			activeRouteKey = `${value.currentSearchQuery}|${value.currentSort}|${value.currentTime}`;
+			restoredFromSnapshot = true;
+		}
+	};
 
 	// Fetch initial data when component mounts or search query changes
 	$effect(() => {
+		if (!hasMounted) {
+			return;
+		}
+
+		const nextRouteKey = getRouteKey();
+		if (nextRouteKey === activeRouteKey) {
+			return;
+		}
+
 		if (
 			currentSearchQuery !== searchQuery ||
 			currentSort !== sortParam ||
@@ -113,12 +207,65 @@
 				currentSort = 'rank';
 			}
 
+			activeRouteKey = nextRouteKey;
+
+			const cached = loadCachedState(nextRouteKey);
+			if (cached && cached.projects.length > 0) {
+				projects = cached.projects;
+				count = cached.count;
+				hasMore = cached.hasMore;
+				scrollY = cached.scrollY || 0;
+				initialLoading = false;
+				requestAnimationFrame(() => {
+					window.scrollTo(0, scrollY);
+				});
+				return;
+			}
+
 			fetchProjects();
 		}
 	});
 
 	onMount(() => {
+		hasMounted = true;
+		activeRouteKey = getRouteKey();
+
+		const cached = loadCachedState(activeRouteKey);
+		if (cached && cached.projects.length > 0) {
+			projects = cached.projects;
+			count = cached.count;
+			hasMore = cached.hasMore;
+			scrollY = cached.scrollY || 0;
+			initialLoading = false;
+			requestAnimationFrame(() => {
+				window.scrollTo(0, scrollY);
+			});
+			return;
+		}
+
+		// If state was restored (snapshot/back-forward cache), keep existing list.
+		if (projects.length > 0) {
+			initialLoading = false;
+			if (restoredFromSnapshot || scrollY > 0) {
+				requestAnimationFrame(() => {
+					window.scrollTo(0, scrollY);
+				});
+			}
+			return;
+		}
+
+		if (restoredFromSnapshot) {
+			// Restore scroll position after DOM has rendered
+			requestAnimationFrame(() => {
+				window.scrollTo(0, scrollY);
+			});
+			return;
+		}
 		fetchProjects();
+	});
+
+	onDestroy(() => {
+		saveCachedState(activeRouteKey);
 	});
 
 	async function fetchProjects() {
@@ -158,6 +305,7 @@
 			projects = data.releases;
 			count = data.count;
 			hasMore = data.hasMore;
+			saveCachedState(activeRouteKey);
 
 			console.log('Projects loaded:', projects.length, 'projects');
 		} catch (error) {
@@ -226,6 +374,7 @@
 
 			projects = [...projects, ...data.releases];
 			hasMore = data.hasMore;
+			saveCachedState(activeRouteKey);
 		} catch (error) {
 			console.error('Error loading more releases:', error);
 		} finally {
