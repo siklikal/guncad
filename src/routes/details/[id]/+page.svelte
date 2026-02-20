@@ -18,6 +18,8 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
 	import { toast } from 'svelte-sonner';
+	import { supabase } from '$lib/supabase';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -26,6 +28,7 @@
 	let downloadError = $state('');
 	let showSubscriptionModal = $state(false);
 	let showSuccessAnimation = $state(false);
+	let geoChecking = $state(false);
 	let isBookmarked = $state(false);
 	let bookmarkLoading = $state(false);
 	let project = $state<any>(null);
@@ -52,6 +55,30 @@
 				trackView();
 			}
 		});
+	});
+
+	// Subscribe to realtime updates for project_stats
+	onMount(() => {
+		const channel = supabase
+			.channel('project-stats-realtime')
+			.on(
+				'postgres_changes',
+				{
+					event: '*',
+					schema: 'public',
+					table: 'project_stats',
+					filter: `project_id=eq.${data.projectId}`
+				},
+				() => {
+					// Re-fetch stats when the row changes
+					fetchProjectStats();
+				}
+			)
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
 	});
 
 	// Track view when project loads
@@ -325,9 +352,26 @@
 
 	let badgeConfig = $derived(project?.badge ? getBadgeConfig(project.badge) : null);
 
-	// Handle buy button click - immediately show modal
-	function handleBuyClick() {
-		showSubscriptionModal = true;
+	// Handle buy button click - check geo restrictions first
+	async function handleBuyClick() {
+		geoChecking = true;
+
+		try {
+			const response = await fetch('/api/geo-check');
+			const result = await response.json();
+
+			if (!result.allowed) {
+				toast.error(result.reason || 'Purchases are not available in your region.');
+				return;
+			}
+
+			showSubscriptionModal = true;
+		} catch (error) {
+			console.error('Geo check failed:', error);
+			toast.error('Unable to verify your location. Please try again later.');
+		} finally {
+			geoChecking = false;
+		}
 	}
 
 	// Handle successful payment
@@ -550,9 +594,17 @@
 							</Button>
 						{:else}
 							<!-- Buy button (shown before purchase) -->
-							<Button size="lg" class="flex-1" onclick={handleBuyClick}>
+							<Button size="lg" class="flex-1" onclick={handleBuyClick} disabled={geoChecking}>
 								{#snippet children()}
-									<Fa icon={faShoppingCart} class="text-sm" />
+									<span class="inline-block w-4">
+										{#if geoChecking}
+											<div
+												class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
+											></div>
+										{:else}
+											<Fa icon={faShoppingCart} class="text-sm" />
+										{/if}
+									</span>
 									Buy
 								{/snippet}
 							</Button>
@@ -677,9 +729,17 @@
 								</Button>
 							{:else}
 								<!-- Buy button (shown before purchase) -->
-								<Button size="lg" class="flex-1 xl:flex-none" onclick={handleBuyClick}>
+								<Button size="lg" class="flex-1 xl:flex-none" onclick={handleBuyClick} disabled={geoChecking}>
 									{#snippet children()}
-										<Fa icon={faShoppingCart} class="text-sm" />
+										<span class="inline-block w-4">
+											{#if geoChecking}
+												<div
+													class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
+												></div>
+											{:else}
+												<Fa icon={faShoppingCart} class="text-sm" />
+											{/if}
+										</span>
 										Buy
 									{/snippet}
 								</Button>

@@ -19,6 +19,8 @@
 
 	let processing = $state(false);
 	let error = $state('');
+	let firstName = $state('');
+	let lastName = $state('');
 	let cardNumber = $state(env.PUBLIC_ADN_TEST_CARD_NUMBER || '');
 	let expiryMonth = $state(env.PUBLIC_ADN_TEST_CARD_EXPIRATION_MONTH || '');
 	let expiryYear = $state(env.PUBLIC_ADN_TEST_CARD_EXPIRATION_YEAR || '');
@@ -33,6 +35,8 @@
 		if (!processing) {
 			isOpen = false;
 			error = '';
+			firstName = '';
+			lastName = '';
 			cardNumber = '';
 			expiryMonth = '';
 			expiryYear = '';
@@ -89,6 +93,8 @@
 					opaqueDataValue: tokenResponse.opaqueData.dataValue,
 					modelId: modelId,
 					modelTitle: modelTitle,
+					firstName: firstName,
+					lastName: lastName,
 					zipCode: zipCode
 				})
 			});
@@ -207,6 +213,34 @@
 
 				<!-- Payment Form -->
 				<form onsubmit={handleSubmit} class="space-y-4">
+					<!-- Name -->
+					<div class="grid grid-cols-2 gap-3">
+						<div>
+							<label for="firstName" class="mb-1 block text-sm font-medium">First Name</label>
+							<input
+								type="text"
+								id="firstName"
+								bind:value={firstName}
+								placeholder="John"
+								disabled={processing}
+								required
+								class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+							/>
+						</div>
+						<div>
+							<label for="lastName" class="mb-1 block text-sm font-medium">Last Name</label>
+							<input
+								type="text"
+								id="lastName"
+								bind:value={lastName}
+								placeholder="Doe"
+								disabled={processing}
+								required
+								class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+							/>
+						</div>
+					</div>
+
 					<!-- Card Number -->
 					<div>
 						<label for="cardNumber" class="mb-1 block text-sm font-medium"> Card Number </label>

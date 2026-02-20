@@ -1,19 +1,21 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import {
-	ADN_API_LOGIN_ID,
 	ADN_TRANSACTION_KEY,
-	ADN_SANDBOX_API_ENDPOINT,
+	ADN_API_ENDPOINT,
 	SUPABASE_SERVICE_ROLE_KEY
 } from '$env/static/private';
-import { PUBLIC_MODEL_PURCHASE_PRICE, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { PUBLIC_ADN_API_LOGIN_ID, PUBLIC_MODEL_PURCHASE_PRICE, PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { createClient } from '@supabase/supabase-js';
+import { checkGeoPurchase, getClientIp } from '$lib/server/geoCheck';
 
 interface PaymentRequest {
 	opaqueDataDescriptor: string;
 	opaqueDataValue: string;
 	modelId: string;
 	modelTitle: string;
+	firstName: string;
+	lastName: string;
 	zipCode: string;
 }
 
@@ -30,10 +32,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			opaqueDataValue,
 			modelId,
 			modelTitle,
+			firstName,
+			lastName,
 			zipCode
 		}: PaymentRequest = await request.json();
 
 		console.log('[Payment] Processing payment for model:', modelId, 'User:', session.user.id);
+
+		// Geo-restriction safety net
+		const ip = getClientIp(request);
+		const geoResult = await checkGeoPurchase(ip);
+		if (!geoResult.allowed) {
+			console.log('[Payment] Blocked by geo check:', geoResult.reason);
+			return json({ success: false, error: geoResult.reason }, { status: 403 });
+		}
 
 		// Build Authorize.Net API request
 		// IMPORTANT: Field order matters in Authorize.Net XML schema!
@@ -43,7 +55,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const authNetRequest = {
 			createTransactionRequest: {
 				merchantAuthentication: {
-					name: ADN_API_LOGIN_ID,
+					name: PUBLIC_ADN_API_LOGIN_ID,
 					transactionKey: ADN_TRANSACTION_KEY
 				},
 				transactionRequest: {
@@ -60,6 +72,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						description: `Model Purchase: ${modelTitle}`
 					},
 					billTo: {
+						firstName: firstName,
+						lastName: lastName,
 						zip: zipCode
 					}
 				}
@@ -69,7 +83,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		console.log('[Payment] Calling Authorize.Net API...');
 
 		// Call Authorize.Net API
-		const response = await fetch(ADN_SANDBOX_API_ENDPOINT, {
+		const response = await fetch(ADN_API_ENDPOINT, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

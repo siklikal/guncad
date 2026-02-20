@@ -101,6 +101,17 @@
 			document.body.removeChild(a);
 
 			console.log('[Downloads] Download completed');
+
+			// Track download in project stats
+			try {
+				await fetch('/api/project-stats/track-download', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ projectId: modelId })
+				});
+			} catch (e) {
+				console.error('[Downloads] Failed to track download:', e);
+			}
 		} catch (error) {
 			console.error('[Downloads] Download error:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Download failed';
@@ -141,11 +152,10 @@
 			<table class="w-full">
 				<thead class="bg-neutral-800">
 					<tr>
-						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Model</th>
-						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Purchase Date</th
-						>
-						<th class="px-6 py-4 text-left text-sm font-semibold text-neutral-300">Price</th>
-						<th class="px-6 py-4 text-right text-sm font-semibold text-neutral-300">Action</th>
+						<th class="w-full px-6 py-4 text-left text-sm font-semibold text-neutral-300">Model</th>
+						<th class="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap text-neutral-300">Purchase Date</th>
+						<th class="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap text-neutral-300">Price</th>
+						<th class="px-6 py-4 text-right text-sm font-semibold whitespace-nowrap text-neutral-300">Action</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-neutral-700">
@@ -165,7 +175,7 @@
 									</div>
 								</a>
 							</td>
-							<td class="px-6 py-4">
+							<td class="whitespace-nowrap px-6 py-4">
 								<div class="flex items-center gap-2 text-neutral-300">
 									<Fa icon={faCalendar} class="text-sm text-neutral-500" />
 									<span>{formatDate(purchase.purchased_at)}</span>
