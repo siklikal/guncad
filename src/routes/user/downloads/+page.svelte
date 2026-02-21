@@ -124,7 +124,7 @@
 
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
-		<h1 class="mb-2 text-4xl font-bold">My Downloads</h1>
+		<h1 class="mb-2 text-4xl font-bold">My Purchases</h1>
 		<p class="text-neutral-400">Models you've purchased</p>
 	</div>
 

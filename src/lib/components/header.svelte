@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { user, auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import { LogOut, Settings, Download, Bookmark, Heart } from '@lucide/svelte';
+	import { LogOut, ShoppingBag, Bookmark, Heart } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -76,11 +76,8 @@
 							>
 							<DropdownMenu.Content class="w-[200px]">
 								<DropdownMenu.Group>
-									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/settings')}
-										><Settings />Settings</DropdownMenu.Item
-									>
 									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/downloads')}
-										><Download />Downloads</DropdownMenu.Item
+										><ShoppingBag />Purchases</DropdownMenu.Item
 									>
 									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/likes')}
 										><Heart />Liked</DropdownMenu.Item
@@ -128,20 +125,12 @@
 					<p class="mb-3 text-sm font-semibold text-neutral-400 uppercase">Account</p>
 					<div class="space-y-1">
 						<a
-							href="/user/settings"
-							onclick={closeMobileMenu}
-							class="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-700"
-						>
-							<Settings class="h-4 w-4" />
-							<span>Settings</span>
-						</a>
-						<a
 							href="/user/downloads"
 							onclick={closeMobileMenu}
 							class="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-700"
 						>
-							<Download class="h-4 w-4" />
-							<span>Downloads</span>
+							<ShoppingBag class="h-4 w-4" />
+							<span>Purchases</span>
 						</a>
 						<a
 							href="/user/likes"
