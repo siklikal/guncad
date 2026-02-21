@@ -80,7 +80,7 @@
 <div class="flex min-h-screen items-center justify-center bg-neutral-950 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header>
-			<Card.Title class="text-center text-3xl">Guncad Account Access</Card.Title>
+			<Card.Title class="text-center text-3xl">Guncad</Card.Title>
 			<Card.Description class="pt-2 text-center">
 				Use your 16-digit account number to sign in.
 			</Card.Description>
@@ -104,7 +104,6 @@
 						onpaste={handleAccountPaste}
 						required
 						maxlength={19}
-						placeholder="1234 5678 9012 3456"
 						inputmode="numeric"
 					/>
 				</div>
@@ -161,7 +160,7 @@
 
 				{#if createdAccountNumber}
 					<div class="rounded-md border border-blue-700 bg-blue-900/20 p-3">
-						<p class="text-xs text-neutral-300">Save this number now. It is your only login.</p>
+						<p class="text-xs text-neutral-300">Your account has been created. Copy and save this number, it's your login credential. Use it in the field above to sign in.</p>
 						<div class="mt-2 flex items-center justify-between gap-2">
 							<p class="font-mono text-lg">{createdAccountNumber}</p>
 							<Button size="sm" type="button" variant="outline" onclick={handleCopy}>
