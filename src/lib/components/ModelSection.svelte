@@ -5,6 +5,7 @@
 
 	interface User {
 		username: string;
+		handle: string;
 		avatar: string;
 	}
 

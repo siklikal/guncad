@@ -65,6 +65,7 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 					tags: release.tags ? release.tags.map((tag: any) => tag.name) : [],
 					user: {
 						username: release.channel?.name || 'Unknown User',
+						handle: release.channel?.handle || '',
 						avatar:
 							release.channel?.thumbnail_manager?.large ||
 							'https://guncadindex.com/static/images/default-avatar.png'
@@ -86,6 +87,7 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 					tags: [],
 					user: {
 						username: 'Unknown User',
+						handle: '',
 						avatar: 'https://guncadindex.com/static/images/default-avatar.png'
 					},
 					description: '',

@@ -58,6 +58,7 @@ export const GET: RequestHandler = async ({ url, fetch: serverFetch }) => {
 				tags: release.tags ? release.tags.map((tag: any) => tag.name) : [],
 				user: {
 					username: release.channel?.name || 'Unknown User',
+					handle: release.channel?.handle || '',
 					avatar:
 						release.channel?.thumbnail_manager?.large ||
 						'https://guncadindex.com/static/images/default-avatar.png'

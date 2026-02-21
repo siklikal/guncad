@@ -81,7 +81,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		'/featured',
 		'/trending',
 		'/premium-models',
-		'/user'
+		'/user',
+		'/channel'
 	];
 
 	const isProtectedRoute = protectedRoutes.some(

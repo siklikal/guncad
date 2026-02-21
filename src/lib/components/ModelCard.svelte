@@ -11,6 +11,7 @@
 
 	interface User {
 		username: string;
+		handle: string;
 		avatar: string;
 	}
 
@@ -73,7 +74,7 @@
 		</div>
 	</div>
 	<div class="flex justify-between gap-1 pb-4 md:flex-row md:gap-4">
-		<a href="/user/{user.username}" class="group/user flex min-w-0 flex-[0.45] items-center gap-1">
+		<a href="/channel/{user.handle ? user.handle.replace('@', '') : user.username}" class="group/user flex min-w-0 flex-[0.45] items-center gap-1">
 			<div
 				class="h-5 w-5 shrink-0 rounded-full bg-cover bg-center"
 				style="background-image: url('{user.avatar &&

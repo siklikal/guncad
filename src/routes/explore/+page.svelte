@@ -45,6 +45,7 @@
 		likes: number;
 		user: {
 			username: string;
+			handle: string;
 			avatar: string;
 		};
 	}

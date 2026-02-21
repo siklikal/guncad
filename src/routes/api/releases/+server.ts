@@ -21,6 +21,7 @@ interface Release {
 	url_lbry?: string;
 	channel?: {
 		name: string;
+		handle: string;
 		thumbnail_manager?: {
 			small: string;
 			large: string;
@@ -39,6 +40,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 	const limit = parseInt(url.searchParams.get('limit') || '20');
 	const offset = parseInt(url.searchParams.get('offset') || '0');
 	const searchQuery = url.searchParams.get('search') || '';
+	const channel = url.searchParams.get('channel') || '';
 	const sort = url.searchParams.get('sort') || (searchQuery ? 'rank' : 'newest');
 	const time = url.searchParams.get('time') || 'alltime';
 
@@ -46,6 +48,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		limit,
 		offset,
 		searchQuery,
+		channel,
 		sort,
 		time
 	});
@@ -61,6 +64,10 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		if (searchQuery) {
 			apiUrl.searchParams.set('query', searchQuery);
 			console.log('[API /api/releases] Using search query:', searchQuery);
+		}
+		if (channel) {
+			apiUrl.searchParams.set('channel', channel);
+			console.log('[API /api/releases] Filtering by channel:', channel);
 		}
 		apiUrl.searchParams.set('sort', sort);
 		apiUrl.searchParams.set('time', time);
@@ -108,6 +115,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 				likes: release.odysee_likes || 0,
 				user: {
 					username: release.channel?.name || 'Unknown',
+					handle: release.channel?.handle || '',
 					avatar: release.channel?.thumbnail_manager?.large || '/images/default-avatar.avif'
 				}
 			};

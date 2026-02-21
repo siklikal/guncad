@@ -469,7 +469,7 @@
 
 						<!-- User Info -->
 						<a
-							href="/user/{loadedProject.user.username}"
+							href="/channel/{loadedProject.user.handle ? loadedProject.user.handle.replace('@', '') : loadedProject.user.username}"
 							class="group/user inline-flex items-center gap-1.5"
 						>
 							<div
