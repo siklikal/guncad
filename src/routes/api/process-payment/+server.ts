@@ -8,6 +8,7 @@ import {
 import { PUBLIC_ADN_API_LOGIN_ID, PUBLIC_MODEL_PURCHASE_PRICE, PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { createClient } from '@supabase/supabase-js';
 import { checkGeoPurchase, getClientIp } from '$lib/server/geoCheck';
+import { env } from '$env/dynamic/private';
 
 interface PaymentRequest {
 	opaqueDataDescriptor: string;
@@ -40,11 +41,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		console.log('[Payment] Processing payment for model:', modelId, 'User:', session.user.id);
 
 		// Geo-restriction safety net
-		const ip = getClientIp(request);
-		const geoResult = await checkGeoPurchase(ip);
-		if (!geoResult.allowed) {
-			console.log('[Payment] Blocked by geo check:', geoResult.reason);
-			return json({ success: false, error: geoResult.reason }, { status: 403 });
+		if (env.BYPASS_GEO_CHECK !== 'true') {
+			const ip = getClientIp(request);
+			const geoResult = await checkGeoPurchase(ip);
+			if (!geoResult.allowed) {
+				console.log('[Payment] Blocked by geo check:', geoResult.reason);
+				return json({ success: false, error: geoResult.reason }, { status: 403 });
+			}
 		}
 
 		// Build Authorize.Net API request

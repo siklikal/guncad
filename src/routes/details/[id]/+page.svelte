@@ -9,7 +9,6 @@
 		faFire,
 		faBookmark,
 		faDownload,
-		faShoppingCart,
 		faCopy,
 		faCalendar
 	} from '@fortawesome/free-solid-svg-icons';
@@ -260,9 +259,23 @@
 			if (entitlementData.canDownload) {
 				await performDownload();
 			} else {
-				// User needs subscription
+				// User needs to purchase, check geo first
 				downloading = false;
-				showSubscriptionModal = true;
+				geoChecking = true;
+				try {
+					const geoResponse = await fetch('/api/geo-check');
+					const geoResult = await geoResponse.json();
+					if (!geoResult.allowed) {
+						toast.error(geoResult.reason || 'Purchases are not available in your region.');
+						return;
+					}
+					showSubscriptionModal = true;
+				} catch (error) {
+					console.error('Geo check failed:', error);
+					toast.error('Unable to verify your location. Please try again later.');
+				} finally {
+					geoChecking = false;
+				}
 			}
 		} catch (error) {
 			downloadError = error instanceof Error ? error.message : 'Failed to check download access';
@@ -352,37 +365,23 @@
 
 	let badgeConfig = $derived(project?.badge ? getBadgeConfig(project.badge) : null);
 
-	// Handle buy button click - check geo restrictions first
-	async function handleBuyClick() {
-		geoChecking = true;
-
-		try {
-			const response = await fetch('/api/geo-check');
-			const result = await response.json();
-
-			if (!result.allowed) {
-				toast.error(result.reason || 'Purchases are not available in your region.');
-				return;
-			}
-
-			showSubscriptionModal = true;
-		} catch (error) {
-			console.error('Geo check failed:', error);
-			toast.error('Unable to verify your location. Please try again later.');
-		} finally {
-			geoChecking = false;
-		}
-	}
-
-	// Handle successful payment
+	// Handle successful payment - auto-start download
 	async function handleSubscriptionSuccess() {
 		showSubscriptionModal = false;
+		hasPurchased = true;
 
-		// Show success animation
+		// Show success animation briefly, then start download
 		showSuccessAnimation = true;
-		setTimeout(() => {
+		setTimeout(async () => {
 			showSuccessAnimation = false;
-			hasPurchased = true;
+			// Auto-start the download
+			downloading = true;
+			downloadError = '';
+			try {
+				await performDownload();
+			} catch (error) {
+				downloadError = error instanceof Error ? error.message : 'Failed to start download';
+			}
 		}, 2000);
 	}
 
@@ -578,37 +577,24 @@
 							{/snippet}
 						</Button>
 
-						{#if hasPurchased}
-							<!-- Download button (shown after purchase) -->
-							<Button size="lg" class="flex-1" onclick={handleDownload} disabled={downloading}>
-								{#snippet children()}
-									<span class="inline-block w-4">
-										{#if downloading}
-											<div class="spinner"></div>
-										{:else}
-											<Fa icon={faDownload} class="text-sm" />
-										{/if}
-									</span>
+						<Button size="lg" class="flex-1" onclick={handleDownload} disabled={downloading || geoChecking}>
+							{#snippet children()}
+								<span class="inline-block w-4">
+									{#if downloading || geoChecking}
+										<div class="spinner"></div>
+									{:else}
+										<Fa icon={faDownload} class="text-sm" />
+									{/if}
+								</span>
+								{#if downloading}
+									Downloading...
+								{:else if geoChecking}
+									Checking...
+								{:else}
 									Download
-								{/snippet}
-							</Button>
-						{:else}
-							<!-- Buy button (shown before purchase) -->
-							<Button size="lg" class="flex-1" onclick={handleBuyClick} disabled={geoChecking}>
-								{#snippet children()}
-									<span class="inline-block w-4">
-										{#if geoChecking}
-											<div
-												class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
-											></div>
-										{:else}
-											<Fa icon={faShoppingCart} class="text-sm" />
-										{/if}
-									</span>
-									Buy
-								{/snippet}
-							</Button>
-						{/if}
+								{/if}
+							{/snippet}
+						</Button>
 
 						<!-- Debug download button -->
 						<!-- <Button
@@ -708,42 +694,24 @@
 								{/snippet}
 							</Button>
 
-							{#if hasPurchased}
-								<!-- Download button (shown after purchase) -->
-								<Button
-									size="lg"
-									class="flex-1 xl:flex-none"
-									onclick={handleDownload}
-									disabled={downloading}
-								>
-									{#snippet children()}
-										<span class="inline-block w-4">
-											{#if downloading}
-												<div class="spinner"></div>
-											{:else}
-												<Fa icon={faDownload} class="text-sm" />
-											{/if}
-										</span>
+							<Button size="lg" class="flex-1 xl:flex-none" onclick={handleDownload} disabled={downloading || geoChecking}>
+								{#snippet children()}
+									<span class="inline-block w-4">
+										{#if downloading || geoChecking}
+											<div class="spinner"></div>
+										{:else}
+											<Fa icon={faDownload} class="text-sm" />
+										{/if}
+									</span>
+									{#if downloading}
+										Downloading...
+									{:else if geoChecking}
+										Checking...
+									{:else}
 										Download
-									{/snippet}
-								</Button>
-							{:else}
-								<!-- Buy button (shown before purchase) -->
-								<Button size="lg" class="flex-1 xl:flex-none" onclick={handleBuyClick} disabled={geoChecking}>
-									{#snippet children()}
-										<span class="inline-block w-4">
-											{#if geoChecking}
-												<div
-													class="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"
-												></div>
-											{:else}
-												<Fa icon={faShoppingCart} class="text-sm" />
-											{/if}
-										</span>
-										Buy
-									{/snippet}
-								</Button>
-							{/if}
+									{/if}
+								{/snippet}
+							</Button>
 
 							<!-- Debug download button -->
 							<!-- <Button
@@ -797,7 +765,7 @@
 				<Check class="h-12 w-12 animate-in text-white delay-150 zoom-in-95" />
 			</div>
 			<h2 class="text-2xl font-bold text-white">Payment Successful!</h2>
-			<p class="text-neutral-300">You can now download this model</p>
+			<p class="text-neutral-300">Your download will start automatically...</p>
 		</div>
 	</div>
 {/if}
