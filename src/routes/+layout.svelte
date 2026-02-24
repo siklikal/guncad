@@ -32,7 +32,7 @@
 <div class="flex min-h-screen flex-col">
 	{#if showHeader}
 		<Header />
-		<div class="flex-1 p-4 md:py-8">
+		<div class="flex-1 p-4 pb-16 md:py-8 md:pb-16">
 			{@render children()}
 		</div>
 		<Footer />

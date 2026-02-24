@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 					source: {
 						name: `${projectData.title}.zip`,
 						mediaType: 'application/zip',
-						size: 0,
+						size: projectData.fileSize || 0,
 						hash: ''
 					},
 					badge: null,

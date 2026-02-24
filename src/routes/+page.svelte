@@ -25,8 +25,11 @@
 		recentlyUpdated: new Promise(() => {})
 	});
 
+	let spotlightsLoaded = $state(false);
+
 	onMount(async () => {
 		pageData = await fetchHomepageData();
+		spotlightsLoaded = true;
 	});
 
 	// Note: Authentication is now handled server-side in hooks.server.ts
@@ -81,10 +84,10 @@
 						href={pageData.spotlightExclusive.id
 							? `/details/${pageData.spotlightExclusive.id}`
 							: pageData.spotlightExclusive.url}
-						class="group flex-1"
+						class="group flex-1 rounded-lg bg-neutral-800"
 					>
 						<div
-							class="h-full flex-1 rounded-lg bg-cover bg-center"
+							class="h-full flex-1 rounded-lg bg-cover bg-center transition-opacity duration-500 {spotlightsLoaded ? 'opacity-100' : 'opacity-0'}"
 							style="background-image: url('{pageData.spotlightExclusive.image}');"
 						>
 							<div class="flex h-full flex-col justify-between">
@@ -121,10 +124,10 @@
 						href={pageData.spotlightFeatured.id
 							? `/details/${pageData.spotlightFeatured.id}`
 							: pageData.spotlightFeatured.url}
-						class="group flex-1"
+						class="group flex-1 rounded-lg bg-neutral-800"
 					>
 						<div
-							class="h-full flex-1 rounded-lg bg-cover bg-center"
+							class="h-full flex-1 rounded-lg bg-cover bg-center transition-opacity duration-500 {spotlightsLoaded ? 'opacity-100' : 'opacity-0'}"
 							style="background-image: url('{pageData.spotlightFeatured.image}');"
 						>
 							<div class="flex h-full flex-col justify-between">
@@ -160,10 +163,10 @@
 						href={pageData.spotlightTrending.id
 							? `/details/${pageData.spotlightTrending.id}`
 							: pageData.spotlightTrending.url}
-						class="group flex-1"
+						class="group flex-1 rounded-lg bg-neutral-800"
 					>
 						<div
-							class="h-full flex-1 rounded-lg bg-cover bg-center"
+							class="h-full flex-1 rounded-lg bg-cover bg-center transition-opacity duration-500 {spotlightsLoaded ? 'opacity-100' : 'opacity-0'}"
 							style="background-image: url('{pageData.spotlightTrending.image}');"
 						>
 							<div class="flex h-full flex-col justify-between">
@@ -214,11 +217,13 @@
 				</div>
 			</div>
 		{:then popular}
-			<ModelSection
-				title="Most Popular"
-				items={popular}
-				href="/explore?sort=popular&time=alltime"
-			/>
+			<div class="fade-in">
+				<ModelSection
+					title="Most Popular"
+					items={popular}
+					href="/explore?sort=popular&time=alltime"
+				/>
+			</div>
 		{/await}
 
 		{#await pageData.newest}
@@ -237,7 +242,9 @@
 				</div>
 			</div>
 		{:then newest}
-			<ModelSection title="Newest" items={newest} href="/explore?sort=newest&time=alltime" />
+			<div class="fade-in">
+				<ModelSection title="Newest" items={newest} href="/explore?sort=newest&time=alltime" />
+			</div>
 		{/await}
 
 		{#await pageData.recentlyUpdated}
@@ -256,11 +263,13 @@
 				</div>
 			</div>
 		{:then recentlyUpdated}
-			<ModelSection
-				title="Recently Updated"
-				items={recentlyUpdated}
-				href="/explore?sort=updated&time=alltime"
-			/>
+			<div class="fade-in">
+				<ModelSection
+					title="Recently Updated"
+					items={recentlyUpdated}
+					href="/explore?sort=updated&time=alltime"
+				/>
+			</div>
 		{/await}
 
 		<div class="mt-10 hidden items-end gap-1.5">
@@ -373,3 +382,18 @@
 		</div>
 	</div>
 </div> -->
+
+<style>
+	.fade-in {
+		animation: fadeIn 0.4s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+</style>

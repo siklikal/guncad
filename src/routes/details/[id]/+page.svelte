@@ -10,7 +10,8 @@
 		faBookmark,
 		faDownload,
 		faCopy,
-		faCalendar
+		faCalendar,
+		faFile
 	} from '@fortawesome/free-solid-svg-icons';
 	import { Check } from 'lucide-svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
@@ -34,6 +35,7 @@
 	let hasPurchased = $state(false);
 	let isLiked = $state(false);
 	let likeLoading = $state(false);
+	let statsLoaded = $state(false);
 	let projectStats = $state<{ views: number; likes: number; bookmarks: number; downloads: number }>(
 		{
 			views: 0,
@@ -116,9 +118,11 @@
 					projectStats = { ...projectStats, ...result.stats };
 				}
 				isLiked = result.isLiked || false;
+				statsLoaded = true;
 			}
 		} catch (error) {
 			console.error('Failed to fetch project stats:', error);
+			statsLoaded = true;
 		}
 	}
 
@@ -154,6 +158,7 @@
 			if (response.ok) {
 				const result = await response.json();
 				isBookmarked = result.bookmarked;
+				projectStats.bookmarks += result.bookmarked ? 1 : -1;
 			}
 		} catch (error) {
 			console.error('Failed to toggle bookmark:', error);
@@ -195,6 +200,13 @@
 
 	function formatNumber(num: number): string {
 		return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
+	}
+
+	function formatFileSize(bytes: number): string {
+		if (!bytes || bytes === 0) return 'N/A';
+		if (bytes >= 1073741824) return `${Math.round(bytes / 1073741824)} GB`;
+		if (bytes >= 1048576) return `${Math.round(bytes / 1048576)} MB`;
+		return `${Math.round(bytes / 1024)} KB`;
 	}
 
 	function formatReleaseDate(dateString: string | null): string {
@@ -502,9 +514,9 @@
 						</div>
 					{/if} -->
 
-					<div class="grid w-full grid-cols-2 overflow-hidden rounded-lg border border-neutral-400 xl:flex xl:w-auto">
+					<div class="grid w-full grid-cols-3 overflow-hidden rounded-lg border border-neutral-400 2xl:flex 2xl:w-auto">
 						<div
-							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-2 xl:rounded-l-lg"
+							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-2 2xl:rounded-l-lg"
 						>
 							<Fa icon={faCalendar} class="text-sm text-neutral-400" />
 							<p class="text-xs font-semibold">
@@ -512,32 +524,58 @@
 							</p>
 						</div>
 						<div
-							class="flex flex-1 items-center justify-center gap-2 bg-neutral-800 p-2 xl:border-r xl:border-neutral-400"
+							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-2"
 						>
 							<Fa icon={faEye} class="text-sm text-neutral-400" />
 							<p class="text-xs font-semibold">
-								{formatNumber(projectStats.views || loadedProject.views)}
+								{#if statsLoaded}
+									{formatNumber(projectStats.views || loadedProject.views)}
+								{:else}
+									<span class="inline-block h-3 w-7 animate-pulse rounded-sm bg-neutral-600"></span>
+								{/if}
 							</p>
 						</div>
 						<div
-							class="flex flex-1 items-center justify-center gap-2 border-r border-t border-neutral-400 bg-neutral-800 p-2 xl:border-t-0"
+							class="flex flex-1 items-center justify-center gap-2 bg-neutral-800 p-2 2xl:border-r 2xl:border-neutral-400"
 						>
 							<Fa icon={faHeart} class="text-sm text-neutral-400" />
 							<p class="text-xs font-semibold">
-								{formatNumber(projectStats.likes || loadedProject.likes)}
+								{#if statsLoaded}
+									{formatNumber(projectStats.likes || loadedProject.likes)}
+								{:else}
+									<span class="inline-block h-3 w-6 animate-pulse rounded-sm bg-neutral-600"></span>
+								{/if}
 							</p>
 						</div>
-						<!-- <div
-							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-3"
+						<div
+							class="flex flex-1 items-center justify-center gap-2 border-r border-t border-neutral-400 bg-neutral-800 p-2 2xl:border-t-0"
 						>
 							<Fa icon={faBookmark} class="text-sm text-neutral-400" />
-							<p class="text-xs font-semibold">{formatNumber(projectStats.bookmarks)}</p>
-						</div> -->
+							<p class="text-xs font-semibold">
+								{#if statsLoaded}
+									{formatNumber(projectStats.bookmarks)}
+								{:else}
+									<span class="inline-block h-3 w-5 animate-pulse rounded-sm bg-neutral-600"></span>
+								{/if}
+							</p>
+						</div>
 						<div
-							class="flex flex-1 items-center justify-center gap-2 border-t border-neutral-400 bg-neutral-800 p-2 xl:rounded-r-lg xl:border-t-0"
+							class="flex flex-1 items-center justify-center gap-2 border-r border-t border-neutral-400 bg-neutral-800 p-2 2xl:border-t-0"
 						>
 							<Fa icon={faDownload} class="text-sm text-neutral-400" />
-							<p class="text-xs font-semibold">{formatNumber(projectStats.downloads)}</p>
+							<p class="text-xs font-semibold">
+								{#if statsLoaded}
+									{formatNumber(projectStats.downloads)}
+								{:else}
+									<span class="inline-block h-3 w-5 animate-pulse rounded-sm bg-neutral-600"></span>
+								{/if}
+							</p>
+						</div>
+						<div
+							class="flex flex-1 items-center justify-center gap-2 border-t border-neutral-400 bg-neutral-800 p-2 2xl:rounded-r-lg 2xl:border-t-0"
+						>
+							<Fa icon={faFile} class="text-sm text-neutral-400" />
+							<p class="text-xs font-semibold">{formatFileSize(loadedProject.source?.size)}</p>
 						</div>
 					</div>
 
@@ -623,7 +661,11 @@
 							>
 								<Fa icon={faEye} class="text-sm text-neutral-400" />
 								<p class="text-sm font-semibold">
-									{formatNumber(projectStats.views || loadedProject.views)}
+									{#if statsLoaded}
+										{formatNumber(projectStats.views || loadedProject.views)}
+									{:else}
+										<span class="inline-block h-3.5 w-8 animate-pulse rounded-sm bg-neutral-600"></span>
+									{/if}
 								</p>
 							</div>
 							<div
@@ -631,20 +673,42 @@
 							>
 								<Fa icon={faHeart} class="text-sm text-neutral-400" />
 								<p class="text-sm font-semibold">
-									{formatNumber(projectStats.likes || loadedProject.likes)}
+									{#if statsLoaded}
+										{formatNumber(projectStats.likes || loadedProject.likes)}
+									{:else}
+										<span class="inline-block h-3.5 w-7 animate-pulse rounded-sm bg-neutral-600"></span>
+									{/if}
 								</p>
 							</div>
 							<div
 								class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
 							>
 								<Fa icon={faBookmark} class="text-sm text-neutral-400" />
-								<p class="text-sm font-semibold">{formatNumber(projectStats.bookmarks)}</p>
+								<p class="text-sm font-semibold">
+									{#if statsLoaded}
+										{formatNumber(projectStats.bookmarks)}
+									{:else}
+										<span class="inline-block h-3.5 w-6 animate-pulse rounded-sm bg-neutral-600"></span>
+									{/if}
+								</p>
+							</div>
+							<div
+								class="flex flex-1 items-center justify-center gap-1 border-r border-neutral-400 bg-neutral-800 p-3"
+							>
+								<Fa icon={faDownload} class="text-sm text-neutral-400" />
+								<p class="text-sm font-semibold">
+									{#if statsLoaded}
+										{formatNumber(projectStats.downloads)}
+									{:else}
+										<span class="inline-block h-3.5 w-6 animate-pulse rounded-sm bg-neutral-600"></span>
+									{/if}
+								</p>
 							</div>
 							<div
 								class="flex flex-1 items-center justify-center gap-1 rounded-tr-lg rounded-br-lg bg-neutral-800 p-3"
 							>
-								<Fa icon={faDownload} class="text-sm text-neutral-400" />
-								<p class="text-sm font-semibold">{formatNumber(projectStats.downloads)}</p>
+								<Fa icon={faFile} class="text-sm text-neutral-400" />
+								<p class="text-sm font-semibold">{formatFileSize(loadedProject.source?.size)}</p>
 							</div>
 						</div>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Fa from 'svelte-fa';
-	import { faDownload, faShoppingCart, faCalendar } from '@fortawesome/free-solid-svg-icons';
+	import { faDownload, faCalendar } from '@fortawesome/free-solid-svg-icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { onMount } from 'svelte';
 
@@ -124,8 +124,8 @@
 
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
-		<h1 class="mb-2 text-4xl font-bold">My Purchases</h1>
-		<p class="text-neutral-400">Models you've purchased</p>
+		<h1 class="mb-2 text-4xl font-bold">My Downloads</h1>
+		<p class="text-neutral-400">Models you've downloaded</p>
 	</div>
 
 	{#if loading}
@@ -140,10 +140,10 @@
 		<div
 			class="flex flex-col items-center justify-center rounded-lg border border-neutral-700 bg-neutral-800/50 px-6 py-16"
 		>
-			<Fa icon={faShoppingCart} class="mb-4 text-4xl text-neutral-600" />
-			<h2 class="mb-2 text-xl font-semibold text-neutral-300">No purchases yet</h2>
+			<Fa icon={faDownload} class="mb-4 text-4xl text-neutral-600" />
+			<h2 class="mb-2 text-xl font-semibold text-neutral-300">No downloads yet</h2>
 			<p class="text-center text-neutral-400">
-				You haven't purchased any models. Explore to find models you'd like to download.
+				You haven't downloaded any models yet. Explore to find models you'd like to download.
 			</p>
 		</div>
 	{:else}
@@ -153,7 +153,7 @@
 				<thead class="bg-neutral-800">
 					<tr>
 						<th class="w-full px-6 py-4 text-left text-sm font-semibold text-neutral-300">Model</th>
-						<th class="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap text-neutral-300">Purchase Date</th>
+						<th class="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap text-neutral-300">Date</th>
 						<th class="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap text-neutral-300">Price</th>
 						<th class="px-6 py-4 text-right text-sm font-semibold whitespace-nowrap text-neutral-300">Action</th>
 					</tr>

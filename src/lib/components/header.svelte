@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { user, auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import { LogOut, ShoppingBag, Bookmark, Heart } from '@lucide/svelte';
+	import { LogOut, Download, Bookmark, Heart } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -77,7 +77,7 @@
 							<DropdownMenu.Content class="w-[200px]">
 								<DropdownMenu.Group>
 									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/downloads')}
-										><ShoppingBag />Purchases</DropdownMenu.Item
+										><Download />Downloads</DropdownMenu.Item
 									>
 									<DropdownMenu.Item class="cursor-pointer" onclick={() => goto('/user/likes')}
 										><Heart />Liked</DropdownMenu.Item
@@ -129,8 +129,8 @@
 							onclick={closeMobileMenu}
 							class="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-700"
 						>
-							<ShoppingBag class="h-4 w-4" />
-							<span>Purchases</span>
+							<Download class="h-4 w-4" />
+							<span>Downloads</span>
 						</a>
 						<a
 							href="/user/likes"

@@ -173,17 +173,24 @@ export async function fetchSortedProjects(
 }
 
 export async function fetchHomepageData() {
-	// CRITICAL PATH: Above-the-fold content (wait for these)
-	const [spotlights, tags] = await Promise.all([fetchSpotlights(), fetchTags()]);
+	// Start ALL fetches immediately in parallel
+	const spotlightsPromise = fetchSpotlights();
+	const tagsPromise = fetchTags();
+	const popularPromise = fetchSortedProjects('popular', 5);
+	const newestPromise = fetchSortedProjects('newest', 5);
+	const recentlyUpdatedPromise = fetchSortedProjects('updated', 5);
+
+	// Only await above-the-fold content before returning
+	const [spotlights, tags] = await Promise.all([spotlightsPromise, tagsPromise]);
 
 	return {
 		spotlightExclusive: spotlights.exclusive,
 		spotlightFeatured: spotlights.featured,
 		spotlightTrending: spotlights.trending,
 		tags: tags,
-		// Start fetching below-the-fold content using GCI sort API
-		popular: fetchSortedProjects('popular', 5),
-		newest: fetchSortedProjects('newest', 5),
-		recentlyUpdated: fetchSortedProjects('updated', 5)
+		// Pass through already-started promises for below-the-fold sections
+		popular: popularPromise,
+		newest: newestPromise,
+		recentlyUpdated: recentlyUpdatedPromise
 	};
 }

@@ -72,7 +72,8 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 					},
 					description: release.description || '',
 					lbryUrl: release.url_lbry || '',
-					released: release.released || null
+					released: release.released || null,
+					fileSize: release.size || 0
 				};
 			} catch (error) {
 				console.error(`Error fetching project details from ${url}:`, error);
@@ -92,7 +93,8 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 					},
 					description: '',
 					lbryUrl: '',
-					released: null
+					released: null,
+					fileSize: 0
 				};
 			}
 		});
