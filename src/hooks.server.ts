@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import { hashSessionToken, SESSION_COOKIE_NAME } from '$lib/server/accountAuth';
+import { isValidAccessCookie } from '$lib/server/accessAuth';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
@@ -19,6 +20,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	});
 
+	// --- Account session (optional, for user-specific features) ---
 	event.locals.session = null;
 
 	const sessionToken = event.cookies.get(SESSION_COOKIE_NAME);
@@ -72,29 +74,32 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	const protectedRoutes = [
-		'/',
-		'/details',
-		'/collections',
-		'/tag',
-		'/exclusive',
-		'/featured',
-		'/trending',
-		'/premium-models',
-		'/user',
-		'/channel'
-	];
-
-	const isProtectedRoute = protectedRoutes.some(
+	// --- Beta access gate (site-wide password protection) ---
+	const publicRoutes = ['/access', '/api'];
+	const isPublicRoute = publicRoutes.some(
 		(route) => event.url.pathname === route || event.url.pathname.startsWith(route + '/')
 	);
 
-	if (isProtectedRoute && !event.locals.session) {
-		throw redirect(303, '/login');
+	if (!isPublicRoute) {
+		const accessCookie = event.cookies.get('guncad_access');
+		if (!isValidAccessCookie(accessCookie)) {
+			throw redirect(303, '/access');
+		}
 	}
 
+	// Redirect logged-in users away from login page
 	if (event.url.pathname === '/login' && event.locals.session) {
 		throw redirect(303, '/');
+	}
+
+	// Account-specific routes require a session
+	const accountRoutes = ['/user'];
+	const isAccountRoute = accountRoutes.some(
+		(route) => event.url.pathname === route || event.url.pathname.startsWith(route + '/')
+	);
+
+	if (isAccountRoute && !event.locals.session) {
+		throw redirect(303, '/login');
 	}
 
 	return resolve(event);

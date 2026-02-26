@@ -5,15 +5,24 @@
 			<div class="pt-2 pb-2">
 				<div class="h-5 w-3/4 rounded bg-neutral-800"></div>
 			</div>
-			<div class="flex items-center justify-between pb-4">
-				<div class="flex items-center gap-1">
-					<div class="h-5 w-5 rounded-full bg-neutral-800"></div>
+			<div class="flex justify-between gap-1 pb-4 md:gap-4">
+				<div class="flex flex-[0.45] items-center gap-1">
+					<div class="h-5 w-5 shrink-0 rounded-full bg-neutral-800"></div>
 					<div class="h-3 w-16 rounded bg-neutral-800"></div>
 				</div>
-				<div class="flex gap-3">
-					<div class="h-3 w-10 rounded bg-neutral-800"></div>
-					<div class="h-3 w-10 rounded bg-neutral-800"></div>
-					<div class="h-3 w-10 rounded bg-neutral-800"></div>
+				<div class="flex flex-[0.55] justify-end gap-3">
+					<div class="flex items-center gap-1">
+						<div class="h-3 w-3 rounded bg-neutral-800"></div>
+						<div class="h-3 w-5 rounded bg-neutral-800"></div>
+					</div>
+					<div class="flex items-center gap-1">
+						<div class="h-3 w-3 rounded bg-neutral-800"></div>
+						<div class="h-3 w-5 rounded bg-neutral-800"></div>
+					</div>
+					<div class="flex items-center gap-1">
+						<div class="h-3 w-3 rounded bg-neutral-800"></div>
+						<div class="h-3 w-5 rounded bg-neutral-800"></div>
+					</div>
 				</div>
 			</div>
 		</div>

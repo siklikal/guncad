@@ -18,7 +18,7 @@
 	});
 
 	// Check if we're on an auth page (no header/padding needed)
-	const authPages = ['/login', '/signup', '/forgot-password'];
+	const authPages = ['/login', '/signup', '/forgot-password', '/access'];
 	let isAuthPage = $derived(browser && authPages.includes(page.url.pathname));
 	let showHeader = $derived(browser && !isAuthPage);
 </script>

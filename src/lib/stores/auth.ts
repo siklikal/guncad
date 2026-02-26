@@ -69,10 +69,8 @@ export const auth = {
 	},
 
 	signOut: async () => {
-		const response = await fetch('/api/account/logout', { method: 'POST' });
 		user.set(null);
-		return {
-			error: response.ok ? null : { message: 'Failed to sign out' }
-		};
+		fetch('/api/account/logout', { method: 'POST' });
+		return { error: null };
 	}
 };

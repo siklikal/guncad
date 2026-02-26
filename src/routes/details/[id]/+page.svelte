@@ -260,18 +260,11 @@
 
 			const entitlementData = await entitlementResponse.json();
 
-			// User is not authenticated
-			if (entitlementResponse.status === 401) {
-				downloadError = 'Please sign in to download models';
-				downloading = false;
-				return;
-			}
-
-			// User can download
-			if (entitlementData.canDownload) {
+			// User can download (has entitlement)
+			if (entitlementResponse.ok && entitlementData.canDownload) {
 				await performDownload();
 			} else {
-				// User needs to purchase, check geo first
+				// User needs to purchase (either not authenticated or no entitlement), check geo first
 				downloading = false;
 				geoChecking = true;
 				try {
@@ -382,19 +375,15 @@
 		showSubscriptionModal = false;
 		hasPurchased = true;
 
-		// Show success animation briefly, then start download
-		showSuccessAnimation = true;
-		setTimeout(async () => {
-			showSuccessAnimation = false;
-			// Auto-start the download
-			downloading = true;
-			downloadError = '';
-			try {
-				await performDownload();
-			} catch (error) {
-				downloadError = error instanceof Error ? error.message : 'Failed to start download';
-			}
-		}, 2000);
+		// Start download immediately (no setTimeout — browser blocks programmatic
+		// downloads that aren't in a user gesture context)
+		downloading = true;
+		downloadError = '';
+		try {
+			await performDownload();
+		} catch (error) {
+			downloadError = error instanceof Error ? error.message : 'Failed to start download';
+		}
 	}
 
 	// Handle debug download button (separate from buy button)
@@ -433,19 +422,31 @@
 				<div class="animate-pulse rounded-lg bg-neutral-800" style="aspect-ratio: 16 / 9;"></div>
 			</div>
 			<div class="flex flex-col gap-6">
+				<!-- Title + user -->
 				<div>
 					<div class="mb-4 h-10 w-3/4 animate-pulse rounded bg-neutral-800"></div>
-					<div class="h-8 w-32 animate-pulse rounded-full bg-neutral-800"></div>
+					<div class="flex items-center gap-1.5">
+						<div class="h-8 w-8 shrink-0 animate-pulse rounded-full bg-neutral-800"></div>
+						<div class="h-4 w-24 animate-pulse rounded bg-neutral-800"></div>
+					</div>
 				</div>
-				<div class="flex flex-wrap gap-2">
-					<div class="h-8 w-20 animate-pulse rounded-full bg-neutral-800"></div>
-					<div class="h-8 w-24 animate-pulse rounded-full bg-neutral-800"></div>
-					<div class="h-8 w-16 animate-pulse rounded-full bg-neutral-800"></div>
+				<!-- Stats bar (6 cells matching real grid) -->
+				<div class="grid w-full grid-cols-3 overflow-hidden rounded-lg border border-neutral-700 2xl:flex 2xl:w-auto">
+					{#each Array(6) as _}
+						<div class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-700 bg-neutral-800 p-2 last:border-r-0">
+							<div class="h-3 w-3 animate-pulse rounded bg-neutral-700"></div>
+							<div class="h-3 w-10 animate-pulse rounded bg-neutral-700"></div>
+						</div>
+					{/each}
 				</div>
-				<div class="flex gap-2">
-					<div class="h-12 flex-1 animate-pulse rounded bg-neutral-800"></div>
-					<div class="h-12 flex-1 animate-pulse rounded bg-neutral-800"></div>
+				<!-- Action buttons -->
+				<div class="grid w-full grid-cols-2 gap-2 xl:grid-cols-4">
+					<div class="h-10 animate-pulse rounded bg-neutral-800"></div>
+					<div class="h-10 animate-pulse rounded bg-neutral-800"></div>
+					<div class="h-10 animate-pulse rounded bg-neutral-800"></div>
+					<div class="h-10 animate-pulse rounded bg-neutral-800"></div>
 				</div>
+				<!-- Description -->
 				<div class="h-48 animate-pulse rounded-lg bg-neutral-800"></div>
 			</div>
 		</div>
@@ -516,7 +517,7 @@
 
 					<div class="grid w-full grid-cols-3 overflow-hidden rounded-lg border border-neutral-400 2xl:flex 2xl:w-auto">
 						<div
-							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-2 2xl:rounded-l-lg"
+							class="flex flex-1 items-center justify-center gap-2 border-r border-neutral-400 bg-neutral-800 p-2"
 						>
 							<Fa icon={faCalendar} class="text-sm text-neutral-400" />
 							<p class="text-xs font-semibold">
@@ -531,7 +532,7 @@
 								{#if statsLoaded}
 									{formatNumber(projectStats.views || loadedProject.views)}
 								{:else}
-									<span class="inline-block h-3 w-7 animate-pulse rounded-sm bg-neutral-600"></span>
+									<span class="inline-block h-3 w-7 align-middle animate-pulse rounded-sm bg-neutral-600"></span>
 								{/if}
 							</p>
 						</div>
@@ -543,7 +544,7 @@
 								{#if statsLoaded}
 									{formatNumber(projectStats.likes || loadedProject.likes)}
 								{:else}
-									<span class="inline-block h-3 w-6 animate-pulse rounded-sm bg-neutral-600"></span>
+									<span class="inline-block h-3 w-6 align-middle animate-pulse rounded-sm bg-neutral-600"></span>
 								{/if}
 							</p>
 						</div>
@@ -555,7 +556,7 @@
 								{#if statsLoaded}
 									{formatNumber(projectStats.bookmarks)}
 								{:else}
-									<span class="inline-block h-3 w-5 animate-pulse rounded-sm bg-neutral-600"></span>
+									<span class="inline-block h-3 w-5 align-middle animate-pulse rounded-sm bg-neutral-600"></span>
 								{/if}
 							</p>
 						</div>
@@ -567,12 +568,12 @@
 								{#if statsLoaded}
 									{formatNumber(projectStats.downloads)}
 								{:else}
-									<span class="inline-block h-3 w-5 animate-pulse rounded-sm bg-neutral-600"></span>
+									<span class="inline-block h-3 w-5 align-middle animate-pulse rounded-sm bg-neutral-600"></span>
 								{/if}
 							</p>
 						</div>
 						<div
-							class="flex flex-1 items-center justify-center gap-2 border-t border-neutral-400 bg-neutral-800 p-2 2xl:rounded-r-lg 2xl:border-t-0"
+							class="flex flex-1 items-center justify-center gap-2 border-t border-neutral-400 bg-neutral-800 p-2 2xl:border-t-0"
 						>
 							<Fa icon={faFile} class="text-sm text-neutral-400" />
 							<p class="text-xs font-semibold">{formatFileSize(loadedProject.source?.size)}</p>

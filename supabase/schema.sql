@@ -47,7 +47,7 @@ comment on column public.subscriptions.expires_at is 'Subscription valid until t
 -- Audit log of all payment transactions
 create table if not exists public.payments (
   id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade,
   model_id text,
   amount decimal(10,2) not null,
   currency text default 'USD',

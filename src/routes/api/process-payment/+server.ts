@@ -18,15 +18,13 @@ interface PaymentRequest {
 	firstName: string;
 	lastName: string;
 	zipCode: string;
+	guestPurchase?: boolean;
+	userId?: string;
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		const session = locals.session;
-
-		if (!session?.user) {
-			return json({ error: 'Unauthorized' }, { status: 401 });
-		}
 
 		const {
 			opaqueDataDescriptor,
@@ -35,10 +33,27 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			modelTitle,
 			firstName,
 			lastName,
-			zipCode
+			zipCode,
+			guestPurchase,
+			userId: providedUserId
 		}: PaymentRequest = await request.json();
 
-		console.log('[Payment] Processing payment for model:', modelId, 'User:', session.user.id);
+		// Determine the user ID for this payment
+		let paymentUserId: string | null = null;
+		if (guestPurchase) {
+			// Guest purchase — no user association
+			paymentUserId = null;
+		} else if (providedUserId) {
+			// Explicit user ID (new account or existing account option)
+			paymentUserId = providedUserId;
+		} else if (session?.user) {
+			// Logged-in user (legacy flow)
+			paymentUserId = session.user.id;
+		} else {
+			return json({ error: 'Unauthorized' }, { status: 401 });
+		}
+
+		console.log('[Payment] Processing payment for model:', modelId, 'User:', paymentUserId || 'guest');
 
 		// Geo-restriction safety net
 		if (env.BYPASS_GEO_CHECK !== 'true') {
@@ -114,14 +129,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				console.log('[Payment] Service role key exists:', !!SUPABASE_SERVICE_ROLE_KEY);
 
 				console.log('[Payment] Recording payment with data:', {
-					user_id: session.user.id,
+					user_id: paymentUserId,
 					model_id: modelId,
 					amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
 					transaction_id: transactionResponse.transId
 				});
 
 				const { data: insertData, error: dbError } = await supabase.from('payments').insert({
-					user_id: session.user.id,
+					user_id: paymentUserId,
 					model_id: modelId,
 					amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
 					currency: 'USD',
