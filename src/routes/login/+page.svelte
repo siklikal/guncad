@@ -7,7 +7,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { Copy, Loader2 } from '@lucide/svelte';
-	import { formatAccountNumber, normalizeAccountNumber } from '$lib/utils/accountNumber';
+	import { formatAccountNumber, formatAccountNumberInput, normalizeAccountNumber } from '$lib/utils/accountNumber';
 
 	let accountNumber = $state('');
 	let acceptedTos = $state(false);
@@ -23,19 +23,14 @@
 		}
 	});
 
-	function setAccountNumberFromRaw(value: string) {
-		const normalized = normalizeAccountNumber(value).slice(0, 16);
-		accountNumber = formatAccountNumber(normalized);
-	}
-
 	function handleAccountInput(value: string) {
-		setAccountNumberFromRaw(value);
+		accountNumber = formatAccountNumberInput(value);
 	}
 
 	function handleAccountPaste(event: ClipboardEvent) {
 		event.preventDefault();
 		const pasted = event.clipboardData?.getData('text') ?? '';
-		setAccountNumberFromRaw(pasted);
+		accountNumber = formatAccountNumberInput(pasted);
 	}
 
 	async function handleLogin() {
@@ -77,7 +72,7 @@
 	}
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-neutral-950 p-4">
+<div class="flex flex-1 items-center justify-center">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header>
 			<Card.Title class="text-center text-3xl">Guncad</Card.Title>

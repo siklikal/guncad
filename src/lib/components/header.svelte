@@ -15,7 +15,7 @@
 	async function handleLogout() {
 		const { error} = await auth.signOut();
 		if (!error) {
-			goto('/login');
+			goto('/');
 		}
 	}
 
@@ -92,7 +92,7 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 					{:else}
-						<a href="/login" class="btn btn-sm btn-primary rounded-full capitalize">log in</a>
+						<Button class="btn bg-blue-600 text-white hover:bg-blue-700" onclick={() => goto('/login')}>Log In</Button>
 					{/if}
 				</div>
 				<button

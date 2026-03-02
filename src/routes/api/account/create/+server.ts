@@ -51,6 +51,12 @@ export const POST: RequestHandler = async ({ request }) => {
 
 			const userId = createdUser.user.id;
 
+			// Activate the profile immediately so the account can sign in
+			await supabase
+				.from('user_profiles')
+				.update({ status: 'active', approved_at: new Date().toISOString() })
+				.eq('id', userId);
+
 			const { error: identityError } = await supabase
 				.from('account_identities')
 				.insert({

@@ -18,7 +18,7 @@
 	});
 
 	// Check if we're on an auth page (no header/padding needed)
-	const authPages = ['/login', '/signup', '/forgot-password', '/access'];
+	const authPages = ['/signup', '/forgot-password', '/access'];
 	let isAuthPage = $derived(browser && authPages.includes(page.url.pathname));
 	let showHeader = $derived(browser && !isAuthPage);
 </script>
@@ -32,7 +32,7 @@
 <div class="flex min-h-screen flex-col">
 	{#if showHeader}
 		<Header />
-		<div class="flex-1 p-4 pb-16 md:py-8 md:pb-16">
+		<div class="flex flex-1 flex-col p-4 pb-16 md:py-8 md:pb-16">
 			{@render children()}
 		</div>
 		<Footer />

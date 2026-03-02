@@ -7,6 +7,7 @@
 	import { auth } from '$lib/stores/auth';
 	import {
 		formatAccountNumber,
+		formatAccountNumberInput,
 		normalizeAccountNumber,
 		isValidAccountNumber
 	} from '$lib/utils/accountNumber';
@@ -29,7 +30,7 @@
 	let error = $state('');
 	let firstName = $state('');
 	let lastName = $state('');
-	let cardNumber = $state(env.PUBLIC_ADN_TEST_CARD_NUMBER || '');
+	let cardNumber = $state(env.PUBLIC_ADN_TEST_CARD_NUMBER ? env.PUBLIC_ADN_TEST_CARD_NUMBER.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim() : '');
 	let expiryMonth = $state(env.PUBLIC_ADN_TEST_CARD_EXPIRATION_MONTH || '');
 	let expiryYear = $state(env.PUBLIC_ADN_TEST_CARD_EXPIRATION_YEAR || '');
 	let cardCode = $state(env.PUBLIC_ADN_TEST_CARD_CODE_NUMBER || '');
@@ -120,14 +121,13 @@
 	}
 
 	function handleExistingAccountInput(value: string) {
-		const normalized = normalizeAccountNumber(value).slice(0, 16);
-		existingAccountNumber = formatAccountNumber(normalized);
+		existingAccountNumber = formatAccountNumberInput(value);
 	}
 
 	function handleExistingAccountPaste(event: ClipboardEvent) {
 		event.preventDefault();
 		const pasted = event.clipboardData?.getData('text') ?? '';
-		handleExistingAccountInput(pasted);
+		existingAccountNumber = formatAccountNumberInput(pasted);
 	}
 
 	async function handleSubmit(e: Event) {
@@ -285,6 +285,23 @@
 		const value = input.value.replace(/\D/g, '');
 		zipCode = value.slice(0, 5);
 	}
+
+	// Auto-format card number with 4-digit spacing
+	function formatCardNumber(raw: string): string {
+		const digits = raw.replace(/\D/g, '').slice(0, 16);
+		return digits.replace(/(.{4})/g, '$1 ').trim();
+	}
+
+	function handleCardNumberInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		cardNumber = formatCardNumber(input.value);
+	}
+
+	function handleCardNumberPaste(e: ClipboardEvent) {
+		e.preventDefault();
+		const pasted = e.clipboardData?.getData('text') ?? '';
+		cardNumber = formatCardNumber(pasted);
+	}
 </script>
 
 {#if isOpen}
@@ -353,11 +370,14 @@
 							<input
 								type="text"
 								id="cardNumber"
-								bind:value={cardNumber}
-								placeholder="1234 5678 9012 3456"
+								value={cardNumber}
+								oninput={handleCardNumberInput}
+								onpaste={handleCardNumberPaste}
+
 								disabled={processing}
 								required
 								maxlength="19"
+								inputmode="numeric"
 								class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
 							/>
 						</div>
@@ -369,7 +389,7 @@
 									id="expiryMonth"
 									bind:value={expiryMonth}
 									oninput={handleMonthInput}
-									placeholder="MM"
+
 									disabled={processing}
 									required
 									maxlength="2"
@@ -385,7 +405,7 @@
 									id="expiryYear"
 									bind:value={expiryYear}
 									oninput={handleYearInput}
-									placeholder="YY"
+
 									disabled={processing}
 									required
 									maxlength="2"
@@ -405,7 +425,7 @@
 								type="text"
 								id="cardCode"
 								bind:value={cardCode}
-								placeholder="123"
+
 								disabled={processing}
 								required
 								maxlength="4"
@@ -421,7 +441,7 @@
 								id="zipCode"
 								bind:value={zipCode}
 								oninput={handleZipInput}
-								placeholder="12345"
+
 								disabled={processing}
 								required
 								maxlength="5"
@@ -451,7 +471,7 @@
 							<div>
 								<p class="text-sm font-medium">Instant download only</p>
 								<p class="text-xs text-neutral-400">
-									Not saved. If lost, you must purchase again.
+									No account needed. Purchase cannot be recovered.
 								</p>
 							</div>
 						</label>
@@ -471,7 +491,7 @@
 							<div class="flex-1">
 								<p class="text-sm font-medium">Save to new account</p>
 								<p class="text-xs text-neutral-400">
-									A new account number will be created. You can use it later to download again.
+									Purchase is saved to a new account number.
 								</p>
 							</div>
 						</label>
@@ -523,22 +543,24 @@
 								class="mt-0.5 accent-blue-600"
 							/>
 							<div class="flex-1">
-								<p class="text-sm font-medium">Use existing account</p>
+								<p class="text-sm font-medium">Save to existing account</p>
 								<p class="text-xs text-neutral-400">
-									Enter your 16-digit account number to save this purchase.
+									Enter your 16-digit account number.
 								</p>
 							</div>
 						</label>
 
 						{#if accountOption === 'existing_account'}
 							<div class="ml-6">
+								<label for="existingAccount" class="mb-1 block text-sm font-medium">Account Number</label>
 								<input
+									id="existingAccount"
 									type="text"
 									value={existingAccountNumber}
 									oninput={(e) =>
 										handleExistingAccountInput((e.target as HTMLInputElement).value)}
 									onpaste={handleExistingAccountPaste}
-									placeholder="XXXX XXXX XXXX XXXX"
+
 									disabled={processing}
 									maxlength={19}
 									inputmode="numeric"
