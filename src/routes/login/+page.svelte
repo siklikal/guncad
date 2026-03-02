@@ -6,13 +6,13 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { Copy, Loader2 } from '@lucide/svelte';
-	import { formatAccountNumber, formatAccountNumberInput, normalizeAccountNumber } from '$lib/utils/accountNumber';
+	import { Loader2 } from '@lucide/svelte';
+	import { formatAccountNumber, formatAccountNumberInput } from '$lib/utils/accountNumber';
+	import AccountNumberCard from '$lib/components/AccountNumberCard.svelte';
 
 	let accountNumber = $state('');
 	let acceptedTos = $state(false);
 	let createdAccountNumber = $state('');
-	let copied = $state(false);
 	let error = $state('');
 	let loadingLogin = $state(false);
 	let loadingCreate = $state(false);
@@ -62,14 +62,6 @@
 		accountNumber = createdAccountNumber;
 	}
 
-	async function handleCopy() {
-		if (!createdAccountNumber) return;
-		await navigator.clipboard.writeText(normalizeAccountNumber(createdAccountNumber));
-		copied = true;
-		setTimeout(() => {
-			copied = false;
-		}, 1800);
-	}
 </script>
 
 <div class="flex flex-1 items-center justify-center">
@@ -154,16 +146,10 @@
 				</Button>
 
 				{#if createdAccountNumber}
-					<div class="rounded-md border border-blue-700 bg-blue-900/20 p-3">
-						<p class="text-xs text-neutral-300">Your account has been created. Copy and save this number, it's your login credential. Use it in the field above to sign in.</p>
-						<div class="mt-2 flex items-center justify-between gap-2">
-							<p class="font-mono text-lg">{createdAccountNumber}</p>
-							<Button size="sm" type="button" variant="outline" onclick={handleCopy}>
-								<Copy class="mr-1 h-3.5 w-3.5" />
-								{copied ? 'Copied' : 'Copy'}
-							</Button>
-						</div>
-					</div>
+					<AccountNumberCard
+						accountNumber={createdAccountNumber}
+						description="This is your login credential. Copy it and use it in the field above to sign in."
+					/>
 				{/if}
 			</div>
 		</Card.Content>

@@ -2,9 +2,10 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import Fa from 'svelte-fa';
 	import { faXmark, faCheck, faInfinity } from '@fortawesome/free-solid-svg-icons';
-	import { Copy, Loader2 } from '@lucide/svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-	import { auth } from '$lib/stores/auth';
+	import { auth, user } from '$lib/stores/auth';
+	import AccountNumberCard from '$lib/components/AccountNumberCard.svelte';
 	import {
 		formatAccountNumber,
 		formatAccountNumberInput,
@@ -44,12 +45,15 @@
 	let generatingAccount = $state(false);
 	let accountGenerated = $state(false);
 	let existingAccountNumber = $state('');
-	let copied = $state(false);
 
-	// Disable purchase button when new account is selected but not yet generated
+	// Check if user is logged in
+	let isLoggedIn = $derived($user !== null);
+
+	// Disable purchase button when generating account or when new account selected but not yet generated
 	let purchaseDisabled = $derived(
 		processing ||
-			(accountOption === 'new_account' && !accountGenerated)
+			generatingAccount ||
+			(!isLoggedIn && accountOption === 'new_account' && !accountGenerated)
 	);
 
 	// Get price from environment variable
@@ -73,7 +77,6 @@
 			generatingAccount = false;
 			accountGenerated = false;
 			existingAccountNumber = '';
-			copied = false;
 		}
 	}
 
@@ -111,15 +114,6 @@
 		}
 	}
 
-	async function handleCopy() {
-		if (!generatedAccountNumber) return;
-		await navigator.clipboard.writeText(normalizeAccountNumber(generatedAccountNumber));
-		copied = true;
-		setTimeout(() => {
-			copied = false;
-		}, 1800);
-	}
-
 	function handleExistingAccountInput(value: string) {
 		existingAccountNumber = formatAccountNumberInput(value);
 	}
@@ -138,8 +132,10 @@
 		try {
 			let existingUserId: string | undefined;
 
-			// Pre-validate for existing account option
-			if (accountOption === 'existing_account') {
+			// If logged in, use the session user's ID directly
+			if (isLoggedIn) {
+				// Skip account option logic — purchase saves to current account
+			} else if (accountOption === 'existing_account') {
 				const normalized = normalizeAccountNumber(existingAccountNumber);
 				if (!isValidAccountNumber(normalized)) {
 					error = 'Account number must be 16 digits';
@@ -206,7 +202,9 @@
 				zipCode: zipCode
 			};
 
-			if (accountOption === 'instant') {
+			if (isLoggedIn) {
+				paymentBody.userId = $user!.id;
+			} else if (accountOption === 'instant') {
 				paymentBody.guestPurchase = true;
 			} else if (accountOption === 'new_account') {
 				paymentBody.userId = generatedUserId;
@@ -229,8 +227,8 @@
 
 			console.log('[Payment] Payment successful:', paymentData.transactionId);
 
-			// Step 5: Auto-login for existing account option
-			if (accountOption === 'existing_account') {
+			// Step 5: Auto-login for existing account option (skip if already logged in)
+			if (!isLoggedIn && accountOption === 'existing_account') {
 				const loginResult = await auth.signIn(existingAccountNumber);
 				if (loginResult.error) {
 					console.error('[Payment] Auto-login failed:', loginResult.error);
@@ -308,7 +306,6 @@
 	<!-- Backdrop -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-		onclick={handleBackdropClick}
 		role="presentation"
 	>
 		<!-- Modal -->
@@ -452,7 +449,23 @@
 						</div>
 					</div>
 
-					<!-- Download Option -->
+					<!-- Account number card (shown after generating a new account) -->
+				{#if accountGenerated}
+					<div class="border-t border-neutral-700 pt-4">
+						<AccountNumberCard accountNumber={generatedAccountNumber} />
+					</div>
+
+				<!-- Generating account spinner -->
+				{:else if generatingAccount}
+					<div class="flex items-center justify-center border-t border-neutral-700 py-8">
+						<div class="flex flex-col items-center gap-2">
+							<Loader2 class="h-6 w-6 animate-spin text-blue-500" />
+							<p class="text-sm text-neutral-400">Creating your account...</p>
+						</div>
+					</div>
+
+				<!-- Download options (only shown when not logged in and no account just generated) -->
+				{:else if !isLoggedIn}
 					<div class="space-y-3 border-t border-neutral-700 pt-4">
 						<p class="text-sm font-medium text-neutral-300">Download Option</p>
 
@@ -498,35 +511,20 @@
 
 						{#if accountOption === 'new_account'}
 							<div class="ml-6">
-								{#if !accountGenerated}
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										disabled={generatingAccount}
-										onclick={handleGenerateAccount}
-									>
-										{#if generatingAccount}
-											<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-											Generating...
-										{:else}
-											Generate Account Number
-										{/if}
-									</Button>
-								{:else}
-									<div class="rounded-md border border-blue-700 bg-blue-900/20 p-3">
-										<p class="text-xs text-neutral-300">
-											Save this number — it will not be displayed again for security.
-										</p>
-										<div class="mt-2 flex items-center justify-between gap-2">
-											<p class="font-mono text-lg">{generatedAccountNumber}</p>
-											<Button size="sm" type="button" variant="outline" onclick={handleCopy}>
-												<Copy class="mr-1 h-3.5 w-3.5" />
-												{copied ? 'Copied' : 'Copy'}
-											</Button>
-										</div>
-									</div>
-								{/if}
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									disabled={generatingAccount}
+									onclick={handleGenerateAccount}
+								>
+									{#if generatingAccount}
+										<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+										Generating...
+									{:else}
+										Generate Account Number
+									{/if}
+								</Button>
 							</div>
 						{/if}
 
@@ -569,6 +567,7 @@
 							</div>
 						{/if}
 					</div>
+				{/if}
 
 					<!-- Error Message -->
 					{#if error}
