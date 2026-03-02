@@ -203,15 +203,10 @@
 
 		{#await pageData.popular}
 			<div class="mt-10">
-				<div class="flex items-end gap-1.5">
-					<a
-						href="/explore?sort=popular&time=alltime"
-						class="text-2xl leading-none font-bold hover:text-blue-600">Most Popular</a
-					>
-					<a href="/explore?sort=popular&time=alltime" class="flex items-end hover:text-blue-600"
-						><Fa icon={faChevronRight} class="text-xl" /></a
-					>
-				</div>
+				<a href="/explore?sort=popular&time=alltime" class="group inline-flex items-end gap-1.5">
+					<h2 class="text-2xl leading-none font-bold group-hover:text-blue-600">Most Popular</h2>
+					<div class="flex items-end group-hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></div>
+				</a>
 				<div class="my-5">
 					<ModelsSkeleton />
 				</div>
@@ -228,15 +223,10 @@
 
 		{#await pageData.newest}
 			<div class="mt-10">
-				<div class="flex items-end gap-1.5">
-					<a
-						href="/explore?sort=newest&time=alltime"
-						class="text-2xl leading-none font-bold hover:text-blue-600">Newest</a
-					>
-					<a href="/explore?sort=newest&time=alltime" class="flex items-end hover:text-blue-600"
-						><Fa icon={faChevronRight} class="text-xl" /></a
-					>
-				</div>
+				<a href="/explore?sort=newest&time=alltime" class="group inline-flex items-end gap-1.5">
+					<h2 class="text-2xl leading-none font-bold group-hover:text-blue-600">Newest</h2>
+					<div class="flex items-end group-hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></div>
+				</a>
 				<div class="my-5">
 					<ModelsSkeleton />
 				</div>
@@ -249,15 +239,10 @@
 
 		{#await pageData.recentlyUpdated}
 			<div class="mt-10">
-				<div class="flex items-end gap-1.5">
-					<a
-						href="/explore?sort=updated&time=alltime"
-						class="text-2xl leading-none font-bold hover:text-blue-600">Recently Updated</a
-					>
-					<a href="/explore?sort=updated&time=alltime" class="flex items-end hover:text-blue-600"
-						><Fa icon={faChevronRight} class="text-xl" /></a
-					>
-				</div>
+				<a href="/explore?sort=updated&time=alltime" class="group inline-flex items-end gap-1.5">
+					<h2 class="text-2xl leading-none font-bold group-hover:text-blue-600">Recently Updated</h2>
+					<div class="flex items-end group-hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></div>
+				</a>
 				<div class="my-5">
 					<ModelsSkeleton />
 				</div>
@@ -272,9 +257,11 @@
 			</div>
 		{/await}
 
-		<div class="mt-10 hidden items-end gap-1.5">
-			<a href="/" class="text-2xl leading-none font-bold">Ready to Print</a>
-			<a href="/" class="flex items-end"><Fa icon={faChevronRight} class="text-xl" /></a>
+		<div class="mt-10 hidden">
+			<a href="/" class="group inline-flex items-end gap-1.5">
+				<h2 class="text-2xl leading-none font-bold group-hover:text-blue-600">Ready to Print</h2>
+				<div class="flex items-end group-hover:text-blue-600"><Fa icon={faChevronRight} class="text-xl" /></div>
+			</a>
 		</div>
 
 		<div

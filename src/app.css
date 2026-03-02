@@ -124,3 +124,8 @@
 body {
 	font-family: 'IBM Plex Sans Variable', sans-serif;
 }
+
+a,
+a * {
+	transition: color 150ms ease;
+}

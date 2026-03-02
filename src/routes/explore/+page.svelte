@@ -396,9 +396,15 @@
 	}
 
 	function updateFilters() {
+		// Update state directly instead of relying on goto → load → effect chain
+		currentSort = selectedSort;
+		currentTime = selectedTime;
+		activeRouteKey = `${currentSearchQuery}|${currentSort}|${currentTime}`;
+
+		// Update URL for bookmarking
 		const params = new URLSearchParams();
-		if (searchQuery) {
-			params.set('search', searchQuery);
+		if (currentSearchQuery) {
+			params.set('search', currentSearchQuery);
 		}
 		if (selectedSort) {
 			params.set('sort', selectedSort);
@@ -411,6 +417,9 @@
 			keepFocus: true,
 			noScroll: true
 		});
+
+		// Fetch directly — don't wait for the reactive chain
+		fetchProjects();
 	}
 </script>
 
