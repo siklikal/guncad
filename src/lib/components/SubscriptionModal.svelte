@@ -45,6 +45,7 @@
 	let generatingAccount = $state(false);
 	let accountGenerated = $state(false);
 	let existingAccountNumber = $state('');
+	let usCertified = $state(false);
 
 	// Check if user is logged in
 	let isLoggedIn = $derived($user !== null);
@@ -53,6 +54,7 @@
 	let purchaseDisabled = $derived(
 		processing ||
 			generatingAccount ||
+			!usCertified ||
 			(!isLoggedIn && accountOption === 'new_account' && !accountGenerated)
 	);
 
@@ -77,6 +79,7 @@
 			generatingAccount = false;
 			accountGenerated = false;
 			existingAccountNumber = '';
+			usCertified = false;
 		}
 	}
 
@@ -326,7 +329,6 @@
 			<!-- Header -->
 			<div class="border-b border-neutral-700 px-6 py-4">
 				<h2 class="text-xl font-bold">Purchase Model — {priceFormatted}</h2>
-				<p class="text-sm text-neutral-400">One-time download</p>
 			</div>
 
 			<!-- Content -->
@@ -577,6 +579,17 @@
 							{error}
 						</div>
 					{/if}
+
+					<!-- US Person Certification -->
+					<label class="flex cursor-pointer items-start gap-3 rounded-lg border border-neutral-700 p-3">
+						<input
+							type="checkbox"
+							bind:checked={usCertified}
+							disabled={processing}
+							class="mt-0.5 accent-blue-600"
+						/>
+						<span class="text-sm text-neutral-300">I certify I am a US person</span>
+					</label>
 
 					<!-- Submit Button -->
 					<Button type="submit" disabled={purchaseDisabled} class="w-full" size="lg">

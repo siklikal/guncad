@@ -4,7 +4,8 @@
 			<p class="text-xs">© 2025 Guncad</p>
 			<div class="h-1 bg-red-500"></div>
 			<a href="/" class="text-xs text-neutral-400">Privacy</a>
-			<a href="/" class="text-xs text-neutral-400">Terms</a>
+			<a href="/terms" class="text-xs text-neutral-400">Terms</a>
+			<a href="/about" class="text-xs text-neutral-400">About</a>
 		</div>
 	</div>
 </div>
