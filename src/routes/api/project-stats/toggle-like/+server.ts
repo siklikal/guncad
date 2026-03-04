@@ -69,7 +69,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			likes: (stats?.base_likes || 0) + (stats?.our_likes || 0)
 		});
 	} catch (error) {
-		console.error('[toggle-like] Error:', error);
+		console.error('[toggle-like] Error:', error instanceof Error ? error.message : 'Unknown error');
 		return json({ error: 'Failed to toggle like' }, { status: 500 });
 	}
 };

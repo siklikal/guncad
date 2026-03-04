@@ -46,6 +46,7 @@
 	let accountGenerated = $state(false);
 	let existingAccountNumber = $state('');
 	let usCertified = $state(false);
+	let purchaseSuccess = $state(false);
 
 	// Check if user is logged in
 	let isLoggedIn = $derived($user !== null);
@@ -63,7 +64,7 @@
 	const priceFormatted = `$${parseFloat(price).toFixed(2)}`;
 
 	function closeModal() {
-		if (!processing) {
+		if (!processing && !purchaseSuccess) {
 			isOpen = false;
 			error = '';
 			firstName = '';
@@ -80,6 +81,7 @@
 			accountGenerated = false;
 			existingAccountNumber = '';
 			usCertified = false;
+			purchaseSuccess = false;
 		}
 	}
 
@@ -238,9 +240,13 @@
 				}
 			}
 
-			// Step 6: Handle success
-			closeModal();
-			onSuccess();
+			// Step 6: Show success state, then close and trigger download
+			purchaseSuccess = true;
+			setTimeout(() => {
+				purchaseSuccess = false;
+				isOpen = false;
+				onSuccess();
+			}, 2000);
 		} catch (err) {
 			console.error('[Payment] Payment error:', err);
 			error = err instanceof Error ? err.message : 'Payment failed';
@@ -315,6 +321,16 @@
 		<div
 			class="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-neutral-700 bg-neutral-900 shadow-xl"
 		>
+			{#if purchaseSuccess}
+				<!-- Success State -->
+				<div class="flex flex-col items-center justify-center gap-4 px-6 py-16">
+					<div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
+						<Fa icon={faCheck} class="text-2xl text-white" />
+					</div>
+					<h2 class="text-xl font-bold">Purchase Successful!</h2>
+					<p class="text-sm text-neutral-400">Your download will begin shortly...</p>
+				</div>
+			{:else}
 			<!-- Close Button -->
 			<button
 				type="button"
@@ -362,57 +378,57 @@
 						</div>
 					</div>
 
-					<!-- Card Number + Expiry -->
+					<!-- Card Number -->
+					<div>
+						<label for="cardNumber" class="mb-1 block text-sm font-medium">Card Number</label>
+						<input
+							type="text"
+							id="cardNumber"
+							value={cardNumber}
+							oninput={handleCardNumberInput}
+							onpaste={handleCardNumberPaste}
+
+							disabled={processing}
+							required
+							maxlength="19"
+							inputmode="numeric"
+							class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+						/>
+					</div>
+
+					<!-- Expiry -->
 					<div class="grid grid-cols-2 gap-3">
 						<div>
-							<label for="cardNumber" class="mb-1 block text-sm font-medium">Card Number</label>
+							<label for="expiryMonth" class="mb-1 block text-sm font-medium">Month</label>
 							<input
 								type="text"
-								id="cardNumber"
-								value={cardNumber}
-								oninput={handleCardNumberInput}
-								onpaste={handleCardNumberPaste}
+								id="expiryMonth"
+								bind:value={expiryMonth}
+								oninput={handleMonthInput}
 
 								disabled={processing}
 								required
-								maxlength="19"
+								maxlength="2"
+								pattern="[0-9]*"
 								inputmode="numeric"
 								class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
 							/>
 						</div>
-						<div class="grid grid-cols-2 gap-2">
-							<div>
-								<label for="expiryMonth" class="mb-1 block text-sm font-medium">Month</label>
-								<input
-									type="text"
-									id="expiryMonth"
-									bind:value={expiryMonth}
-									oninput={handleMonthInput}
+						<div>
+							<label for="expiryYear" class="mb-1 block text-sm font-medium">Year</label>
+							<input
+								type="text"
+								id="expiryYear"
+								bind:value={expiryYear}
+								oninput={handleYearInput}
 
-									disabled={processing}
-									required
-									maxlength="2"
-									pattern="[0-9]*"
-									inputmode="numeric"
-									class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
-								/>
-							</div>
-							<div>
-								<label for="expiryYear" class="mb-1 block text-sm font-medium">Year</label>
-								<input
-									type="text"
-									id="expiryYear"
-									bind:value={expiryYear}
-									oninput={handleYearInput}
-
-									disabled={processing}
-									required
-									maxlength="2"
-									pattern="[0-9]*"
-									inputmode="numeric"
-									class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
-								/>
-							</div>
+								disabled={processing}
+								required
+								maxlength="2"
+								pattern="[0-9]*"
+								inputmode="numeric"
+								class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+							/>
 						</div>
 					</div>
 
@@ -607,6 +623,7 @@
 					</p>
 				</form>
 			</div>
+			{/if}
 		</div>
 	</div>
 {/if}

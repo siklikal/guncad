@@ -57,7 +57,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			});
 		}
 	} catch (error) {
-		console.error('[track-download] Error:', error);
+		console.error('[track-download] Error:', error instanceof Error ? error.message : 'Unknown error');
 		return json({ error: 'Failed to track download' }, { status: 500 });
 	}
 };

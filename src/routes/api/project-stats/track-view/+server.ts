@@ -81,7 +81,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			});
 		}
 	} catch (error) {
-		console.error('[track-view] Error:', error);
+		console.error('[track-view] Error:', error instanceof Error ? error.message : 'Unknown error');
 		return json({ error: 'Failed to track view' }, { status: 500 });
 	}
 };

@@ -13,10 +13,9 @@
 		faCalendar,
 		faFile
 	} from '@fortawesome/free-solid-svg-icons';
-	import { Check } from 'lucide-svelte';
 	import { getTagColorClass } from '$lib/utils/tagColors';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import SubscriptionModal from '$lib/components/SubscriptionModal.svelte';
+	import PurchaseModal from '$lib/components/PurchaseModal.svelte';
 	import { toast } from 'svelte-sonner';
 	import { supabase } from '$lib/supabase';
 	import { onMount } from 'svelte';
@@ -26,8 +25,7 @@
 	let downloading = $state(false);
 	let debugDownloading = $state(false);
 	let downloadError = $state('');
-	let showSubscriptionModal = $state(false);
-	let showSuccessAnimation = $state(false);
+	let showPurchaseModal = $state(false);
 	let geoChecking = $state(false);
 	let isBookmarked = $state(false);
 	let bookmarkLoading = $state(false);
@@ -236,9 +234,9 @@
 	 * Check if user has entitlement to download
 	 *
 	 * Flow:
-	 * 1. Check if user has active subscription or purchased this model
+	 * 1. Check if user has purchased this model
 	 * 2. If yes, proceed to download
-	 * 3. If no, show subscription modal
+	 * 3. If no, show purchase modal
 	 */
 	async function handleDownload() {
 		if (!project || downloading) return;
@@ -274,7 +272,7 @@
 						toast.error(geoResult.reason || 'Purchases are not available in your region.');
 						return;
 					}
-					showSubscriptionModal = true;
+					showPurchaseModal = true;
 				} catch (error) {
 					console.error('Geo check failed:', error);
 					toast.error('Unable to verify your location. Please try again later.');
@@ -371,8 +369,8 @@
 	let badgeConfig = $derived(project?.badge ? getBadgeConfig(project.badge) : null);
 
 	// Handle successful payment - auto-start download
-	async function handleSubscriptionSuccess() {
-		showSubscriptionModal = false;
+	async function handlePurchaseSuccess() {
+		showPurchaseModal = false;
 		hasPurchased = true;
 
 		// Start download immediately (no setTimeout — browser blocks programmatic
@@ -818,30 +816,13 @@
 	{/await}
 </div>
 
-<!-- Success Animation Overlay -->
-{#if showSuccessAnimation}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-		role="dialog"
-		aria-modal="true"
-	>
-		<div class="flex animate-in flex-col items-center gap-4 duration-300 zoom-in-95">
-			<div class="flex h-24 w-24 items-center justify-center rounded-full bg-green-500">
-				<Check class="h-12 w-12 animate-in text-white delay-150 zoom-in-95" />
-			</div>
-			<h2 class="text-2xl font-bold text-white">Payment Successful!</h2>
-			<p class="text-neutral-300">Your download will start automatically...</p>
-		</div>
-	</div>
-{/if}
-
-<!-- Subscription Modal -->
+<!-- Purchase Modal -->
 {#if project}
-	<SubscriptionModal
-		bind:isOpen={showSubscriptionModal}
+	<PurchaseModal
+		bind:isOpen={showPurchaseModal}
 		modelId={project.id}
 		modelTitle={project.title}
-		onSuccess={handleSubscriptionSuccess}
+		onSuccess={handlePurchaseSuccess}
 	/>
 {/if}
 

@@ -53,14 +53,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		console.log('[Payment] Processing payment for model:', modelId, 'User:', paymentUserId || 'guest');
-
 		// Geo-restriction safety net
 		if (env.BYPASS_GEO_CHECK !== 'true') {
 			const ip = getClientIp(request);
 			const geoResult = await checkGeoPurchase(ip);
 			if (!geoResult.allowed) {
-				console.log('[Payment] Blocked by geo check:', geoResult.reason);
 				return json({ success: false, error: geoResult.reason }, { status: 403 });
 			}
 		}
@@ -98,8 +95,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		};
 
-		console.log('[Payment] Calling Authorize.Net API...');
-
 		// Call Authorize.Net API
 		const response = await fetch(ADN_API_ENDPOINT, {
 			method: 'POST',
@@ -111,29 +106,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		const responseData = await response.json();
 
-		console.log('[Payment] Authorize.Net response:', responseData);
-
 		// Check if payment was successful
 		if (responseData.messages.resultCode === 'Ok') {
 			const transactionResponse = responseData.transactionResponse;
 
 			if (transactionResponse.responseCode === '1') {
-				// Payment approved
-				console.log('[Payment] Payment approved:', transactionResponse.transId);
-
-				// Record payment in Supabase
+				// Payment approved — record in Supabase
 				const supabase = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-				// Test connection
-				console.log('[Payment] Supabase URL:', PUBLIC_SUPABASE_URL);
-				console.log('[Payment] Service role key exists:', !!SUPABASE_SERVICE_ROLE_KEY);
-
-				console.log('[Payment] Recording payment with data:', {
-					user_id: paymentUserId,
-					model_id: modelId,
-					amount: parseFloat(PUBLIC_MODEL_PURCHASE_PRICE),
-					transaction_id: transactionResponse.transId
-				});
 
 				const { data: insertData, error: dbError } = await supabase.from('payments').insert({
 					user_id: paymentUserId,
@@ -149,11 +128,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				}).select();
 
 				if (dbError) {
-					console.error('[Payment] Failed to record payment in database:', dbError);
-					console.error('[Payment] Error details:', JSON.stringify(dbError, null, 2));
-					// Don't fail the request - payment was successful
-				} else {
-					console.log('[Payment] Payment recorded in database successfully:', insertData);
+					console.error('[Payment] Failed to record payment in database:', dbError.message);
 				}
 
 				return json({
@@ -163,7 +138,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				});
 			} else {
 				// Payment declined
-				console.error('[Payment] Payment declined:', transactionResponse.errors);
 				return json(
 					{
 						success: false,
@@ -174,7 +148,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		} else {
 			// API error
-			console.error('[Payment] API error:', responseData.messages);
 			return json(
 				{
 					success: false,
@@ -184,9 +157,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			);
 		}
 	} catch (error) {
-		console.error('[Payment] Error processing payment:', error);
+		console.error('[Payment] Unexpected error:', error instanceof Error ? error.message : 'Unknown error');
 		const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-		console.error('[Payment] Error details:', errorMessage);
 		return json(
 			{
 				success: false,
