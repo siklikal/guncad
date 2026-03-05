@@ -7,26 +7,14 @@
 	import { LogOut, Download, Bookmark, Heart } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 
 	let mobileMenuOpen = $state(false);
-	let searchQuery = $state('');
 
 	async function handleLogout() {
 		const { error} = await auth.signOut();
 		if (!error) {
 			goto('/');
-		}
-	}
-
-	function handleSearch(e: Event) {
-		e.preventDefault();
-		const query = searchQuery.trim();
-		if (query) {
-			goto(`/explore?search=${encodeURIComponent(query)}`);
-			searchQuery = ''; // Clear search after submitting
-		} else {
-			goto('/explore');
 		}
 	}
 
@@ -59,14 +47,7 @@
 				<a href="/explore" class="link-primary hidden capitalize md:flex">explore</a>
 			</div>
 			<div class="flex flex-1 items-center justify-end gap-4">
-				<form onsubmit={handleSearch} class="w-full md:flex lg:w-[340px] xl:w-[400px]">
-					<Input
-						type="text"
-						bind:value={searchQuery}
-						placeholder="Search..."
-						class="w-full"
-					/>
-				</form>
+				<SearchBar />
 				<div class="hidden md:flex">
 					{#if $user}
 						<DropdownMenu.Root>
