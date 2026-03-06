@@ -55,6 +55,7 @@
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.79.0",
 		"lucide-svelte": "^0.562.0",
+		"meilisearch": "^0.55.0",
 		"svelte-fa": "^4.0.4",
 		"svelte-sonner": "^1.0.7"
 	}

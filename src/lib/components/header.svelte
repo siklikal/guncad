@@ -7,7 +7,7 @@
 	import { LogOut, Download, Bookmark, Heart } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import SearchBar from '$lib/components/SearchBar.svelte';
+	import SearchBarMeili from '$lib/components/SearchBarMeili.svelte';
 
 	let mobileMenuOpen = $state(false);
 
@@ -47,7 +47,7 @@
 				<a href="/explore" class="link-primary hidden capitalize md:flex">explore</a>
 			</div>
 			<div class="flex flex-1 items-center justify-end gap-4">
-				<SearchBar />
+				<SearchBarMeili />
 				<div class="hidden md:flex">
 					{#if $user}
 						<DropdownMenu.Root>
