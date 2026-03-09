@@ -7,7 +7,7 @@
 		host: PUBLIC_MEILISEARCH_URL,
 		apiKey: PUBLIC_MEILISEARCH_SEARCH_KEY
 	});
-	const index = client.index('models');
+	const index = client.index('releases');
 
 	interface MeilisearchHit {
 		objectID: string;

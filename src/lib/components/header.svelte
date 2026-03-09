@@ -8,6 +8,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import SearchBarMeili from '$lib/components/SearchBarMeili.svelte';
+	import { haptic } from '$lib/haptics';
 
 	let mobileMenuOpen = $state(false);
 
@@ -77,6 +78,7 @@
 					{/if}
 				</div>
 				<button
+					use:haptic
 					onclick={toggleMobileMenu}
 					class="flex h-9 w-9 items-center justify-center md:hidden"
 				>
@@ -136,6 +138,7 @@
 			<div class="px-4 py-8">
 				{#if $user}
 					<button
+						use:haptic
 						onclick={() => {
 							handleLogout();
 							closeMobileMenu();

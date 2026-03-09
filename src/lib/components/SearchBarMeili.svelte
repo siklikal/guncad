@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { trigger as hapticTrigger } from '$lib/haptics';
 
 	interface Suggestion {
 		model_name: string;
@@ -105,6 +106,7 @@
 	}
 
 	function openSuggestion(slug: string) {
+		hapticTrigger('nudge');
 		showSuggestions = false;
 		suggestions = [];
 		searchQuery = '';
@@ -138,7 +140,7 @@
 				{#each suggestions as item (item.model_name_slug)}
 					<button
 						type="button"
-						class="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-neutral-800"
+						class="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left hover:bg-neutral-800"
 						onclick={() => openSuggestion(item.model_name_slug)}
 					>
 						{#if item.model_thumbnail}

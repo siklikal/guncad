@@ -42,6 +42,8 @@
 </script>
 
 <script lang="ts">
+	import { haptic } from "$lib/haptics";
+
 	let {
 		class: className,
 		variant = "default",
@@ -58,6 +60,7 @@
 {#if href}
 	<a
 		bind:this={ref}
+		use:haptic
 		data-slot="button"
 		class={cn(buttonVariants({ variant, size }), className)}
 		href={disabled ? undefined : href}
@@ -71,6 +74,7 @@
 {:else}
 	<button
 		bind:this={ref}
+		use:haptic
 		data-slot="button"
 		class={cn(buttonVariants({ variant, size }), className)}
 		{type}

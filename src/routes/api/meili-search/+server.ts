@@ -28,7 +28,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		publicEnv.PUBLIC_MEILISEARCH_SEARCH_KEY ||
 		privateEnv.MEILISEARCH_SEARCH_KEY ||
 		privateEnv.MEILISEARCH_MASTER_KEY;
-	const indexUid = privateEnv.MEILISEARCH_INDEX_UID || publicEnv.PUBLIC_MEILISEARCH_INDEX_UID || 'models';
+	const indexUid = privateEnv.MEILISEARCH_INDEX_UID || publicEnv.PUBLIC_MEILISEARCH_INDEX_UID || 'releases';
 
 	const missing: string[] = [];
 	if (!meiliUrl) missing.push('PUBLIC_MEILISEARCH_URL or MEILISEARCH_URL');

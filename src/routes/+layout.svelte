@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { initAuth } from '$lib/stores/auth';
+	import { initHaptics } from '$lib/haptics';
 	import Header from '$lib/components/header.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { page } from '$app/state';
@@ -14,6 +15,7 @@
 
 	// Initialize auth when app starts
 	onMount(() => {
+		initHaptics();
 		return initAuth();
 	});
 
