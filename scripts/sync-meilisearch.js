@@ -45,6 +45,18 @@
  *   Re-running the same command is safe — Meilisearch upserts by `id`,
  *   so existing documents get replaced and new ones get added.
  *
+ *   To nuke the index and start fresh:
+ *     curl -X DELETE 'http://MEILI_HOST/indexes/releases' \
+ *       -H 'Authorization: Bearer YOUR_API_KEY'
+ *
+ *   Check task status:
+ *     curl 'http://MEILI_HOST/tasks?indexUids=releases&limit=3' \
+ *       -H 'Authorization: Bearer YOUR_API_KEY'
+ *
+ *   GOTCHA: The index name matters. If you push to "releases" but your app
+ *   queries "models" (or vice versa), you'll see stale data. Make sure the
+ *   index name here matches what the app uses (currently "releases").
+ *
  * NOTES:
  *   - GCI API max limit per request is 1000
  *   - We use 500 per page to be safe and avoid timeouts
