@@ -13,12 +13,15 @@
 		faCalendar,
 		faFile
 	} from '@fortawesome/free-solid-svg-icons';
+	import { goto } from '$app/navigation';
 	import { getTagColorClass } from '$lib/utils/tagColors';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import PurchaseModal from '$lib/components/PurchaseModal.svelte';
 	import { toast } from 'svelte-sonner';
 	import { supabase } from '$lib/supabase';
 	import { onMount } from 'svelte';
+	import { user } from '$lib/stores/auth';
+	import { trigger as hapticTrigger } from '$lib/haptics';
 
 	let { data }: { data: PageData } = $props();
 
@@ -145,6 +148,14 @@
 	async function toggleBookmark() {
 		if (!project || bookmarkLoading) return;
 
+		if (!$user) {
+			hapticTrigger('error');
+			toast.error('Log in to bookmark files', {
+				action: { label: 'Log in', onClick: () => goto('/login') }
+			});
+			return;
+		}
+
 		bookmarkLoading = true;
 		try {
 			const response = await fetch('/api/bookmarks/toggle', {
@@ -168,6 +179,14 @@
 	async function toggleLike() {
 		if (!project || likeLoading) return;
 
+		if (!$user) {
+			hapticTrigger('error');
+			toast.error('Log in to like files', {
+				action: { label: 'Log in', onClick: () => goto('/login') }
+			});
+			return;
+		}
+
 		likeLoading = true;
 		try {
 			const response = await fetch('/api/project-stats/toggle-like', {
@@ -175,10 +194,6 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ projectId: project.id })
 			});
-
-			if (response.status === 401) {
-				return;
-			}
 
 			if (response.ok) {
 				const result = await response.json();
@@ -269,13 +284,15 @@
 					const geoResponse = await fetch('/api/geo-check');
 					const geoResult = await geoResponse.json();
 					if (!geoResult.allowed) {
+						hapticTrigger('error');
 						toast.error(geoResult.reason || 'Purchases are not available in your region.');
 						return;
 					}
 					showPurchaseModal = true;
 				} catch (error) {
 					console.error('Geo check failed:', error);
-					toast.error('Unable to verify your location. Please try again later.');
+				hapticTrigger('error');
+				toast.error('Unable to verify your location. Please try again later.');
 				} finally {
 					geoChecking = false;
 				}
@@ -404,9 +421,11 @@
 		try {
 			const url = window.location.href;
 			await navigator.clipboard.writeText(url);
+			hapticTrigger('success');
 			toast.success('Link copied to clipboard!');
 		} catch (error) {
 			console.error('Failed to copy URL:', error);
+			hapticTrigger('error');
 			toast.error('Failed to copy link');
 		}
 	}

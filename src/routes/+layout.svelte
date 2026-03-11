@@ -31,7 +31,7 @@
 	<script src={env.PUBLIC_ADN_ACCEPT_JS_URL} charset="utf-8"></script>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex min-h-dvh flex-col">
 	{#if showHeader}
 		<Header />
 		<div class="flex flex-1 flex-col p-4 pb-16 md:py-8 md:pb-16">

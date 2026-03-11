@@ -4,11 +4,12 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Loader2 } from '@lucide/svelte';
+	import { Loader2, Eye, EyeOff } from '@lucide/svelte';
 
 	let accessCode = $state('');
 	let error = $state('');
 	let loading = $state(false);
+	let showPassword = $state(false);
 
 	async function handleSubmit() {
 		error = '';
@@ -37,7 +38,7 @@
 	}
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-neutral-950 p-4">
+<div class="flex h-dvh items-center justify-center bg-neutral-950 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header>
 			<Card.Title class="text-center text-3xl">Guncad</Card.Title>
@@ -56,13 +57,26 @@
 			>
 				<div class="space-y-2">
 					<Label for="access-code">Access Code</Label>
-					<Input
-						id="access-code"
-						type="password"
-						bind:value={accessCode}
-						placeholder="Enter access code"
-						required
-					/>
+					<div class="relative">
+						<Input
+							id="access-code"
+							type={showPassword ? 'text' : 'password'}
+							bind:value={accessCode}
+							placeholder="Enter access code"
+							required
+						/>
+						<button
+							type="button"
+							class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+							onclick={() => (showPassword = !showPassword)}
+						>
+							{#if showPassword}
+								<EyeOff class="h-4 w-4" />
+							{:else}
+								<Eye class="h-4 w-4" />
+							{/if}
+						</button>
+					</div>
 				</div>
 
 				{#if error}

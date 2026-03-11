@@ -73,7 +73,7 @@
 							<span class="inline md:block">GunCAD and 3D2A Files</span>
 						</p>
 						<p class="text-[16px] md:text-2xl">By the community, for the community</p>
-						<a href="/" class=" rounded-full bg-black px-8 py-3 font-bold text-white">Join Now</a>
+						<a href="/explore" class="rounded-full bg-black px-8 py-3 font-bold text-white">Explore Files</a>
 					</div>
 				</div>
 			</div>
