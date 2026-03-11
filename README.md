@@ -52,6 +52,9 @@ Set these in Railway's Variables tab:
 | `IPGEOLOCATION_API_KEY` | IP geolocation API key |
 | `VPNAPI_API_KEY` | VPN detection API key |
 | `BYPASS_GEO_CHECK` | Skip geo/VPN checks (`true` for dev, `false` for prod) |
+| `PUBLIC_MEILISEARCH_URL` | Meilisearch instance URL |
+| `PUBLIC_MEILISEARCH_SEARCH_KEY` | Meilisearch search-only API key (safe for client) |
+| `MEILISEARCH_MASTER_KEY` | Meilisearch master key (server-only, for indexing) |
 
 Variables prefixed with `PUBLIC_` are accessible client-side. All others are server-only.
 
@@ -88,12 +91,21 @@ curl -H "Authorization: Bearer YOUR_MASTER_KEY" https://your-meilisearch-url/key
 Use the sync script to fetch all releases from the GCI API and push to Meilisearch:
 
 ```sh
-node scripts/sync-algolia.js                # Full sync
-node scripts/sync-algolia.js --update       # Only fetch new releases since last run
-node scripts/sync-algolia.js --offset 3000  # Resume a crashed run
+node scripts/sync-meilisearch.js                # Full sync
+node scripts/sync-meilisearch.js --update       # Only fetch new releases since last run
+node scripts/sync-meilisearch.js --offset 3000  # Resume a crashed run
 ```
 
-The script outputs `algolia-records.json` which can be uploaded to your Meilisearch index.
+The script outputs `meilisearch-records.json`. Push it to your Meilisearch index:
+
+```sh
+curl -X POST 'https://YOUR_MEILI_URL/indexes/releases/documents' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_MASTER_KEY' \
+  --data-binary @scripts/meilisearch-records.json
+```
+
+Re-running is safe — Meilisearch upserts by `id`, so existing documents get replaced and new ones get added. The index name must be `releases` (matching what the app queries).
 
 ---
 
@@ -199,5 +211,5 @@ src/
     user/             # Authenticated user pages (downloads, likes, bookmarks)
     login/            # Login page
 scripts/
-  sync-algolia.js     # GCI → search index sync script
+  sync-meilisearch.js  # GCI → Meilisearch sync script
 ```
