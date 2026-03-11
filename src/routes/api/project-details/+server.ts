@@ -7,18 +7,14 @@ export const config = {
 };
 
 async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch): Promise<any> {
-	// Extract the LBRY identifier from the GCI URL
-	// Format: https://guncadindex.com/detail/Tiny-11:5
 	const projectIdMatch = url.match(/detail\/(.+)$/);
 	if (!projectIdMatch) {
 		throw new Error(`Invalid GCI URL format: ${url}`);
 	}
 
-	const lbryId = projectIdMatch[1]; // e.g., "Tiny-11:5"
-
-	// Use the direct GCI API endpoint for the specific release
-	// This is much more efficient than searching and filtering
+	const lbryId = projectIdMatch[1];
 	const apiUrl = `https://guncadindex.com/api/releases/${lbryId}/`;
+	const start = Date.now();
 	const response = await serverFetch(apiUrl, {
 		headers: {
 			Accept: 'application/json',
@@ -26,20 +22,23 @@ async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch):
 			Referer: 'https://guncad.vercel.app'
 		}
 	});
+	const elapsed = Date.now() - start;
 
 	if (!response.ok) {
 		const errorBody = await response.text();
-		console.error('[project-details] GCI API failed', {
+		console.error(`[project-details] GCI API failed for ${lbryId}`, {
 			status: response.status,
 			statusText: response.statusText,
-			headers: Object.fromEntries(response.headers.entries()),
+			elapsed: `${elapsed}ms`,
 			body: errorBody.slice(0, 1000)
 		});
-		throw new Error(`GCI API failed: ${response.status}`);
+		throw new Error(
+			`GCI ${response.status} ${response.statusText} for ${lbryId} (${elapsed}ms)`
+		);
 	}
 
-	const release = await response.json();
-	return release;
+	console.log(`[project-details] ${lbryId} OK ${elapsed}ms`);
+	return await response.json();
 }
 
 export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
@@ -50,12 +49,10 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 			return json({ error: 'Invalid request: urls array required' }, { status: 400 });
 		}
 
-		// Fetch all project details in parallel using GCI API
 		const projectPromises = urls.map(async (url: string) => {
 			try {
 				const release = await getProjectDetailsFromGCI(url, serverFetch);
 
-				// Map GCI API response to our format
 				return {
 					title: release.name,
 					image: release.thumbnail_manager?.large || release.thumbnail || '',
@@ -76,12 +73,10 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 					fileSize: release.size || 0
 				};
 			} catch (error) {
-				console.error(`Error fetching project details from ${url}:`, error);
-				// Return fallback data for failed requests
+				console.error(`[project-details] Failed: ${url}`, error);
 				return {
 					title: 'Unknown Title',
-					image:
-						'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
+					image: 'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
 					url: url,
 					views: 0,
 					likes: 0,
@@ -100,10 +95,16 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 		});
 
 		const projects = await Promise.all(projectPromises);
-
 		return json({ projects });
 	} catch (error) {
-		console.error('Error fetching project details:', error);
-		return json({ error: 'Failed to fetch project details' }, { status: 500 });
+		const message = error instanceof Error ? error.message : String(error);
+		console.error('[project-details] Request error:', message);
+		return json(
+			{
+				error: 'Failed to fetch project details',
+				detail: message
+			},
+			{ status: 500 }
+		);
 	}
 };

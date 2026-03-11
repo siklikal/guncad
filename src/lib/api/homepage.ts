@@ -22,12 +22,15 @@ export async function fetchTags() {
 		const response = await fetch('/api/tags?limit=200', {
 			headers: { Accept: 'application/json' }
 		});
-		if (!response.ok) throw new Error('Failed to fetch tags');
+		if (!response.ok) {
+			const body = await response.json().catch(() => ({}));
+			console.error('[homepage] Tags failed:', { status: response.status, ...body });
+			return [];
+		}
 		const data: TagsResponse = await response.json();
-		console.log('Tags fetched:', data.results.length, 'tags');
 		return data.results;
 	} catch (error) {
-		console.error('Error fetching tags:', error);
+		console.error('[homepage] Tags network error:', error);
 		return [];
 	}
 }
@@ -56,7 +59,6 @@ export async function fetchSpotlights() {
 			spotlightTrending.id = spotlightTrending.url.split('/detail/')[1];
 		}
 
-		console.log('Spotlights fetched');
 		return {
 			exclusive: spotlightExclusive || {
 				title: 'The Hello Kitty',
@@ -81,7 +83,7 @@ export async function fetchSpotlights() {
 			}
 		};
 	} catch (error) {
-		console.error('Error fetching spotlights:', error);
+		console.error('[homepage] Spotlights network error:', error);
 		return {
 			exclusive: {
 				title: 'The Hello Kitty',
@@ -149,25 +151,15 @@ export async function fetchSortedProjects(
 		});
 
 		if (!response.ok) {
-			console.error(`Failed to fetch ${sort} projects`);
+			const body = await response.json().catch(() => ({}));
+			console.error(`[homepage] ${sort} projects failed:`, { status: response.status, ...body });
 			return [];
 		}
 
 		const data = await response.json();
-		console.log(`${sort} projects fetched:`, data.projects.length);
-
-		// Debug: Show first 3 newest projects
-		if (sort === 'newest' && data.projects.length > 0) {
-			const count = Math.min(3, data.projects.length);
-			console.log(`[DEBUG] First ${count} newest projects:`, data.projects.slice(0, count));
-		}
-
-		if (data.projects.length > 0) {
-			console.log(`${sort} first project sample:`, data.projects[0]);
-		}
 		return data.projects;
 	} catch (error) {
-		console.error(`Error fetching ${sort} projects:`, error);
+		console.error(`[homepage] ${sort} projects network error:`, error);
 		return [];
 	}
 }
