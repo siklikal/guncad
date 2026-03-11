@@ -21,6 +21,9 @@ Thumbs.db
 !.vscode/settings.json
 .idea
 
+# Supabase migrations (only schema.sql is committed)
+supabase/migrations/
+
 # Logs
 logs
 *.log
