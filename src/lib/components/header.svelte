@@ -4,11 +4,14 @@
 	import { browser } from '$app/environment';
 	import { user, auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { LogOut, Download, Bookmark, Heart } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import SearchBarMeili from '$lib/components/SearchBarMeili.svelte';
 	import { haptic } from '$lib/haptics';
+
+	let loginUrl = $derived(`/login?redirect=${encodeURIComponent(page.url.pathname + page.url.search)}`);
 
 	let mobileMenuOpen = $state(false);
 
@@ -74,7 +77,7 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 					{:else}
-						<Button class="btn bg-blue-600 text-white hover:bg-blue-700" onclick={() => goto('/login')}>Log In</Button>
+						<Button class="btn bg-blue-600 text-white hover:bg-blue-700" onclick={() => goto(loginUrl)}>Log In</Button>
 					{/if}
 				</div>
 				<button
@@ -149,7 +152,7 @@
 						Sign Out
 					</button>
 				{:else}
-					<a href="/login" class="btn btn-sm btn-primary rounded-full capitalize">log in</a>
+					<a href={loginUrl} class="btn btn-sm btn-primary rounded-full capitalize">log in</a>
 				{/if}
 			</div>
 		</div>

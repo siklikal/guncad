@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { auth, user } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -9,6 +10,7 @@
 	import { Loader2 } from '@lucide/svelte';
 	import { formatAccountNumber, formatAccountNumberInput } from '$lib/utils/accountNumber';
 	import AccountNumberCard from '$lib/components/AccountNumberCard.svelte';
+	import { TextMorph } from 'torph/svelte';
 
 	let accountNumber = $state('');
 	let acceptedTos = $state(false);
@@ -19,7 +21,8 @@
 
 	$effect(() => {
 		if ($user) {
-			goto('/');
+			const redirect = page.url.searchParams.get('redirect') || '/';
+			goto(redirect);
 		}
 	});
 
@@ -104,10 +107,8 @@
 				<Button type="submit" class="w-full" disabled={loadingLogin}>
 					{#if loadingLogin}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-						Signing in...
-					{:else}
-						Sign In
 					{/if}
+					<TextMorph text={loadingLogin ? 'Signing in...' : 'Sign In'} />
 				</Button>
 			</form>
 
@@ -139,10 +140,8 @@
 				>
 					{#if loadingCreate}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-						Creating...
-					{:else}
-						Generate Account Number
 					{/if}
+					<TextMorph text={loadingCreate ? 'Creating...' : 'Generate Account Number'} />
 				</Button>
 
 				{#if createdAccountNumber}

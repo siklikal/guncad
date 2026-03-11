@@ -22,6 +22,7 @@
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/auth';
 	import { trigger as hapticTrigger } from '$lib/haptics';
+	import { TextMorph } from 'torph/svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -151,7 +152,7 @@
 		if (!$user) {
 			hapticTrigger('error');
 			toast.error('Log in to bookmark files', {
-				action: { label: 'Log in', onClick: () => goto('/login') }
+				action: { label: 'Log in', onClick: () => goto(`/login?redirect=${encodeURIComponent(window.location.pathname)}`) }
 			});
 			return;
 		}
@@ -182,7 +183,7 @@
 		if (!$user) {
 			hapticTrigger('error');
 			toast.error('Log in to like files', {
-				action: { label: 'Log in', onClick: () => goto('/login') }
+				action: { label: 'Log in', onClick: () => goto(`/login?redirect=${encodeURIComponent(window.location.pathname)}`) }
 			});
 			return;
 		}
@@ -559,7 +560,7 @@
 							<Fa icon={faHeart} class="text-sm text-neutral-400" />
 							<p class="text-xs font-semibold">
 								{#if statsLoaded}
-									{formatNumber(projectStats.likes || loadedProject.likes)}
+									<TextMorph text={formatNumber(projectStats.likes || loadedProject.likes)} />
 								{:else}
 									<span class="inline-block h-3 w-6 align-middle animate-pulse rounded-sm bg-neutral-600"></span>
 								{/if}
@@ -615,7 +616,7 @@
 										<Fa icon={faBookmark} class="text-sm {isBookmarked ? 'text-red-500' : ''}" />
 									{/if}
 								</span>
-								Bookmark
+								<TextMorph text={isBookmarked ? 'Bookmarked' : 'Bookmark'} />
 							{/snippet}
 						</Button>
 						<Button size="lg" class="flex-1" onclick={toggleLike} disabled={likeLoading}>
@@ -629,7 +630,7 @@
 										<Fa icon={faHeart} class="text-sm {isLiked ? 'text-red-500' : ''}" />
 									{/if}
 								</span>
-								Like
+								<TextMorph text={isLiked ? 'Liked' : 'Like'} />
 							{/snippet}
 						</Button>
 
@@ -642,13 +643,7 @@
 										<Fa icon={faDownload} class="text-sm" />
 									{/if}
 								</span>
-								{#if downloading}
-									Downloading...
-								{:else if geoChecking}
-									Checking...
-								{:else}
-									Download
-								{/if}
+								<TextMorph text={downloading ? 'Downloading...' : 'Download'} />
 							{/snippet}
 						</Button>
 
@@ -692,7 +687,7 @@
 								<Fa icon={faHeart} class="text-sm text-neutral-400" />
 								<p class="text-sm font-semibold">
 									{#if statsLoaded}
-										{formatNumber(projectStats.likes || loadedProject.likes)}
+										<TextMorph text={formatNumber(projectStats.likes || loadedProject.likes)} />
 									{:else}
 										<span class="inline-block h-3.5 w-7 animate-pulse rounded-sm bg-neutral-600"></span>
 									{/if}
@@ -753,7 +748,7 @@
 											<Fa icon={faBookmark} class="text-sm {isBookmarked ? 'text-red-500' : ''}" />
 										{/if}
 									</span>
-									Bookmark
+									<TextMorph text={isBookmarked ? 'Bookmarked' : 'Bookmark'} />
 								{/snippet}
 							</Button>
 							<Button
@@ -772,7 +767,7 @@
 											<Fa icon={faHeart} class="text-sm {isLiked ? 'text-red-500' : ''}" />
 										{/if}
 									</span>
-									Like
+									<TextMorph text={isLiked ? 'Liked' : 'Like'} />
 								{/snippet}
 							</Button>
 
@@ -785,13 +780,7 @@
 											<Fa icon={faDownload} class="text-sm" />
 										{/if}
 									</span>
-									{#if downloading}
-										Downloading...
-									{:else if geoChecking}
-										Checking...
-									{:else}
-										Download
-									{/if}
+									<TextMorph text={downloading ? 'Downloading...' : 'Download'} />
 								{/snippet}
 							</Button>
 
