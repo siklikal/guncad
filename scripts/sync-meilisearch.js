@@ -166,7 +166,10 @@ async function fetchPage(offset) {
 	const url = `${GCI_API_BASE}?format=json&limit=${PAGE_SIZE}&offset=${offset}&ordering=-released`;
 
 	const response = await fetch(url, {
-		headers: { Accept: 'application/json' }
+		headers: {
+			Accept: 'application/json',
+			'User-Agent': 'GunCAD-Sync/1.0'
+		}
 	});
 
 	if (!response.ok) {
