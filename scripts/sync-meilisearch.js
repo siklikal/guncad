@@ -3,69 +3,45 @@
 /**
  * GunCAD → Meilisearch Sync Script
  *
- * Fetches releases from the GCI API and outputs a JSON file
- * formatted for Meilisearch import.
+ * Fetches all releases from the GCI API and pushes them to Meilisearch.
+ * Designed to run on a schedule (twice daily) to keep the search index
+ * in sync with GCI data — including updated thumbnails/URLs on old records.
  *
- * MODES:
+ * USAGE:
  *
- *   1. Full sync (first run — fetches everything):
- *      node scripts/sync-meilisearch.js
+ *   Full sync + push (recommended for scheduled runs):
+ *     MEILISEARCH_URL=... MEILISEARCH_MASTER_KEY=... node scripts/sync-meilisearch.js --push
  *
- *   2. Update sync (subsequent runs — only fetches new releases):
- *      node scripts/sync-meilisearch.js --update
- *      This reads your existing meilisearch-records.json file, fetches newest
- *      releases from the API, and stops when it hits a record that already
- *      exists. New records are prepended to the file.
+ *   Full sync only (writes JSON file, no push):
+ *     node scripts/sync-meilisearch.js
  *
- *   3. Resume a crashed run:
- *      node scripts/sync-meilisearch.js --offset 3000
- *      Picks up fetching from offset 3000 (useful if script died mid-run).
+ *   Update sync (only fetches new releases since last run):
+ *     node scripts/sync-meilisearch.js --update
+ *     NOTE: --update only catches NEW records. It won't pick up changes
+ *     to existing records (updated thumbnails, URLs, etc). Use full sync
+ *     for scheduled runs.
+ *
+ *   Resume a crashed run:
+ *     node scripts/sync-meilisearch.js --offset 3000
  *
  * ALL OPTIONS:
- *   --update             Only fetch new releases since last run
  *   --push               Push records to Meilisearch after syncing
+ *   --update             Only fetch new releases since last run
  *   --offset <number>    Start fetching from this offset (default: 0)
  *   --output <path>      Output file path (default: meilisearch-records.json)
  *   --help               Show this help message
  *
  * ENVIRONMENT VARIABLES (required for --push):
- *   MEILISEARCH_URL      Meilisearch instance URL
+ *   MEILISEARCH_URL         Meilisearch instance URL
  *   MEILISEARCH_MASTER_KEY  Master/admin API key
  *
- * HOW --update WORKS:
- *   - Results are ordered newest-first (-released)
- *   - Script loads existing ids from your output file
- *   - Fetches pages from the API starting at offset 0
- *   - As soon as it hits a record that already exists, it stops
- *   - New records are prepended to the existing file
- *   - This means you only download the delta (new stuff since last run)
- *
- * PUSHING TO MEILISEARCH:
- *
- *   curl -X POST 'http://MEILI_HOST/indexes/releases/documents' \
- *     -H 'Content-Type: application/json' \
- *     -H 'Authorization: Bearer YOUR_API_KEY' \
- *     --data-binary @meilisearch-records.json
- *
- *   Re-running the same command is safe — Meilisearch upserts by `id`,
- *   so existing documents get replaced and new ones get added.
- *
- *   To nuke the index and start fresh:
- *     curl -X DELETE 'http://MEILI_HOST/indexes/releases' \
- *       -H 'Authorization: Bearer YOUR_API_KEY'
- *
- *   Check task status:
- *     curl 'http://MEILI_HOST/tasks?indexUids=releases&limit=3' \
- *       -H 'Authorization: Bearer YOUR_API_KEY'
- *
- *   GOTCHA: The index name matters. If you push to "releases" but your app
- *   queries "models" (or vice versa), you'll see stale data. Make sure the
- *   index name here matches what the app uses (currently "releases").
- *
  * NOTES:
- *   - GCI API max limit per request is 1000
- *   - We use 500 per page to be safe and avoid timeouts
- *   - A 1-second delay between pages avoids hammering the API
+ *   - Meilisearch upserts by `id`, so re-running is always safe
+ *   - GCI API max limit per request is 1000, we use 500 to avoid timeouts
+ *   - 1-second delay between pages to avoid hammering the API
+ *   - GCI's Cloudflare blocks datacenter IPs (GitHub Actions), so run
+ *     this from a residential IP (your local machine)
+ *   - The index name must match what the app queries (currently "releases")
  */
 
 import fs from 'fs';
