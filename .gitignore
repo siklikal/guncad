@@ -24,6 +24,9 @@ Thumbs.db
 # Supabase migrations (only schema.sql is committed)
 supabase/migrations/
 
+# Meilisearch sync
+meilisearch-records.json
+
 # Logs
 logs
 *.log

@@ -78,7 +78,7 @@
 				</div>
 			</div>
 
-			<div class="flex flex-1 flex-col gap-5 md:flex-row">
+			<div class="flex flex-1 flex-col gap-5 md:flex-row {spotlightsLoaded ? 'fade-in' : 'opacity-0'}">
 				<div class="flex h-[250px] flex-col gap-2 md:flex-1 xl:h-full" id="spotlight-exclusive">
 					<a
 						href={pageData.spotlightExclusive.id
@@ -372,15 +372,17 @@
 
 <style>
 	.fade-in {
-		animation: fadeIn 0.4s ease-out;
+		animation: fadeIn 0.5s ease-out both;
 	}
 
 	@keyframes fadeIn {
 		from {
 			opacity: 0;
+			transform: translateY(8px);
 		}
 		to {
 			opacity: 1;
+			transform: translateY(0);
 		}
 	}
 </style>

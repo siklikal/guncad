@@ -23,9 +23,14 @@
  *
  * ALL OPTIONS:
  *   --update             Only fetch new releases since last run
+ *   --push               Push records to Meilisearch after syncing
  *   --offset <number>    Start fetching from this offset (default: 0)
  *   --output <path>      Output file path (default: meilisearch-records.json)
  *   --help               Show this help message
+ *
+ * ENVIRONMENT VARIABLES (required for --push):
+ *   MEILISEARCH_URL      Meilisearch instance URL
+ *   MEILISEARCH_MASTER_KEY  Master/admin API key
  *
  * HOW --update WORKS:
  *   - Results are ordered newest-first (-released)
@@ -81,9 +86,12 @@ function parseArgs() {
 	let offset = 0;
 	let output = DEFAULT_OUTPUT;
 	let update = false;
+	let push = false;
 
 	for (let i = 0; i < args.length; i++) {
-		if (args[i] === '--offset' && args[i + 1]) {
+		if (args[i] === '--push') {
+			push = true;
+		} else if (args[i] === '--offset' && args[i + 1]) {
 			offset = parseInt(args[i + 1], 10);
 			if (isNaN(offset) || offset < 0) {
 				console.error('Error: --offset must be a non-negative integer');
@@ -101,6 +109,7 @@ Usage: node scripts/sync-meilisearch.js [options]
 
 Options:
   --update              Only fetch new releases since last run
+  --push                Push records to Meilisearch after syncing
   --offset <number>     Start fetching from this offset (default: 0)
   --output <path>       Output file path (default: ${DEFAULT_OUTPUT})
   --help                Show this help message
@@ -108,13 +117,14 @@ Options:
 Examples:
   node scripts/sync-meilisearch.js              # Full sync (first run)
   node scripts/sync-meilisearch.js --update     # Only fetch new stuff
+  node scripts/sync-meilisearch.js --update --push  # Fetch new + push to Meilisearch
   node scripts/sync-meilisearch.js --offset 3000  # Resume crashed run
 `);
 			process.exit(0);
 		}
 	}
 
-	return { offset, output, update };
+	return { offset, output, update, push };
 }
 
 // ---------------------------------------------------------------------------
@@ -292,15 +302,58 @@ async function updateSync(output) {
 }
 
 // ---------------------------------------------------------------------------
+// Push records to Meilisearch
+// ---------------------------------------------------------------------------
+async function pushToMeilisearch(output) {
+	const url = process.env.MEILISEARCH_URL;
+	const key = process.env.MEILISEARCH_MASTER_KEY;
+
+	if (!url || !key) {
+		console.error('Error: --push requires MEILISEARCH_URL and MEILISEARCH_MASTER_KEY env vars');
+		process.exit(1);
+	}
+
+	if (!fs.existsSync(output)) {
+		console.error(`Error: No file found at ${output} — nothing to push`);
+		process.exit(1);
+	}
+
+	const records = JSON.parse(fs.readFileSync(output, 'utf-8'));
+	console.log(`\nPushing ${records.length} records to Meilisearch...`);
+
+	const endpoint = `${url.replace(/\/$/, '')}/indexes/releases/documents`;
+	const response = await fetch(endpoint, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${key}`
+		},
+		body: JSON.stringify(records)
+	});
+
+	if (!response.ok) {
+		const body = await response.text();
+		throw new Error(`Meilisearch returned ${response.status}: ${body}`);
+	}
+
+	const result = await response.json();
+	console.log(`Push accepted — task UID: ${result.taskUid}, status: ${result.status}`);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
-	const { offset, output, update } = parseArgs();
+	const { offset, output, update, push } = parseArgs();
 
 	if (update) {
 		await updateSync(output);
 	} else {
 		await fullSync(offset, output);
+	}
+
+	if (push) {
+		await pushToMeilisearch(output);
 	}
 }
 
