@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData, Snapshot } from './$types';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { onDestroy, onMount } from 'svelte';
 	import Fa from 'svelte-fa';
 	import { faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -62,10 +62,6 @@
 	let observer: IntersectionObserver;
 	let loadMoreTrigger = $state<HTMLDivElement | undefined>(undefined);
 
-	let searchQuery = $derived(data.searchQuery);
-	let sortParam = $derived(data.sort || (data.searchQuery ? 'rank' : 'newest'));
-	let timeParam = $derived(data.time || 'alltime');
-
 	const sortOptions = [
 		{ value: 'newest', label: 'Newest' },
 		{ value: 'rank', label: 'Relevance' },
@@ -78,7 +74,7 @@
 
 	// Derived page title based on selected sort
 	let pageTitle = $derived(
-		searchQuery
+		currentSearchQuery
 			? `Search Results`
 			: sortOptions.find((opt) => opt.value === selectedSort)?.label || 'Latest Releases'
 	);
@@ -92,20 +88,23 @@
 		{ value: 'year', label: 'This Year' }
 	];
 
-	let selectedSort = $state(sortParam);
-	let selectedTime = $state(timeParam);
+	let selectedSort = $state(data.sort || (data.searchQuery ? 'rank' : 'newest'));
+	let selectedTime = $state(data.time || 'alltime');
 	let restoredFromSnapshot = false;
 	let scrollY = 0;
 	let hasMounted = false;
-	let activeRouteKey = $state(`${searchQuery}|${sortParam}|${timeParam}`);
+	let activeRouteKey = $state('');
 	const CACHE_PREFIX = 'explore-cache:';
 
-	function getRouteKey(
-		query: string = searchQuery,
-		sort: string = sortParam,
-		time: string = timeParam
-	): string {
+	function getRouteKey(query: string, sort: string, time: string): string {
 		return `${query}|${sort}|${time}`;
+	}
+
+	function getRouteState(routeUrl: URL) {
+		const query = routeUrl.searchParams.get('search') || '';
+		const sort = routeUrl.searchParams.get('sort') || (query ? 'rank' : 'newest');
+		const time = routeUrl.searchParams.get('time') || 'alltime';
+		return { query, sort, time, routeKey: getRouteKey(query, sort, time) };
 	}
 
 	function loadCachedState(routeKey: string) {
@@ -180,58 +179,25 @@
 		}
 	};
 
-	// Fetch initial data when component mounts or search query changes
-	$effect(() => {
-		if (!hasMounted) {
+	function applyRoute(routeUrl: URL) {
+		const { query, sort, time, routeKey } = getRouteState(routeUrl);
+
+		if (routeKey === activeRouteKey && hasMounted) {
 			return;
 		}
 
-		const nextRouteKey = getRouteKey();
-		if (nextRouteKey === activeRouteKey) {
-			return;
+		if (hasMounted && activeRouteKey) {
+			saveCachedState(activeRouteKey);
 		}
 
-		if (
-			currentSearchQuery !== searchQuery ||
-			currentSort !== sortParam ||
-			currentTime !== timeParam
-		) {
-			currentSearchQuery = searchQuery;
-			currentSort = sortParam;
-			currentTime = timeParam;
-			selectedSort = sortParam;
-			selectedTime = timeParam;
+		currentSearchQuery = query;
+		currentSort = sort;
+		currentTime = time;
+		selectedSort = sort;
+		selectedTime = time;
+		activeRouteKey = routeKey;
 
-			// Auto-select 'Relevance' when search is performed
-			if (searchQuery && !data.sort) {
-				selectedSort = 'rank';
-				currentSort = 'rank';
-			}
-
-			activeRouteKey = nextRouteKey;
-
-			const cached = loadCachedState(nextRouteKey);
-			if (cached && cached.projects.length > 0) {
-				projects = cached.projects;
-				count = cached.count;
-				hasMore = cached.hasMore;
-				scrollY = cached.scrollY || 0;
-				initialLoading = false;
-				requestAnimationFrame(() => {
-					window.scrollTo(0, scrollY);
-				});
-				return;
-			}
-
-			fetchProjects();
-		}
-	});
-
-	onMount(() => {
-		hasMounted = true;
-		activeRouteKey = getRouteKey();
-
-		const cached = loadCachedState(activeRouteKey);
+		const cached = loadCachedState(routeKey);
 		if (cached && cached.projects.length > 0) {
 			projects = cached.projects;
 			count = cached.count;
@@ -244,8 +210,15 @@
 			return;
 		}
 
-		// If state was restored (snapshot/back-forward cache), keep existing list.
-		if (projects.length > 0) {
+		void fetchProjects();
+	}
+
+	onMount(() => {
+		hasMounted = true;
+		const initialRoute = new URL(window.location.href);
+
+		// If state was restored (snapshot/back-forward cache), keep existing list if route matches.
+		if (projects.length > 0 && activeRouteKey === getRouteState(initialRoute).routeKey) {
 			initialLoading = false;
 			if (restoredFromSnapshot || scrollY > 0) {
 				requestAnimationFrame(() => {
@@ -262,7 +235,16 @@
 			});
 			return;
 		}
-		fetchProjects();
+
+		applyRoute(initialRoute);
+	});
+
+	afterNavigate(({ to }) => {
+		if (!hasMounted || !to?.url || to.url.pathname !== '/explore') {
+			return;
+		}
+
+		applyRoute(to.url);
 	});
 
 	onDestroy(() => {
@@ -270,7 +252,7 @@
 	});
 
 	async function fetchProjects() {
-		console.log('fetchProjects called, searchQuery:', searchQuery);
+		console.log('fetchProjects called, searchQuery:', currentSearchQuery);
 		initialLoading = true;
 		projects = [];
 
@@ -385,10 +367,10 @@
 
 	function clearSearch() {
 		const params = new URLSearchParams();
-		if (selectedSort) {
+		if (selectedSort && selectedSort !== 'rank' && selectedSort !== 'newest') {
 			params.set('sort', selectedSort);
 		}
-		if (selectedTime) {
+		if (selectedTime && selectedTime !== 'alltime') {
 			params.set('time', selectedTime);
 		}
 		const queryString = params.toString();
@@ -396,20 +378,15 @@
 	}
 
 	function updateFilters() {
-		// Update state directly instead of relying on goto → load → effect chain
-		currentSort = selectedSort;
-		currentTime = selectedTime;
-		activeRouteKey = `${currentSearchQuery}|${currentSort}|${currentTime}`;
-
-		// Update URL for bookmarking
+		// Update URL and let afterNavigate apply the new route state.
 		const params = new URLSearchParams();
 		if (currentSearchQuery) {
 			params.set('search', currentSearchQuery);
 		}
-		if (selectedSort) {
+		if (selectedSort && selectedSort !== 'newest') {
 			params.set('sort', selectedSort);
 		}
-		if (selectedTime) {
+		if (selectedTime && selectedTime !== 'alltime') {
 			params.set('time', selectedTime);
 		}
 		goto(`/explore?${params.toString()}`, {
@@ -417,9 +394,6 @@
 			keepFocus: true,
 			noScroll: true
 		});
-
-		// Fetch directly — don't wait for the reactive chain
-		fetchProjects();
 	}
 </script>
 
@@ -430,14 +404,14 @@
 
 <div class="px-4">
 	<!-- Active Search Badge -->
-	{#if searchQuery}
+	{#if currentSearchQuery}
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
 			<div>
 				<button
 					onclick={clearSearch}
 					class="inline-flex items-center gap-2 rounded-full border border-neutral-600 bg-neutral-800 px-4 py-2 text-sm hover:bg-neutral-700"
 				>
-					<span>Search: <span class="font-semibold">{searchQuery}</span></span>
+					<span>Search: <span class="font-semibold">{currentSearchQuery}</span></span>
 					<Fa icon={faXmark} class="text-lg" />
 				</button>
 				{#if initialLoading}
@@ -548,9 +522,9 @@
 		<div class="flex h-64 items-center justify-center">
 			<div class="text-center">
 				<p class="text-xl text-neutral-400">
-					{searchQuery ? 'No models found for your search' : 'No models available'}
+					{currentSearchQuery ? 'No models found for your search' : 'No models available'}
 				</p>
-				{#if searchQuery}
+				{#if currentSearchQuery}
 					<button
 						onclick={clearSearch}
 						class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"

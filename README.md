@@ -66,13 +66,46 @@ For production, use the production Authorize.Net keys (not sandbox).
 
 Meilisearch powers the search feature. It runs as a separate Railway service.
 
+Search in the app has two parts:
+
+- Header autocomplete uses Meilisearch through `/api/meili-search`.
+- Full search results on `/explore` use the GunCAD Index API through `/api/releases?search=...`.
+
+If autocomplete breaks, inspect the Meilisearch service first. If full search stops updating after navigation, inspect the `/explore` route state handling before changing the API.
+
 ### Setup on Railway
 
 1. Create a new service in your Railway project
-2. Use the Docker image: `getmeili/meilisearch`
+2. Use a pinned Docker image tag, not floating `latest`, for example: `getmeili/meilisearch:v1.37.0`
 3. Add a **Volume** (Railway dashboard: service > + New > Volume), mount at `/meili_data` — this persists the search index across deploys
 4. Set the `MEILI_MASTER_KEY` environment variable to a strong random string (16+ chars). Without this, the instance is open to the public with no auth
 5. Under Networking, generate a public domain or use Railway's internal networking (`meilisearch.railway.internal`) for service-to-service communication
+
+### Versioning and upgrades
+
+Meilisearch data files are version-sensitive. If Railway pulls a newer engine image against an older persisted `/meili_data` volume, the service will fail to boot with an error like:
+
+```text
+Your database version (1.37.0) is incompatible with your current engine version (1.40.0)
+```
+
+To avoid that:
+
+- Pin the Meilisearch image to the exact version your volume was created with.
+- Upgrade intentionally by following Meilisearch's migration guide before changing the image tag.
+- If the index can be rebuilt, the fastest recovery is to delete the Meilisearch volume, redeploy the same image tag you want to run, then re-push documents with `node scripts/sync-meilisearch.js --push`.
+
+If search suddenly starts returning `502` from `/api/meili-search`, check the Meilisearch service logs first for a version mismatch before debugging the app.
+
+### Search maintenance notes
+
+To keep search working reliably:
+
+- Pin the Meilisearch Docker image version on Railway when using a persistent volume.
+- Keep the header search submit flow navigating to `/explore?search=...` so the full results page has a single URL-based source of truth.
+- Keep `/src/routes/explore/+page.svelte` route-driven. Repeated searches and clear-search behavior depend on syncing state from the current URL after navigation, not from mount-only props.
+- When changing `/src/lib/components/SearchBarMeili.svelte`, make sure pressing Enter clears and invalidates any pending suggestion request so the Meilisearch dropdown does not reappear after submit.
+- When changing `/src/routes/api/releases/+server.ts`, preserve support for the `search` query param from the app and the `query` param expected by the upstream GCI API.
 
 ### Keys
 

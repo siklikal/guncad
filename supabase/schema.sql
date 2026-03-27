@@ -106,28 +106,13 @@ create policy "Users can view their own profile"
   using (auth.uid() = id);
 
 drop policy if exists "Admins can update profiles" on public.user_profiles;
-create policy "Admins can update profiles"
-  on public.user_profiles
-  for update
-  using (
-    exists (
-      select 1 from public.user_profiles
-      where id = auth.uid()
-      and status = 'active'
-    )
-  );
-
 drop policy if exists "Admins can view all profiles" on public.user_profiles;
-create policy "Admins can view all profiles"
+
+drop policy if exists "Service role can manage all profiles" on public.user_profiles;
+create policy "Service role can manage all profiles"
   on public.user_profiles
-  for select
-  using (
-    exists (
-      select 1 from public.user_profiles
-      where id = auth.uid()
-      and status = 'active'
-    )
-  );
+  for all
+  using (auth.role() = 'service_role');
 
 create index if not exists user_profiles_status_idx on public.user_profiles(status);
 create index if not exists user_profiles_email_idx on public.user_profiles(email);
@@ -283,16 +268,12 @@ create policy "Anyone can view project stats"
   using (true);
 
 drop policy if exists "Authenticated users can insert project stats" on public.project_stats;
-create policy "Authenticated users can insert project stats"
-  on public.project_stats
-  for insert
-  with check (auth.role() = 'authenticated');
-
 drop policy if exists "Authenticated users can update project stats" on public.project_stats;
-create policy "Authenticated users can update project stats"
+drop policy if exists "Service role can manage all project stats" on public.project_stats;
+create policy "Service role can manage all project stats"
   on public.project_stats
-  for update
-  using (auth.role() = 'authenticated');
+  for all
+  using (auth.role() = 'service_role');
 
 comment on table public.project_stats is 'Aggregated statistics for each project combining GCI base stats and our tracked stats';
 comment on column public.project_stats.project_id is 'The LBRY project ID (e.g., "Model-Name:1")';

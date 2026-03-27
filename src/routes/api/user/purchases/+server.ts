@@ -15,6 +15,12 @@ interface PurchaseWithDetails {
 	transaction_id: string | null;
 }
 
+interface ProjectDetailsSummary {
+	title?: string;
+	image?: string;
+	url?: string;
+}
+
 export const GET: RequestHandler = async ({ locals, fetch }) => {
 	try {
 		const session = locals.session;
@@ -59,19 +65,30 @@ export const GET: RequestHandler = async ({ locals, fetch }) => {
 
 				if (projectResponse.ok) {
 					const projectData = await projectResponse.json();
-					const projects = projectData.projects;
+					const projects: ProjectDetailsSummary[] = Array.isArray(projectData.projects)
+						? projectData.projects
+						: [];
+					const projectsByUrl = new Map(
+						projects
+							.filter((project) => typeof project.url === 'string' && project.url.length > 0)
+							.map((project) => [project.url!, project] as const)
+					);
 
-					// Map projects to purchases (order is preserved)
-					purchasesWithDetails = payments.map((payment, index) => {
-						const project = projects[index];
+					purchasesWithDetails = payments.map((payment) => {
+						const projectUrl = `https://guncadindex.com/detail/${payment.model_id}`;
+						const project = projectsByUrl.get(projectUrl);
+						const resolvedTitle =
+							project?.title && project.title !== 'Unknown Title' ? project.title : payment.model_id;
+						const resolvedImage =
+							project?.title && project.title !== 'Unknown Title' && project.image
+								? project.image
+								: 'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image';
 
 						return {
 							id: payment.id,
 							model_id: payment.model_id,
-							model_title: project?.title || payment.model_id,
-							model_image:
-								project?.image ||
-								'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
+							model_title: resolvedTitle,
+							model_image: resolvedImage,
 							amount: payment.amount,
 							currency: payment.currency,
 							purchased_at: payment.created_at,

@@ -115,7 +115,7 @@
 							<span class="text-sm text-white group-hover/category:text-blue-600">Most Popular</span
 							>
 						</div>
-						<Fa icon={faChevronRight} />
+						<Fa icon={faChevronRight} class="text-white group-hover/category:text-blue-600" />
 					</a>
 				</div>
 
@@ -154,7 +154,7 @@
 							<Fa icon={faStar} class="text-lg text-green-600" />
 							<span class="text-sm text-white group-hover/category:text-blue-600">Newest</span>
 						</div>
-						<Fa icon={faChevronRight} />
+						<Fa icon={faChevronRight} class="text-white group-hover/category:text-blue-600" />
 					</a>
 				</div>
 
@@ -195,7 +195,7 @@
 								>Recently Updated</span
 							>
 						</div>
-						<Fa icon={faChevronRight} />
+						<Fa icon={faChevronRight} class="text-white group-hover/category:text-blue-600" />
 					</a>
 				</div>
 			</div>

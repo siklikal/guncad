@@ -4,6 +4,12 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 
+interface ProjectDetailsSummary {
+	title?: string;
+	image?: string;
+	url?: string;
+}
+
 export const GET: RequestHandler = async ({ locals, fetch }) => {
 	try {
 		const session = locals.session;
@@ -46,18 +52,30 @@ export const GET: RequestHandler = async ({ locals, fetch }) => {
 
 				if (projectResponse.ok) {
 					const projectData = await projectResponse.json();
-					const projects = projectData.projects;
+					const projects: ProjectDetailsSummary[] = Array.isArray(projectData.projects)
+						? projectData.projects
+						: [];
+					const projectsByUrl = new Map(
+						projects
+							.filter((project) => typeof project.url === 'string' && project.url.length > 0)
+							.map((project) => [project.url!, project] as const)
+					);
 
-					likesWithDetails = likes.map((like, index) => {
-						const project = projects[index];
+					likesWithDetails = likes.map((like) => {
+						const projectUrl = `https://guncadindex.com/detail/${like.project_id}`;
+						const project = projectsByUrl.get(projectUrl);
+						const resolvedTitle =
+							project?.title && project.title !== 'Unknown Title' ? project.title : like.project_id;
+						const resolvedImage =
+							project?.title && project.title !== 'Unknown Title' && project.image
+								? project.image
+								: 'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image';
 
 						return {
 							id: like.id,
 							model_id: like.project_id,
-							model_title: project?.title || like.project_id,
-							model_image:
-								project?.image ||
-								'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
+							model_title: resolvedTitle,
+							model_image: resolvedImage,
 							liked_at: like.created_at
 						};
 					});

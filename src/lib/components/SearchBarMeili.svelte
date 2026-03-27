@@ -32,12 +32,17 @@
 	function handleSearch(e: Event) {
 		e.preventDefault();
 		const query = searchQuery.trim();
+		requestId += 1;
+		if (debounceTimer) {
+			clearTimeout(debounceTimer);
+		}
+		isLoading = false;
 		showSuggestions = false;
+		suggestions = [];
 
 		if (query) {
 			goto(`/explore?search=${encodeURIComponent(query)}`);
 			searchQuery = '';
-			suggestions = [];
 		} else {
 			goto('/explore');
 		}
@@ -80,7 +85,11 @@
 		try {
 			const response = await fetch(`/api/meili-search?q=${encodeURIComponent(query)}&limit=8`);
 			if (!response.ok) {
-				throw new Error(`Suggestion request failed with ${response.status}`);
+				const error = new Error(`Suggestion request failed with ${response.status}`) as Error & {
+					status?: number;
+				};
+				error.status = response.status;
+				throw error;
 			}
 
 			const payload = await response.json();
@@ -94,8 +103,18 @@
 			if (currentRequestId !== requestId) {
 				return;
 			}
-			console.error('[SearchBarMeili] Instant search disabled:', error);
-			instantSearchEnabled = false;
+
+			const status = typeof error === 'object' && error && 'status' in error ? error.status : undefined;
+			const shouldDisable =
+				status === 401 || status === 403 || status === 404 || status === 422 || status === 503;
+
+			if (shouldDisable) {
+				console.error('[SearchBarMeili] Instant search disabled:', error);
+				instantSearchEnabled = false;
+			} else {
+				console.warn('[SearchBarMeili] Suggestion request failed:', error);
+			}
+
 			suggestions = [];
 			showSuggestions = false;
 		} finally {

@@ -12,6 +12,12 @@ interface BookmarkWithDetails {
 	bookmarked_at: string;
 }
 
+interface ProjectDetailsSummary {
+	title?: string;
+	image?: string;
+	url?: string;
+}
+
 export const GET: RequestHandler = async ({ locals, fetch }) => {
 	try {
 		const session = locals.session;
@@ -53,19 +59,30 @@ export const GET: RequestHandler = async ({ locals, fetch }) => {
 
 				if (projectResponse.ok) {
 					const projectData = await projectResponse.json();
-					const projects = projectData.projects;
+					const projects: ProjectDetailsSummary[] = Array.isArray(projectData.projects)
+						? projectData.projects
+						: [];
+					const projectsByUrl = new Map(
+						projects
+							.filter((project) => typeof project.url === 'string' && project.url.length > 0)
+							.map((project) => [project.url!, project] as const)
+					);
 
-					// Map projects to bookmarks (order is preserved)
-					bookmarksWithDetails = bookmarks.map((bookmark, index) => {
-						const project = projects[index];
+					bookmarksWithDetails = bookmarks.map((bookmark) => {
+						const projectUrl = `https://guncadindex.com/detail/${bookmark.model_id}`;
+						const project = projectsByUrl.get(projectUrl);
+						const resolvedTitle =
+							project?.title && project.title !== 'Unknown Title' ? project.title : bookmark.model_id;
+						const resolvedImage =
+							project?.title && project.title !== 'Unknown Title' && project.image
+								? project.image
+								: 'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image';
 
 						return {
 							id: bookmark.id,
 							model_id: bookmark.model_id,
-							model_title: project?.title || bookmark.model_id,
-							model_image:
-								project?.image ||
-								'https://via.placeholder.com/400x225/374151/9ca3af?text=No+Image',
+							model_title: resolvedTitle,
+							model_image: resolvedImage,
 							bookmarked_at: bookmark.created_at
 						};
 					});

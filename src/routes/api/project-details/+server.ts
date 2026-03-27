@@ -13,7 +13,7 @@ async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch):
 	}
 
 	const lbryId = projectIdMatch[1];
-	const apiUrl = `https://guncadindex.com/api/releases/${lbryId}/`;
+	const apiUrl = `https://guncadindex.com/api/releases/${encodeURIComponent(lbryId)}/`;
 	const start = Date.now();
 	const response = await serverFetch(apiUrl, {
 		headers: {
