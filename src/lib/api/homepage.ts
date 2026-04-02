@@ -75,9 +75,9 @@ export async function fetchSpotlights() {
 				likes: 0
 			},
 			trending: spotlightTrending || {
-				title: 'DeadTrolls PA6CF',
+				title: 'Tiny 11',
 				image: 'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
-				url: 'https://guncadindex.com/detail/DeadTrolls-PA6CF-20:0',
+				url: 'https://guncadindex.com/detail/Tiny-11:5',
 				views: 0,
 				likes: 0
 			}
@@ -100,9 +100,9 @@ export async function fetchSpotlights() {
 				likes: 0
 			},
 			trending: {
-				title: 'DeadTrolls PA6CF',
+				title: 'Tiny 11',
 				image: 'https://guncadindex.com/media/thumbnails/thumbnail-d06fa14f-ffb0-4224-a851-bf241e474500-768.webp',
-				url: 'https://guncadindex.com/detail/DeadTrolls-PA6CF-20:0',
+				url: 'https://guncadindex.com/detail/Tiny-11:5',
 				views: 0,
 				likes: 0
 			}

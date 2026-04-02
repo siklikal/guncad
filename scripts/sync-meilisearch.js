@@ -49,7 +49,7 @@ import fs from 'fs';
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const GCI_API_BASE = 'https://guncadindex.com/api/releases/';
+const GCI_API_BASE = 'https://guncadindex.com/api/v2/releases/';
 const PAGE_SIZE = 500;
 const DELAY_MS = 1000;
 const DEFAULT_OUTPUT = 'meilisearch-records.json';
@@ -123,15 +123,15 @@ function loadExistingRecords(filePath) {
 // Transform a GCI release into an Meilisearch record
 // ---------------------------------------------------------------------------
 function transformRelease(release) {
-	const model_name_slug = release.url_lbry ? release.url_lbry.replace(/^lbry:\/\//, '') : '';
+	const model_name_slug = release.path?.split('/detail/')[1] || '';
 
 	return {
 		id: release.id,
 		model_name: release.name || '',
 		model_name_slug,
-		model_thumbnail: release.thumbnail_manager?.small || '',
+		model_thumbnail: release.thumbnail?.small || '',
 		user: release.channel?.name || '',
-		user_thumbnail: release.channel?.thumbnail_manager?.small || ''
+		user_thumbnail: release.channel?.thumbnail?.small || ''
 	};
 }
 
@@ -139,7 +139,7 @@ function transformRelease(release) {
 // Fetch a single page from the GCI API
 // ---------------------------------------------------------------------------
 async function fetchPage(offset) {
-	const url = `${GCI_API_BASE}?format=json&limit=${PAGE_SIZE}&offset=${offset}&ordering=-released`;
+	const url = `${GCI_API_BASE}?limit=${PAGE_SIZE}&offset=${offset}&sort=newest`;
 
 	const response = await fetch(url, {
 		headers: {
@@ -284,11 +284,13 @@ async function updateSync(output) {
 // Push records to Meilisearch
 // ---------------------------------------------------------------------------
 async function pushToMeilisearch(output) {
-	const url = process.env.MEILISEARCH_URL;
+	const url = process.env.MEILISEARCH_URL || process.env.PUBLIC_MEILISEARCH_URL;
 	const key = process.env.MEILISEARCH_MASTER_KEY;
 
 	if (!url || !key) {
-		console.error('Error: --push requires MEILISEARCH_URL and MEILISEARCH_MASTER_KEY env vars');
+		console.error(
+			'Error: --push requires MEILISEARCH_URL or PUBLIC_MEILISEARCH_URL, and MEILISEARCH_MASTER_KEY env vars'
+		);
 		process.exit(1);
 	}
 

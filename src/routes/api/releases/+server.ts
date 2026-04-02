@@ -11,20 +11,25 @@ interface Release {
 	name: string;
 	description: string;
 	released: string;
-	thumbnail: string;
-	thumbnail_manager?: {
-		small: string;
-		large: string;
+	path?: string;
+	thumbnail?: {
+		small?: string;
+		large?: string;
+		origin?: string;
 	};
-	odysee_views?: number;
-	odysee_likes?: number;
-	url_lbry?: string;
 	channel?: {
 		name: string;
 		handle: string;
-		thumbnail_manager?: {
-			small: string;
-			large: string;
+		thumbnail?: {
+			small?: string;
+			large?: string;
+		};
+	};
+	origin?: {
+		statistics?: {
+			views?: number;
+			likes?: number;
+			hearts?: number;
 		};
 	};
 }
@@ -55,12 +60,11 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 
 	try {
 		// Build GCI API URL
-		const apiUrl = new URL('https://guncadindex.com/api/releases/');
-		apiUrl.searchParams.set('format', 'json');
+		const apiUrl = new URL('https://guncadindex.com/api/v2/releases/');
 		apiUrl.searchParams.set('limit', limit.toString());
 		apiUrl.searchParams.set('offset', offset.toString());
 
-		// GCI API uses 'query' parameter for search, not 'search'
+		// GCI v2 uses 'query' parameter for search
 		if (searchQuery) {
 			apiUrl.searchParams.set('query', searchQuery);
 			console.log('[API /api/releases] Using search query:', searchQuery);
@@ -105,18 +109,19 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 
 		// Map GCI API data directly
 		const projects = data.results.map((release) => {
-			const slug = release.url_lbry ? release.url_lbry.replace('lbry://', '') : release.id;
+			const slug = release.path?.split('/detail/')[1] || release.id;
+			const statistics = release.origin?.statistics || {};
 
 			return {
 				id: slug,
 				title: release.name,
-				image: release.thumbnail_manager?.large || release.thumbnail || '',
-				views: release.odysee_views || 0,
-				likes: release.odysee_likes || 0,
+				image: release.thumbnail?.large || release.thumbnail?.origin || '',
+				views: statistics.views || 0,
+				likes: statistics.likes || statistics.hearts || 0,
 				user: {
 					username: release.channel?.name || 'Unknown',
 					handle: release.channel?.handle || '',
-					avatar: release.channel?.thumbnail_manager?.large || '/images/default-avatar.avif'
+					avatar: release.channel?.thumbnail?.large || '/images/default-avatar.avif'
 				}
 			};
 		});

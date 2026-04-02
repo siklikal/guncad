@@ -13,7 +13,7 @@ async function getProjectDetailsFromGCI(url: string, serverFetch: typeof fetch):
 	}
 
 	const lbryId = projectIdMatch[1];
-	const apiUrl = `https://guncadindex.com/api/releases/${encodeURIComponent(lbryId)}/`;
+	const apiUrl = `https://guncadindex.com/api/v2/releases/${encodeURIComponent(lbryId)}/`;
 	const start = Date.now();
 	const response = await serverFetch(apiUrl, {
 		headers: {
@@ -52,25 +52,26 @@ export const POST: RequestHandler = async ({ request, fetch: serverFetch }) => {
 		const projectPromises = urls.map(async (url: string) => {
 			try {
 				const release = await getProjectDetailsFromGCI(url, serverFetch);
+				const statistics = release.origin?.statistics || {};
 
 				return {
 					title: release.name,
-					image: release.thumbnail_manager?.large || release.thumbnail || '',
+					image: release.thumbnail?.large || release.thumbnail?.origin || '',
 					url: url,
-					views: release.odysee_views || 0,
-					likes: release.odysee_likes || 0,
+					views: statistics.views || 0,
+					likes: statistics.likes || statistics.hearts || 0,
 					tags: release.tags ? release.tags.map((tag: any) => tag.name) : [],
 					user: {
 						username: release.channel?.name || 'Unknown User',
 						handle: release.channel?.handle || '',
 						avatar:
-							release.channel?.thumbnail_manager?.large ||
+							release.channel?.thumbnail?.large ||
 							'https://guncadindex.com/static/images/default-avatar.png'
 					},
 					description: release.description || '',
-					lbryUrl: release.url_lbry || '',
+					lbryUrl: release.origin?.links?.find((link: any) => link.url?.startsWith('lbry://'))?.url || '',
 					released: release.released || null,
-					fileSize: release.size || 0
+					fileSize: release.origin?.size || 0
 				};
 			} catch (error) {
 				console.error(`[project-details] Failed: ${url}`, error);

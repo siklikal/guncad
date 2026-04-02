@@ -129,3 +129,12 @@ a,
 a * {
 	transition: color 150ms ease;
 }
+
+.scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
+}

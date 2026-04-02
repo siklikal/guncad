@@ -12,7 +12,10 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"sync:meili": "node scripts/sync-meilisearch.js --push",
+		"sync:meili:env": "node --env-file=.env scripts/sync-meilisearch.js --push",
+		"sync:meili:update:env": "node --env-file=.env scripts/sync-meilisearch.js --update --push"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",

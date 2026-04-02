@@ -366,15 +366,16 @@
 	}
 
 	function clearSearch() {
-		const params = new URLSearchParams();
-		if (selectedSort && selectedSort !== 'rank' && selectedSort !== 'newest') {
-			params.set('sort', selectedSort);
-		}
-		if (selectedTime && selectedTime !== 'alltime') {
-			params.set('time', selectedTime);
-		}
-		const queryString = params.toString();
-		goto(queryString ? `/explore?${queryString}` : '/explore');
+		selectedSort = 'newest';
+		selectedTime = 'alltime';
+		currentSearchQuery = '';
+		currentSort = 'newest';
+		currentTime = 'alltime';
+		goto('/explore', {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
 	}
 
 	function updateFilters() {
@@ -409,7 +410,7 @@
 			<div>
 				<button
 					onclick={clearSearch}
-					class="inline-flex items-center gap-2 rounded-full border border-neutral-600 bg-neutral-800 px-4 py-2 text-sm hover:bg-neutral-700"
+					class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-600 bg-neutral-800 px-4 py-2 text-sm hover:bg-neutral-700"
 				>
 					<span>Search: <span class="font-semibold">{currentSearchQuery}</span></span>
 					<Fa icon={faXmark} class="text-lg" />

@@ -49,8 +49,7 @@ Set these in Railway's Variables tab:
 | `PUBLIC_ADN_PUBLIC_CLIENT_KEY` | Authorize.Net public client key |
 | `PUBLIC_ADN_ACCEPT_JS_URL` | Authorize.Net Accept.js script URL |
 | `PUBLIC_MODEL_PURCHASE_PRICE` | Default model price |
-| `IPGEOLOCATION_API_KEY` | IP geolocation API key |
-| `VPNAPI_API_KEY` | VPN detection API key |
+| `IPGEOLOCATION_API_KEY` | IP geolocation and VPN/proxy detection API key |
 | `BYPASS_GEO_CHECK` | Skip geo/VPN checks (`true` for dev, `false` for prod) |
 | `PUBLIC_MEILISEARCH_URL` | Meilisearch instance URL |
 | `PUBLIC_MEILISEARCH_SEARCH_KEY` | Meilisearch search-only API key (safe for client) |

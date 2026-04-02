@@ -9,7 +9,7 @@ export const config = {
 export const GET: RequestHandler = async ({ url, fetch: serverFetch }) => {
 	const sort = url.searchParams.get('sort') || 'newest';
 	const limit = parseInt(url.searchParams.get('limit') || '5');
-	const gciUrl = `https://guncadindex.com/api/releases/?format=json&sort=${sort}&time=alltime&limit=${limit}`;
+	const gciUrl = `https://guncadindex.com/api/v2/releases/?sort=${sort}&limit=${limit}`;
 
 	try {
 		const start = Date.now();
@@ -47,25 +47,26 @@ export const GET: RequestHandler = async ({ url, fetch: serverFetch }) => {
 		console.log(`[gci-sorted] sort=${sort} OK ${elapsed}ms — ${releases.length} releases`);
 
 		const projects = releases.map((release: any) => {
-			const slug = release.url_lbry ? release.url_lbry.replace('lbry://', '') : null;
+			const slug = release.path?.split('/detail/')[1] || null;
+			const statistics = release.origin?.statistics || {};
 
 			return {
 				id: slug,
 				title: release.name,
-				image: release.thumbnail_manager?.large || release.thumbnail || '',
+				image: release.thumbnail?.large || release.thumbnail?.origin || '',
 				url: `https://guncadindex.com/detail/${slug}`,
-				views: release.odysee_views || 0,
-				likes: release.odysee_likes || 0,
+				views: statistics.views || 0,
+				likes: statistics.likes || statistics.hearts || 0,
 				tags: release.tags ? release.tags.map((tag: any) => tag.name) : [],
 				user: {
 					username: release.channel?.name || 'Unknown User',
 					handle: release.channel?.handle || '',
 					avatar:
-						release.channel?.thumbnail_manager?.large ||
+						release.channel?.thumbnail?.large ||
 						'https://guncadindex.com/static/images/default-avatar.png'
 				},
 				description: release.description || '',
-				lbryUrl: release.url_lbry || ''
+				lbryUrl: release.origin?.links?.find((link: any) => link.url?.startsWith('lbry://'))?.url || ''
 			};
 		});
 

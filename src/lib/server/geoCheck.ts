@@ -1,4 +1,4 @@
-import { VPNAPI_API_KEY } from '$env/static/private';
+import { IPGEOLOCATION_API_KEY } from '$env/static/private';
 
 // US states where purchases are blocked
 const BLOCKED_STATES = ['California', 'New Jersey', 'Washington', 'Delaware', 'Rhode Island', 'Connecticut', 'District of Columbia'];
@@ -15,13 +15,24 @@ interface GeoResult {
 /**
  * Check if a purchase is allowed based on IP geolocation.
  * Blocks VPN/proxy/Tor/relay users and users from restricted states.
- * Uses vpnapi.io for detection.
+ * Uses ipgeolocation.io for geolocation and security detection.
  */
 export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 	try {
-		const response = await fetch(
-			`https://vpnapi.io/api/${ip}?key=${VPNAPI_API_KEY}`
-		);
+		const query = new URLSearchParams({
+			apiKey: IPGEOLOCATION_API_KEY,
+			ip,
+			include: 'security',
+			fields: [
+				'location.country_name',
+				'location.state_prov',
+				'security.is_vpn',
+				'security.is_proxy',
+				'security.is_tor',
+				'security.is_relay'
+			].join(',')
+		});
+		const response = await fetch(`https://api.ipgeolocation.io/v3/ipgeo?${query}`);
 
 		if (!response.ok) {
 			console.error('[GeoCheck] API returned status:', response.status);
@@ -32,54 +43,54 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 
 		console.log('[GeoCheck] Full API response:', JSON.stringify(data, null, 2));
 
-		// API returns a message instead of geo data for invalid IPs (e.g. localhost)
+		// API may omit geo/security data for invalid or private IPs (e.g. localhost)
 		if (!data.security || !data.location) {
 			console.warn('[GeoCheck] No security/location data returned (likely localhost or invalid IP)');
 			return { allowed: false, reason: 'Unable to verify your location.' };
 		}
 
 		console.log('[GeoCheck] IP:', data.ip);
-		console.log('[GeoCheck] Country:', data.location.country, '| Region:', data.location.region);
-		console.log('[GeoCheck] VPN:', data.security.vpn, '| Proxy:', data.security.proxy, '| Tor:', data.security.tor, '| Relay:', data.security.relay);
+		console.log('[GeoCheck] Country:', data.location.country_name, '| Region:', data.location.state_prov);
+		console.log('[GeoCheck] VPN:', data.security.is_vpn, '| Proxy:', data.security.is_proxy, '| Tor:', data.security.is_tor, '| Relay:', data.security.is_relay);
 
 		// Check VPN/proxy/Tor/relay
-		if (data.security.vpn || data.security.proxy || data.security.tor || data.security.relay) {
+		if (data.security.is_vpn || data.security.is_proxy || data.security.is_tor || data.security.is_relay) {
 			return {
 				allowed: false,
 				reason: 'Purchases are not available when using a VPN, proxy, or Tor. Please disable it and try again.',
 				ip: data.ip,
-				state: data.location.region,
-				country: data.location.country
+				state: data.location.state_prov,
+				country: data.location.country_name
 			};
 		}
 
 		// Must be in the United States
-		if (data.location.country !== 'United States') {
+		if (data.location.country_name !== 'United States') {
 			return {
 				allowed: false,
 				reason: 'Purchases are only available within the United States.',
 				ip: data.ip,
-				state: data.location.region,
-				country: data.location.country
+				state: data.location.state_prov,
+				country: data.location.country_name
 			};
 		}
 
 		// Check blocked states
-		if (BLOCKED_STATES.includes(data.location.region)) {
+		if (BLOCKED_STATES.includes(data.location.state_prov)) {
 			return {
 				allowed: false,
-				reason: `Purchases are currently not available in ${data.location.region}.`,
+				reason: `Purchases are currently not available in ${data.location.state_prov}.`,
 				ip: data.ip,
-				state: data.location.region,
-				country: data.location.country
+				state: data.location.state_prov,
+				country: data.location.country_name
 			};
 		}
 
 		return {
 			allowed: true,
 			ip: data.ip,
-			state: data.location.region,
-			country: data.location.country
+			state: data.location.state_prov,
+			country: data.location.country_name
 		};
 	} catch (error) {
 		console.error('[GeoCheck] Error:', error);
