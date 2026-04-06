@@ -5,7 +5,13 @@ import { env } from '$env/dynamic/private';
 
 export const GET: RequestHandler = async ({ request }) => {
 	if (env.BYPASS_GEO_CHECK === 'true') {
-		return json({ allowed: true });
+		return json({
+			allowed: true,
+			debug: {
+				bypassed: true,
+				reason: 'BYPASS_GEO_CHECK is enabled'
+			}
+		});
 	}
 
 	const ip = getClientIp(request);

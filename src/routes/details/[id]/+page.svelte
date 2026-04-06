@@ -75,11 +75,21 @@
 			project = p;
 			hasPurchased = purchased;
 			if (p) {
-				checkBookmarkStatus();
 				fetchProjectStats();
 				trackView();
 			}
 		});
+	});
+
+	$effect(() => {
+		if (!project) return;
+
+		if (!$user) {
+			isBookmarked = false;
+			return;
+		}
+
+		void checkBookmarkStatus();
 	});
 
 	// Subscribe to realtime updates for project_stats
@@ -151,7 +161,11 @@
 	}
 
 	async function checkBookmarkStatus() {
-		if (!project) return;
+		if (!project || !$user) {
+			isBookmarked = false;
+			return;
+		}
+
 		try {
 			const response = await fetch('/api/bookmarks/check', {
 				method: 'POST',

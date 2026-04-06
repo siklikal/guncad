@@ -116,32 +116,6 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 		console.log('[GeoCheck] Country:', data.location.country_name, '| Region:', data.location.state_prov);
 		console.log('[GeoCheck] VPN:', data.security.is_vpn, '| Proxy:', data.security.is_proxy, '| Tor:', data.security.is_tor, '| Relay:', data.security.is_relay);
 
-		// Check VPN/proxy/Tor/relay
-		if (data.security.is_vpn || data.security.is_proxy || data.security.is_tor || data.security.is_relay) {
-			return {
-				allowed: false,
-				reason: getSecurityDenyReason(data.security),
-				ip: data.ip,
-				state: data.location.state_prov,
-				country: data.location.country_name,
-				security: {
-					isVpn: data.security.is_vpn,
-					isProxy: data.security.is_proxy,
-					isTor: data.security.is_tor,
-					isRelay: data.security.is_relay
-				},
-				debug: {
-					provider: 'ipgeolocation',
-					providerStatus: response.status,
-					requestIp: ip,
-					resolvedIp: data.ip,
-					hasLocation: Boolean(data.location),
-					hasSecurity: Boolean(data.security),
-					providerResponse: data
-				}
-			};
-		}
-
 		// Must be in the United States
 		if (data.location.country_name !== 'United States') {
 			return {
@@ -173,6 +147,32 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 			return {
 				allowed: false,
 				reason: 'Downloads are not available in your state.',
+				ip: data.ip,
+				state: data.location.state_prov,
+				country: data.location.country_name,
+				security: {
+					isVpn: data.security.is_vpn,
+					isProxy: data.security.is_proxy,
+					isTor: data.security.is_tor,
+					isRelay: data.security.is_relay
+				},
+				debug: {
+					provider: 'ipgeolocation',
+					providerStatus: response.status,
+					requestIp: ip,
+					resolvedIp: data.ip,
+					hasLocation: Boolean(data.location),
+					hasSecurity: Boolean(data.security),
+					providerResponse: data
+				}
+			};
+		}
+
+		// Check VPN/proxy/Tor/relay only after country/state eligibility passes
+		if (data.security.is_vpn || data.security.is_proxy || data.security.is_tor || data.security.is_relay) {
+			return {
+				allowed: false,
+				reason: getSecurityDenyReason(data.security),
 				ip: data.ip,
 				state: data.location.state_prov,
 				country: data.location.country_name,
