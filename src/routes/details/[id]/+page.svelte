@@ -30,6 +30,8 @@
 	let debugDownloading = $state(false);
 	let downloadError = $state('');
 	let showPurchaseModal = $state(false);
+	let showSecurityBlockedModal = $state(false);
+	let securityBlockReason = $state('');
 	let geoChecking = $state(false);
 	let isBookmarked = $state(false);
 	let bookmarkLoading = $state(false);
@@ -46,6 +48,24 @@
 			downloads: 0
 		}
 	);
+
+	async function checkSecurityAccess() {
+		try {
+			const response = await fetch('/api/geo-check');
+			const result = await response.json();
+
+			console.log('[DetailsPage] Geo/VPN check result:', result);
+
+			if (!response.ok) {
+				throw new Error(result.error || 'Security check failed');
+			}
+
+			return result;
+		} catch (error) {
+			console.error('[DetailsPage] Geo/VPN check failed:', error);
+			throw error;
+		}
+	}
 
 	// Unwrap streaming promises when they resolve
 	$effect(() => {
@@ -255,10 +275,37 @@
 	 * 3. If no, show purchase modal
 	 */
 	async function handleDownload() {
-		if (!project || downloading) return;
+		if (!project || downloading || geoChecking) return;
+
+		downloadError = '';
+		showSecurityBlockedModal = false;
+		securityBlockReason = '';
+
+		geoChecking = true;
+
+		try {
+			const securityResult = await checkSecurityAccess();
+
+			if (!securityResult.allowed) {
+				securityBlockReason =
+					securityResult.reason || 'Download is not available from your current network or location.';
+				showSecurityBlockedModal = true;
+				hapticTrigger('error');
+				return;
+			}
+		} catch (error) {
+			securityBlockReason =
+				error instanceof Error
+					? error.message
+					: 'Unable to verify your location or network. Please try again later.';
+			showSecurityBlockedModal = true;
+			hapticTrigger('error');
+			return;
+		} finally {
+			geoChecking = false;
+		}
 
 		downloading = true;
-		downloadError = '';
 
 		try {
 			// Check entitlement first
@@ -278,25 +325,9 @@
 			if (entitlementResponse.ok && entitlementData.canDownload) {
 				await performDownload();
 			} else {
-				// User needs to purchase (either not authenticated or no entitlement), check geo first
+				// User needs to purchase (either not authenticated or no entitlement)
 				downloading = false;
-				geoChecking = true;
-				try {
-					const geoResponse = await fetch('/api/geo-check');
-					const geoResult = await geoResponse.json();
-					if (!geoResult.allowed) {
-						hapticTrigger('error');
-						toast.error(geoResult.reason || 'Purchases are not available in your region.');
-						return;
-					}
-					showPurchaseModal = true;
-				} catch (error) {
-					console.error('Geo check failed:', error);
-				hapticTrigger('error');
-				toast.error('Unable to verify your location. Please try again later.');
-				} finally {
-					geoChecking = false;
-				}
+				showPurchaseModal = true;
 			}
 		} catch (error) {
 			downloadError = error instanceof Error ? error.message : 'Failed to check download access';
@@ -643,7 +674,7 @@
 										<Fa icon={faDownload} class="text-sm" />
 									{/if}
 								</span>
-								<TextMorph text={downloading ? 'Downloading...' : 'Download'} />
+								<TextMorph text={geoChecking ? 'Checking...' : downloading ? 'Downloading...' : 'Download'} />
 							{/snippet}
 						</Button>
 
@@ -780,7 +811,7 @@
 											<Fa icon={faDownload} class="text-sm" />
 										{/if}
 									</span>
-									<TextMorph text={downloading ? 'Downloading...' : 'Download'} />
+									<TextMorph text={geoChecking ? 'Checking...' : downloading ? 'Downloading...' : 'Download'} />
 								{/snippet}
 							</Button>
 
@@ -823,6 +854,20 @@
 		{/if}
 	{/await}
 </div>
+
+{#if showSecurityBlockedModal}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+		<div class="w-full max-w-md rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl">
+			<h2 class="text-xl font-bold text-white">Download Unavailable</h2>
+			<p class="mt-3 text-sm leading-relaxed text-neutral-300">
+				{securityBlockReason}
+			</p>
+			<div class="mt-6 flex justify-end">
+				<Button size="lg" onclick={() => (showSecurityBlockedModal = false)}>Close</Button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <!-- Purchase Modal -->
 {#if project}

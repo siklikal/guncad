@@ -6,15 +6,26 @@ interface LBRYDownloadURLParams {
 	uri: string;
 }
 
+function normalizeLbryUri(uri: string): string {
+	if (!uri.startsWith('lbry://')) return uri;
+
+	try {
+		return decodeURIComponent(uri);
+	} catch {
+		return uri;
+	}
+}
+
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { uri }: LBRYDownloadURLParams = await request.json();
+		const normalizedUri = normalizeLbryUri(uri);
 
 		if (!uri) {
 			return json({ error: 'Invalid request: uri required' }, { status: 400 });
 		}
 
-		console.log('Getting download URL for:', uri);
+		console.log('Getting download URL for:', normalizedUri);
 
 		// Call LBRY's get method to initiate download and get streaming URL
 		// Use save_file: false to enable streaming mode instead of downloading to disk
@@ -26,7 +37,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			body: JSON.stringify({
 				method: 'get',
 				params: {
-					uri: uri,
+					uri: normalizedUri,
 					save_file: false
 				}
 			})

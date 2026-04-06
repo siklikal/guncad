@@ -1,7 +1,15 @@
 import type { PageServerLoad } from './$types';
 
+function decodeClaimId(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
-	const projectId = params.id;
+	const projectId = decodeClaimId(params.id);
 	const gciUrl = `https://guncadindex.com/detail/${projectId}`;
 
 	// Return immediately with projectId and streaming promises

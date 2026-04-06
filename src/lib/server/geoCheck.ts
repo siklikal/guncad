@@ -9,6 +9,39 @@ interface GeoResult {
 	ip?: string;
 	state?: string;
 	country?: string;
+	security?: {
+		isVpn: boolean;
+		isProxy: boolean;
+		isTor: boolean;
+		isRelay: boolean;
+	};
+}
+
+function getSecurityDenyReason(security: {
+	is_vpn: boolean;
+	is_proxy: boolean;
+	is_tor: boolean;
+	is_relay: boolean;
+}): string {
+	const deniedBy = [];
+
+	if (security.is_vpn) deniedBy.push('VPN');
+	if (security.is_proxy) deniedBy.push('proxy');
+	if (security.is_tor) deniedBy.push('Tor');
+	if (security.is_relay) deniedBy.push('network relay');
+
+	if (deniedBy.length === 0) {
+		return 'This network connection is not eligible for downloads.';
+	}
+
+	if (deniedBy.length === 1) {
+		return `Downloads are not available while using ${deniedBy[0]}.`;
+	}
+
+	const last = deniedBy[deniedBy.length - 1];
+	const leading = deniedBy.slice(0, -1).join(', ');
+
+	return `Downloads are not available while using ${leading} or ${last}.`;
 }
 
 
@@ -57,10 +90,16 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 		if (data.security.is_vpn || data.security.is_proxy || data.security.is_tor || data.security.is_relay) {
 			return {
 				allowed: false,
-				reason: 'Purchases are not available when using a VPN, proxy, or Tor. Please disable it and try again.',
+				reason: getSecurityDenyReason(data.security),
 				ip: data.ip,
 				state: data.location.state_prov,
-				country: data.location.country_name
+				country: data.location.country_name,
+				security: {
+					isVpn: data.security.is_vpn,
+					isProxy: data.security.is_proxy,
+					isTor: data.security.is_tor,
+					isRelay: data.security.is_relay
+				}
 			};
 		}
 
@@ -68,10 +107,16 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 		if (data.location.country_name !== 'United States') {
 			return {
 				allowed: false,
-				reason: 'Purchases are only available within the United States.',
+				reason: 'Downloads are only available within the United States.',
 				ip: data.ip,
 				state: data.location.state_prov,
-				country: data.location.country_name
+				country: data.location.country_name,
+				security: {
+					isVpn: data.security.is_vpn,
+					isProxy: data.security.is_proxy,
+					isTor: data.security.is_tor,
+					isRelay: data.security.is_relay
+				}
 			};
 		}
 
@@ -79,10 +124,16 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 		if (BLOCKED_STATES.includes(data.location.state_prov)) {
 			return {
 				allowed: false,
-				reason: `Purchases are currently not available in ${data.location.state_prov}.`,
+				reason: 'Downloads are not available in your state.',
 				ip: data.ip,
 				state: data.location.state_prov,
-				country: data.location.country_name
+				country: data.location.country_name,
+				security: {
+					isVpn: data.security.is_vpn,
+					isProxy: data.security.is_proxy,
+					isTor: data.security.is_tor,
+					isRelay: data.security.is_relay
+				}
 			};
 		}
 
@@ -90,7 +141,13 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 			allowed: true,
 			ip: data.ip,
 			state: data.location.state_prov,
-			country: data.location.country_name
+			country: data.location.country_name,
+			security: {
+				isVpn: data.security.is_vpn,
+				isProxy: data.security.is_proxy,
+				isTor: data.security.is_tor,
+				isRelay: data.security.is_relay
+			}
 		};
 	} catch (error) {
 		console.error('[GeoCheck] Error:', error);

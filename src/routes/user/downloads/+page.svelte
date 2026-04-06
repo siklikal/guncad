@@ -56,6 +56,14 @@
 		}).format(amount);
 	}
 
+	function decodeClaimId(value: string): string {
+		try {
+			return decodeURIComponent(value);
+		} catch {
+			return value;
+		}
+	}
+
 	async function handleDownload(modelId: string, modelTitle: string) {
 		if (downloadingModel) return; // Prevent multiple simultaneous downloads
 
@@ -65,7 +73,7 @@
 			console.log('[Downloads] Starting download for:', modelId);
 
 			// Construct the canonical LBRY URL
-			const canonicalUrl = `lbry://${modelId}`;
+			const canonicalUrl = `lbry://${decodeClaimId(modelId)}`;
 
 			// Use the LBRY download endpoint
 			const response = await fetch('/api/lbry-download', {

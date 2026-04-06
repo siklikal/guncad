@@ -10,6 +10,16 @@ interface LBRYDownloadParams {
 	fileName: string;
 }
 
+function normalizeLbryUri(uri: string): string {
+	if (!uri.startsWith('lbry://')) return uri;
+
+	try {
+		return decodeURIComponent(uri);
+	} catch {
+		return uri;
+	}
+}
+
 // Helper function to wait for file to be fully downloaded
 async function waitForFile(filePath: string, maxWaitTime = 60000): Promise<void> {
 	const startTime = Date.now();
@@ -66,12 +76,13 @@ async function waitForFile(filePath: string, maxWaitTime = 60000): Promise<void>
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { uri, fileName }: LBRYDownloadParams = await request.json();
+		const normalizedUri = normalizeLbryUri(uri);
 
 		if (!uri || !fileName) {
 			return json({ error: 'Invalid request: uri and fileName required' }, { status: 400 });
 		}
 
-		console.log('Downloading file from LBRY:', uri);
+		console.log('Downloading file from LBRY:', normalizedUri);
 
 		// Call LBRY's get method to download the file
 		// CRITICAL: Use save_file: false to enable streaming mode
@@ -85,7 +96,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			body: JSON.stringify({
 				method: 'get',
 				params: {
-					uri: uri,
+					uri: normalizedUri,
 					save_file: false
 				}
 			})
