@@ -51,7 +51,9 @@
 
 	async function checkSecurityAccess() {
 		try {
+			console.log('[DetailsPage] Starting Geo/VPN check...');
 			const response = await fetch('/api/geo-check');
+			console.log('[DetailsPage] Geo/VPN response status:', response.status);
 			const result = await response.json();
 
 			console.log('[DetailsPage] Geo/VPN check result:', result);
@@ -276,6 +278,8 @@
 	 */
 	async function handleDownload() {
 		if (!project || downloading || geoChecking) return;
+
+		console.log('[DetailsPage] Download button clicked');
 
 		downloadError = '';
 		showSecurityBlockedModal = false;
@@ -674,7 +678,7 @@
 										<Fa icon={faDownload} class="text-sm" />
 									{/if}
 								</span>
-								<TextMorph text={geoChecking ? 'Checking...' : downloading ? 'Downloading...' : 'Download'} />
+								<TextMorph text={downloading ? 'Downloading...' : 'Download'} />
 							{/snippet}
 						</Button>
 
@@ -811,7 +815,7 @@
 											<Fa icon={faDownload} class="text-sm" />
 										{/if}
 									</span>
-									<TextMorph text={geoChecking ? 'Checking...' : downloading ? 'Downloading...' : 'Download'} />
+									<TextMorph text={downloading ? 'Downloading...' : 'Download'} />
 								{/snippet}
 							</Button>
 

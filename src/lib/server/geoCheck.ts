@@ -15,6 +15,15 @@ interface GeoResult {
 		isTor: boolean;
 		isRelay: boolean;
 	};
+	debug?: {
+		provider: 'ipgeolocation';
+		providerStatus?: number;
+		requestIp?: string;
+		resolvedIp?: string;
+		hasLocation?: boolean;
+		hasSecurity?: boolean;
+		providerResponse?: unknown;
+	};
 }
 
 function getSecurityDenyReason(security: {
@@ -69,7 +78,16 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 
 		if (!response.ok) {
 			console.error('[GeoCheck] API returned status:', response.status);
-			return { allowed: false, reason: 'Unable to verify your location. Please try again later.' };
+			return {
+				allowed: false,
+				reason: 'We could not verify your location or network connection. Please try again in a few minutes.',
+				debug: {
+					provider: 'ipgeolocation',
+					providerStatus: response.status,
+					requestIp: ip,
+					providerResponse: null
+				}
+			};
 		}
 
 		const data = await response.json();
@@ -79,7 +97,19 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 		// API may omit geo/security data for invalid or private IPs (e.g. localhost)
 		if (!data.security || !data.location) {
 			console.warn('[GeoCheck] No security/location data returned (likely localhost or invalid IP)');
-			return { allowed: false, reason: 'Unable to verify your location.' };
+			return {
+				allowed: false,
+				reason: 'We could not verify your location or network connection for this request.',
+				debug: {
+					provider: 'ipgeolocation',
+					providerStatus: response.status,
+					requestIp: ip,
+					resolvedIp: data.ip,
+					hasLocation: Boolean(data.location),
+					hasSecurity: Boolean(data.security),
+					providerResponse: data
+				}
+			};
 		}
 
 		console.log('[GeoCheck] IP:', data.ip);
@@ -99,6 +129,15 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 					isProxy: data.security.is_proxy,
 					isTor: data.security.is_tor,
 					isRelay: data.security.is_relay
+				},
+				debug: {
+					provider: 'ipgeolocation',
+					providerStatus: response.status,
+					requestIp: ip,
+					resolvedIp: data.ip,
+					hasLocation: Boolean(data.location),
+					hasSecurity: Boolean(data.security),
+					providerResponse: data
 				}
 			};
 		}
@@ -116,6 +155,15 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 					isProxy: data.security.is_proxy,
 					isTor: data.security.is_tor,
 					isRelay: data.security.is_relay
+				},
+				debug: {
+					provider: 'ipgeolocation',
+					providerStatus: response.status,
+					requestIp: ip,
+					resolvedIp: data.ip,
+					hasLocation: Boolean(data.location),
+					hasSecurity: Boolean(data.security),
+					providerResponse: data
 				}
 			};
 		}
@@ -133,6 +181,15 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 					isProxy: data.security.is_proxy,
 					isTor: data.security.is_tor,
 					isRelay: data.security.is_relay
+				},
+				debug: {
+					provider: 'ipgeolocation',
+					providerStatus: response.status,
+					requestIp: ip,
+					resolvedIp: data.ip,
+					hasLocation: Boolean(data.location),
+					hasSecurity: Boolean(data.security),
+					providerResponse: data
 				}
 			};
 		}
@@ -147,11 +204,28 @@ export async function checkGeoPurchase(ip: string): Promise<GeoResult> {
 				isProxy: data.security.is_proxy,
 				isTor: data.security.is_tor,
 				isRelay: data.security.is_relay
+			},
+			debug: {
+				provider: 'ipgeolocation',
+				providerStatus: response.status,
+				requestIp: ip,
+				resolvedIp: data.ip,
+				hasLocation: Boolean(data.location),
+				hasSecurity: Boolean(data.security),
+				providerResponse: data
 			}
 		};
 	} catch (error) {
 		console.error('[GeoCheck] Error:', error);
-		return { allowed: false, reason: 'Unable to verify your location. Please try again later.' };
+		return {
+			allowed: false,
+			reason: 'We could not verify your location or network connection. Please try again in a few minutes.',
+			debug: {
+				provider: 'ipgeolocation',
+				requestIp: ip,
+				providerResponse: null
+			}
+		};
 	}
 }
 
